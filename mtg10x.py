@@ -329,7 +329,7 @@ def gfa_handle(contig):
 #Function to bam_extract the barcodes from the chunks with BamExtractor 
 #(remove the '-1' at the end of the sequences (p2), and keep only the barcodes observed more than once (p3, p4, p5))
 def bam_extract(bam, region, barcodes):
-    command = ["../Con10x/build/tools/BamExtractor", bam, region]
+    command = ["BamExtractor", bam, region]
     p1 = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p2 = subprocess.Popen(["cut", "-d", "-", "-f1"], stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p1.stdout.close()
@@ -349,7 +349,7 @@ def bam_extract(bam, region, barcodes):
 def get_reads(barcodes, out_reads):    
     reads = args.reads
     index = args.index
-    command = ["../Con10x/build/tools/GetReads", "-reads", reads, "-index", index, "-barcodes", barcodes]
+    command = ["GetReads", "-reads", reads, "-index", index, "-barcodes", barcodes]
     subprocess.run(command, stdout=out_reads, stderr=out_reads)
     return out_reads
 
@@ -364,7 +364,7 @@ def mtg_gapfill(input_file, bkpt, k, a, output_prefix):
         max_length = gap_len + 1000
     nb_cores = args.nb_cores_mtg
     max_memory = args.max_memory_mtg
-    command = ["../../MindTheGap/build/bin/MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
+    command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
                "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-out", output_prefix]
     subprocess.run(command)
     output = subprocess.check_output(command)
