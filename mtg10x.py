@@ -38,7 +38,6 @@ def main():
                                                            '-max-length': maximum length of gapfilling (nt) [default '10000']
                                                            '-nb-cores' : number of cores [default '4']
                                                            '-max-memory' : max memory for graph building (in MBytes) [default '8000']
-                                                           '-verbose': verbosity level [default '0']
                                      '''))
 
     parserMain = parser.add_argument_group("[Main options]")
