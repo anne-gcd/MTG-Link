@@ -150,10 +150,19 @@ def main():
                 sys.stderr.write("\nError: The chunk size must be smaller than the sequence length of the contigs")
                 sys.exit(2)
             else:
-                l_start = l_len - args.chunk 
-                l_end = l_len
-                r_start = 0 
-                r_end = args.chunk
+                if l_orient == "fwd":
+                    l_start = l_len - args.chunk 
+                    l_end = l_len
+                elif l_orient == "rev":
+                    l_start = 0
+                    l_end = args.chunk
+                
+                if r_orient == "fwd":
+                    r_start = 0 
+                    r_end = args.chunk
+                elif r_orient == "rev":
+                    r_start = r_len - args.chunk
+                    r_end = r_len
            
             #----------------------------------------------------
             # BamExtractor
