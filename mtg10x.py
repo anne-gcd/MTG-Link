@@ -15,7 +15,7 @@ def main():
     #----------------------------------------------------
     # Arg parser
     #----------------------------------------------------
-    parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> [options]", \
+    parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]", \
                                      formatter_class=argparse.RawTextHelpFormatter, \
                                      description=(''' \
                                      Gapfilling with 10X data, using MindTheGap in 'breakpoint' mode
@@ -24,20 +24,21 @@ def main():
                                      You also need to install Con10X (especially BamExtractor and GetReads) and MindTheGap 
                                      Use MTG in breakpoint mode, but taking an offset of size k
                                     
-                                     [Main options]: '-gfa' : input GFA file containing the contigs paths
+                                     [Main options]: '-gfa': input GFA file containing the contigs paths
                                                      '-c': chunk size 
-                                                     '-bam' : BAM file
+                                                     '-bam': BAM file
                                                      '-reads': file of indexed reads
                                                      '-index': barcodes index file
-                                                     '-out' : output directory [default './mtg10x_results']
+                                                     '-f': minimal frequence of extracted barcodes from BAM file
+                                                     '-out': output directory [default './mtg10x_results']
 
                                      [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
-                                                           '-kmer-size' : size of a kmer [default '[51, 41, 31, 21]']
-                                                           '-abundance-min' : minimal abundance threshold for solid kmers [default '[3, 2]']
-                                                           '-max-nodes' : maximum number of nodes in contig graph [default '1000']
+                                                           '-kmer-size': size of a kmer [default '[51, 41, 31, 21]']
+                                                           '-abundance-min': minimal abundance threshold for solid kmers [default '[3, 2]']
+                                                           '-max-nodes': maximum number of nodes in contig graph [default '1000']
                                                            '-max-length': maximum length of gapfilling (nt) [default '10000']
-                                                           '-nb-cores' : number of cores [default '4']
-                                                           '-max-memory' : max memory for graph building (in MBytes) [default '8000']
+                                                           '-nb-cores': number of cores [default '4']
+                                                           '-max-memory': max memory for graph building (in MBytes) [default '8000']
                                      '''))
 
     parserMain = parser.add_argument_group("[Main options]")
@@ -48,6 +49,7 @@ def main():
     parserMain.add_argument('-bam', action="store", dest="bam", help="BAM file containing the reads of the individual", required=True)
     parserMain.add_argument('-reads', action="store", dest="reads", help="file of indexed reads", required=True)
     parserMain.add_argument('-index', action="store", dest="index", help="barcodes index file", required=True)
+    parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, help="minimal frequence of extracted barcodes from BAM file, in a specific region (chunk)")
     parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
 
     parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
@@ -326,19 +328,30 @@ def gfa_handle(contig):
 # bam_extract function
 #----------------------------------------------------
 #Function to bam_extract the barcodes from the chunks with BamExtractor 
-#(remove the '-1' at the end of the sequences (p2), and keep only the barcodes observed more than once (p3, p4, p5))
 def bam_extract(bam, region, barcodes):
     command = ["BamExtractor", bam, region]
-    p1 = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p2 = subprocess.Popen(["cut", "-d", "-", "-f1"], stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p1.stdout.close()
-    p3 = subprocess.Popen(["sort"], stdin=p2.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p2.stdout.close()
-    p4 = subprocess.Popen(["uniq", "-c"], stdin=p3.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p3.stdout.close()
-    p5 = subprocess.Popen(["awk", "$1 > 1 {print $2}"], stdin=p4.stdout, stdout=barcodes, stderr=barcodes)
-    p4.stdout.close()
-    p5.wait()
+    barcodes_occ = {}
+    with open("bam-extractor-stdout.txt", "w+") as f:
+        subprocess.run(command, stdout=f, stderr=f)
+        f.seek(0)
+        for line in f.readlines():
+            #remove the '-1' at the end of the sequence
+            barc = line.split('-')[0]
+
+            #count occurences of each barcode
+            if barc in barcodes_occ:
+                barcodes_occ[barc] += 1
+            else:
+                barcodes_occ[barc] = 1
+        
+    #filter barcodes by freq
+    for (barc, occ) in barcodes_occ.items():
+        if occ >= args.freq:
+            barcodes.write(barc + "\n")
+
+    #remove the raw file obtained from BamExtractor
+    subprocess.run("rm bam-extractor-stdout.txt", shell=True)
+
     return barcodes
 
 #----------------------------------------------------
@@ -369,7 +382,6 @@ def mtg_gapfill(input_file, bkpt, k, a, output_prefix):
     output = subprocess.check_output(command)
     subprocess.run("rm -f *.h5", shell=True)
     return output
-    #!!Non: enregistrer l'output de sortie dans un fichier plutôt, fichier log ??
 
 
 if __name__ == "__main__":
