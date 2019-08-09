@@ -17,7 +17,7 @@ This tool will be further completed with statistics on the results (ongoing).
 
 Command-line to execute mtg10x.py:
 ```
-    ./mtg10x.py -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> [options]
+./mtg10x.py -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]
 ```
 
 ## License
