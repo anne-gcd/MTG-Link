@@ -81,6 +81,7 @@ def main():
     gfa_file = os.path.abspath(args.gfa)
     if not os.path.exists(gfa_file):
         parser.error("The path of the GFA file doesn't exist")
+    global gfa_name
     gfa_name = gfa_file.split('/')[-1]
     print("\nInput GFA file: " + gfa_file)
 
@@ -98,7 +99,7 @@ def main():
     print("Barcodes index file: " + index_file)
 
     #----------------------------------------------------
-    # Directory for saving results
+    # Directories for saving results
     #----------------------------------------------------
     cwd = os.getcwd() 
     if not os.path.exists(args.out_dir):
@@ -111,6 +112,12 @@ def main():
         os.chdir(cwd)
     cwd = os.getcwd()
     print("\nThe results are saved in " + cwd)
+
+    #'logs' directory
+    global logsDir
+    logsDir = os.path.join(cwd, "logs")
+    if not os.path.exists(logsDir):
+        os.mkdir(logsDir)
 
     #----------------------------------------------------
     # Gapfilling pipeline
@@ -337,9 +344,10 @@ def gfa_handle(contig):
 #Function to bam_extract the barcodes from the chunks with BamExtractor 
 def bam_extract(bam, region, barcodes):
     command = ["BamExtractor", bam, region]
+    bamextractLog = os.path.join(logsDir, "{}_bamextract.log".format(gfa_name))
     barcodes_occ = {}
-    with open("bam-extractor-stdout.txt", "w+") as f:
-        subprocess.run(command, stdout=f, stderr=f)
+    with open("bam-extractor-stdout.txt", "w+") as f, open(bamextractLog, "a") as log:
+        subprocess.run(command, stdout=f, stderr=log)
         f.seek(0)
         for line in f.readlines():
             #remove the '-1' at the end of the sequence
@@ -369,7 +377,11 @@ def get_reads(barcodes, out_reads):
     reads = reads_file
     index = index_file
     command = ["GetReads", "-reads", reads, "-index", index, "-barcodes", barcodes]
-    subprocess.run(command, stdout=out_reads, stderr=out_reads)
+    getreadsLog = os.path.join(logsDir, "{}_getreads.log".format(gfa_name))
+
+    with open(getreadsLog, "a") as log:
+        subprocess.run(command, stdout=out_reads, stderr=log)
+
     return out_reads
 
 #----------------------------------------------------
@@ -385,10 +397,12 @@ def mtg_gapfill(input_file, bkpt, k, a, output_prefix):
     max_memory = args.max_memory_mtg
     command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
                "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-out", output_prefix]
-    subprocess.run(command)
-    output = subprocess.check_output(command)
+    mtgLog = os.path.join(logsDir, "{}_mtg.log".format(gfa_name))
+
+    with open(mtgLog, "a") as log:
+        subprocess.run(command, stdout=log, stderr=log)
+
     subprocess.run("rm -f *.h5", shell=True)
-    return output
 
 
 if __name__ == "__main__":
