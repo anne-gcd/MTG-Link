@@ -65,13 +65,9 @@ def main():
 
     if re.match('^.*\.gfa$', args.gfa) is None:
         parser.error("The suffix of the GFA file should be: '.gfa'")
-    elif not os.path.exists(args.gfa):
-        parser.error("The path of the GFA file doesn't exist")
 
     if re.match('^.*\.bam$', args.bam) is None:
         parser.error("The suffix of the BAM file should be: '.bam'")
-    elif not os.path.exists(args.bam): 
-        parser.error("The path of the BAM file doesn't exist")
 
     if not os.path.exists(args.reads):
         parser.error("The path of the file of indexed reads doesn't exist")
@@ -82,13 +78,24 @@ def main():
     #----------------------------------------------------
     # Input files
     #----------------------------------------------------
-    gfa_file = args.gfa
+    gfa_file = os.readlink("./" + args.gfa)
+    if not os.path.exists(gfa_file):
+        parser.error("The path of the GFA file doesn't exist")
     gfa_name = gfa_file.split('/')[-1]
-    bam_file = args.bam
     print("\nInput GFA file: " + gfa_file)
+
+    bam_file = os.readlink("./" + args.bam)
+    if not os.path.exists(bam_file): 
+        parser.error("The path of the BAM file doesn't exist")
     print("BAM file: " + bam_file)
-    print("File of indexed reads: " + args.reads)
-    print("Barcodes index file: " + args.index)
+
+    global reads_file
+    reads_file = os.readlink("./" + args.reads)
+    print("File of indexed reads: " + reads_file)
+
+    global index_file
+    index_file = os.readlink("./" + args.index)
+    print("Barcodes index file: " + index_file)
 
     #----------------------------------------------------
     # Directory for saving results
@@ -359,8 +366,8 @@ def bam_extract(bam, region, barcodes):
 #----------------------------------------------------
 #Function to extract the reads associated with the barcodes
 def get_reads(barcodes, out_reads):    
-    reads = args.reads
-    index = args.index
+    reads = reads_file
+    index = index_file
     command = ["GetReads", "-reads", reads, "-index", index, "-barcodes", barcodes]
     subprocess.run(command, stdout=out_reads, stderr=out_reads)
     return out_reads
