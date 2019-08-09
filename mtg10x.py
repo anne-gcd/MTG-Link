@@ -78,23 +78,23 @@ def main():
     #----------------------------------------------------
     # Input files
     #----------------------------------------------------
-    gfa_file = os.readlink("./" + args.gfa)
+    gfa_file = os.path.abspath(args.gfa)
     if not os.path.exists(gfa_file):
         parser.error("The path of the GFA file doesn't exist")
     gfa_name = gfa_file.split('/')[-1]
     print("\nInput GFA file: " + gfa_file)
 
-    bam_file = os.readlink("./" + args.bam)
+    bam_file = os.path.abspath(args.bam)
     if not os.path.exists(bam_file): 
         parser.error("The path of the BAM file doesn't exist")
     print("BAM file: " + bam_file)
 
     global reads_file
-    reads_file = os.readlink("./" + args.reads)
+    reads_file = os.path.abspath(args.reads)
     print("File of indexed reads: " + reads_file)
 
     global index_file
-    index_file = os.readlink("./" + args.index)
+    index_file = os.path.abspath(args.index)
     print("Barcodes index file: " + index_file)
 
     #----------------------------------------------------
