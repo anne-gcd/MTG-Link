@@ -61,10 +61,10 @@ parserMtg.add_argument('-verbose', action="store", dest="verbose_mtg", type=int,
 
 args = parser.parse_args()
 
-if re.match('^.*\.gfa$', args.gfa) is None:
+if re.match('^.*.gfa$', args.gfa) is None:
     parser.error("The suffix of the GFA file should be: '.gfa'")
 
-if re.match('^.*\.bam$', args.bam) is None:
+if re.match('^.*.bam$', args.bam) is None:
     parser.error("The suffix of the BAM file should be: '.bam'")
 
 if not os.path.exists(args.reads):
