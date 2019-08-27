@@ -30,12 +30,13 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_fil
                                                 '-out': output directory [default './mtg10x_results']
 
                                 [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
-                                                      '-kmer-size': size of a kmer [default '[51, 41, 31, 21]']
-                                                      '-abundance-min': minimal abundance threshold for solid kmers [default '[3, 2]']
+                                                      '-k': size of a kmer [default '[51, 41, 31, 21]']
+                                                      '-a': minimal abundance threshold for solid kmers [default '[3, 2]']
                                                       '-max-nodes': maximum number of nodes in contig graph [default '1000']
                                                       '-max-length': maximum length of gapfilling (nt) [default '10000']
                                                       '-nb-cores': number of cores [default '4']
                                                       '-max-memory': max memory for graph building (in MBytes) [default '8000']
+                                                      '-verbose': verbosity level  [default '1']
                                 '''))
 
 parserMain = parser.add_argument_group("[Main options]")
@@ -50,12 +51,13 @@ parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, 
 parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
 
 parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
-parserMtg.add_argument('-kmer-size', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
-parserMtg.add_argument('-abundance-min', action="store", dest="a_mtg", default=[3, 2], nargs='*', type=int, help="minimal abundance of kmers used for gapfilling")
+parserMtg.add_argument('-k', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
+parserMtg.add_argument('-a', action="store", dest="a_mtg", default=[3, 2], nargs='*', type=int, help="minimal abundance of kmers used for gapfilling")
 parserMtg.add_argument('-max-nodes', action="store", dest="max_nodes_mtg", type=int, default=1000, help="maximum number of nodes in contig graph")
 parserMtg.add_argument('-max-length', action="store", dest="max_length_mtg", type=int, default=10000, help="maximum length of gapfilling (nt)")
 parserMtg.add_argument('-nb-cores', action="store", dest="nb_cores_mtg", type=int, default=4, help="number of cores")
 parserMtg.add_argument('-max-memory', action="store", dest="max_memory_mtg", type=int, default=8000, help="max memory for graph building (in MBytes)")
+parserMtg.add_argument('-verbose', action="store", dest="verbose_mtg", type=int, default=1, help="verbosity level")
 
 args = parser.parse_args()
 
@@ -222,7 +224,8 @@ try:
                     max_length = gap.length + 1000
                 nb_cores = args.nb_cores_mtg
                 max_memory = args.max_memory_mtg
-                mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, output)
+                verbose = args.verbose_mtg
+                mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
                 if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
                     solution = True

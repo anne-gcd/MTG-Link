@@ -123,9 +123,9 @@ def get_reads(reads, index, barcodes, out_reads):
 # mtg_fill function
 #----------------------------------------------------
 #Function to execute MindTheGap fill module
-def mtg_fill(input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory, output_prefix):
+def mtg_fill(input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output_prefix):
     command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
-               "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-out", output_prefix]
+               "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-verbose", str(verbose), "-out", output_prefix]
     mtgfillLog = "{}_mtgfill.log".format(datetime.now())
 
     with open(mtgfillLog, "a") as log:
