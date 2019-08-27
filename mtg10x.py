@@ -6,413 +6,240 @@ import argparse
 import re
 import gfapy
 from gfapy.sequence import rc
-from Bio import SeqIO
-import subprocess
-
-
-def main():
-
-    #----------------------------------------------------
-    # Arg parser
-    #----------------------------------------------------
-    parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]", \
-                                     formatter_class=argparse.RawTextHelpFormatter, \
-                                     description=(''' \
-                                     Gapfilling with 10X data, using MindTheGap in 'breakpoint' mode
-                                     ----------------------------------------------------------------
-                                     To be able to execute this script, you need to install a virtual environment containing Samtools, Biopython and Gfapy.
-                                     You also need to install Con10X (especially BamExtractor and GetReads) and MindTheGap 
-                                     Use MTG in breakpoint mode, but taking an offset of size k
-                                    
-                                     [Main options]: '-gfa': input GFA file containing the contigs paths
-                                                     '-c': chunk size 
-                                                     '-bam': BAM file
-                                                     '-reads': file of indexed reads
-                                                     '-index': barcodes index file
-                                                     '-f': minimal frequence of extracted barcodes from BAM file
-                                                     '-out': output directory [default './mtg10x_results']
-
-                                     [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
-                                                           '-kmer-size': size of a kmer [default '[51, 41, 31, 21]']
-                                                           '-abundance-min': minimal abundance threshold for solid kmers [default '[3, 2]']
-                                                           '-max-nodes': maximum number of nodes in contig graph [default '1000']
-                                                           '-max-length': maximum length of gapfilling (nt) [default '10000']
-                                                           '-nb-cores': number of cores [default '4']
-                                                           '-max-memory': max memory for graph building (in MBytes) [default '8000']
-                                     '''))
-
-    parserMain = parser.add_argument_group("[Main options]")
-    parserMtg = parser.add_argument_group("[MindTheGap option]")
-
-    parserMain.add_argument('-gfa', action="store", dest="gfa", help="input GFA file containing the contigs paths (format: xxx.gfa)", required=True)
-    parserMain.add_argument('-c', action="store", dest="chunk", type=int, help="size of the chunk for gapfilling", required=True)
-    parserMain.add_argument('-bam', action="store", dest="bam", help="BAM file containing the reads of the individual", required=True)
-    parserMain.add_argument('-reads', action="store", dest="reads", help="file of indexed reads", required=True)
-    parserMain.add_argument('-index', action="store", dest="index", help="barcodes index file", required=True)
-    parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, help="minimal frequence of extracted barcodes from BAM file, in a specific region (chunk)")
-    parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
-
-    parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
-    parserMtg.add_argument('-kmer-size', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
-    parserMtg.add_argument('-abundance-min', action="store", dest="a_mtg", default=[3, 2], nargs='*', type=int, help="minimal abundance of kmers used for gapfilling")
-    parserMtg.add_argument('-max-nodes', action="store", dest="max_nodes_mtg", type=int, default=1000, help="maximum number of nodes in contig graph")
-    parserMtg.add_argument('-max-length', action="store", dest="max_length_mtg", type=int, default=10000, help="maximum length of gapfilling (nt)")
-    parserMtg.add_argument('-nb-cores', action="store", dest="nb_cores_mtg", type=int, default=4, help="number of cores")
-    parserMtg.add_argument('-max-memory', action="store", dest="max_memory_mtg", type=int, default=8000, help="max memory for graph building (in MBytes)")
-
-    global args
-    args = parser.parse_args()
-
-    if re.match('^.*\.gfa$', args.gfa) is None:
-        parser.error("The suffix of the GFA file should be: '.gfa'")
-
-    if re.match('^.*\.bam$', args.bam) is None:
-        parser.error("The suffix of the BAM file should be: '.bam'")
-
-    if not os.path.exists(args.reads):
-        parser.error("The path of the file of indexed reads doesn't exist")
-    
-    if not os.path.exists(args.index):
-        parser.error("The path of the barcodes index file doesn't exist")
-
-    #----------------------------------------------------
-    # Input files
-    #----------------------------------------------------
-    gfa_file = os.path.abspath(args.gfa)
-    if not os.path.exists(gfa_file):
-        parser.error("The path of the GFA file doesn't exist")
-    global gfa_name
-    gfa_name = gfa_file.split('/')[-1]
-    print("\nInput GFA file: " + gfa_file)
-
-    bam_file = os.path.abspath(args.bam)
-    if not os.path.exists(bam_file): 
-        parser.error("The path of the BAM file doesn't exist")
-    print("BAM file: " + bam_file)
-
-    global reads_file
-    reads_file = os.path.abspath(args.reads)
-    print("File of indexed reads: " + reads_file)
-
-    global index_file
-    index_file = os.path.abspath(args.index)
-    print("Barcodes index file: " + index_file)
-
-    #----------------------------------------------------
-    # Directories for saving results
-    #----------------------------------------------------
-    cwd = os.getcwd() 
-    if not os.path.exists(args.out_dir):
-        os.mkdir(args.out_dir)
-    try:
-        os.chdir(args.out_dir)
-    except:
-        print("Something wrong with specified directory. Exception-", sys.exc_info())
-        print("Restoring the path")
-        os.chdir(cwd)
-    cwd = os.getcwd()
-    print("\nThe results are saved in " + cwd)
-
-    #'logs' directory
-    global logsDir
-    logsDir = os.path.join(cwd, "logs")
-    if not os.path.exists(logsDir):
-        os.mkdir(logsDir)
-
-    #----------------------------------------------------
-    # Gapfilling pipeline
-    #----------------------------------------------------
-    try:
-        gfa = gfapy.Gfa.from_file(gfa_file)
-        for gap in gfa.gaps:
-            global gap_len
-            l_contig = gap.sid1
-            r_contig = gap.sid2
-            gap_len = gap.disp
-            gap_id = gap.gid
-            
-            if gap_id != '*':
-                print("\nWORKING ON: {}.{}.g{}.c{}".format(gfa_name, gap_id, gap_len, args.chunk))
-            elif gap_id == '*':
-                print("\nWORKING ON: {}.{}-{}.g{}.c{}".format(gfa_name, l_contig, r_contig, gap_len, args.chunk))
-            
-            #----------------------------------------------------
-            # GFA handling
-            #----------------------------------------------------
-            #Obtain the name, the sequence and the sequence length of the left contig
-            (l_name, l_len, l_seq, l_orient) = gfa_handle(l_contig)
-
-            #Obtain the name, the sequence and the sequence length of the right contig
-            (r_name, r_len, r_seq, r_orient) = gfa_handle(r_contig)
-
-            #Obtain the left region and right region on which to extract the barcodes
-            if args.chunk > l_len or args.chunk > r_len:
-                sys.stderr.write("\nError: The chunk size must be smaller than the sequence length of the contigs")
-                sys.exit(2)
-            else:
-                if l_orient == "fwd":
-                    l_start = l_len - args.chunk 
-                    l_end = l_len
-                elif l_orient == "rev":
-                    l_start = 0
-                    l_end = args.chunk
-                
-                if r_orient == "fwd":
-                    r_start = 0 
-                    r_end = args.chunk
-                elif r_orient == "rev":
-                    r_start = r_len - args.chunk
-                    r_end = r_len
-           
-            #----------------------------------------------------
-            # BamExtractor
-            #----------------------------------------------------
-            #Obtain the left barcodes and store the elements in a set
-            left_region = "{}:{}-{}".format(l_name, l_start, l_end)
-            print("\nBarcodes from left chunk ({}): {}_{}.g{}.c{}.left.barcodes".format(left_region, l_name, l_orient, gap_len, args.chunk))
-            with open("{}_{}.g{}.c{}.left.barcodes".format(l_name, l_orient, gap_len, args.chunk), "w+") as left_barcodes:
-                bam_extract(bam_file, left_region, left_barcodes)
-                left_barcodes.seek(0)
-                l_barcodes = left_barcodes.read()
-                l = set(l_barcodes.splitlines())
-
-            #Obtain the right barcodes and store the elements in a set
-            right_region = "{}:{}-{}".format(r_name, r_start, r_end)
-            print("Barcodes from right chunk ({}): {}_{}.g{}.c{}.right.barcodes".format(right_region, r_name, r_orient, gap_len, args.chunk))
-            with open("{}_{}.g{}.c{}.right.barcodes".format(r_name, r_orient, gap_len, args.chunk), "w+") as right_barcodes:
-                bam_extract(bam_file, right_region, right_barcodes)
-                right_barcodes.seek(0)
-                r_barcodes = right_barcodes.read()
-                r = set(r_barcodes.splitlines())
-
-            #Calculate the union
-            if gap_id != '*':
-                print("Barcodes from the union (all barcodes): {}.{}.g{}.c{}.bxu".format(gfa_name, gap_id, gap_len, args.chunk))
-                with open("{}.{}.g{}.c{}.bxu".format(gfa_name, gap_id, gap_len, args.chunk), "w") as union_barcodes:    
-                    union = l | r
-                    union_barcodes.write('\n'.join(seq for seq in union))
-
-            elif gap_id == '*':
-                print("Barcodes from the union (all barcodes): {}.{}-{}.g{}.c{}.bxu".format(gfa_name, l_contig, r_contig, gap_len, args.chunk))
-                with open("{}.{}-{}.g{}.c{}.bxu".format(gfa_name, l_contig, r_contig, gap_len, args.chunk), "w") as union_barcodes:    
-                    union = l | r
-                    union_barcodes.write('\n'.join(seq for seq in union))
-
-            #----------------------------------------------------
-            # GetReads
-            #----------------------------------------------------
-            #Union: extract the reads associated with the barcodes
-            if gap_id != '*':
-                print("Extracting reads associated with the barcodes from union: {}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, gap_id, gap_len, args.chunk))
-                u_barcodes = cwd + "/{}.{}.g{}.c{}.bxu".format(gfa_name, gap_id, gap_len, args.chunk)
-                with open("{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, gap_id, gap_len, args.chunk), "w") as union_reads:
-                    get_reads(u_barcodes, union_reads)
-
-            elif gap_id == '*':
-                print("Extracting reads associated with the barcodes from union: {}.{}-{}.g{}.c{}.rbxu.fastq".format(gfa_name, l_contig, r_contig, gap_len, args.chunk))
-                u_barcodes = cwd + "/{}.{}-{}.g{}.c{}.bxu".format(gfa_name, l_contig, r_contig, gap_len, args.chunk)
-                with open("{}.{}-{}.g{}.c{}.rbxu.fastq".format(gfa_name, l_contig, r_contig, gap_len, args.chunk), "w") as union_reads:
-                    get_reads(u_barcodes, union_reads)
-
-            #----------------------------------------------------
-            # Summary of union (barcodes and reads)
-            #----------------------------------------------------
-            if gap_id != '*':
-                bxu = sum(1 for line in open("{}.{}.g{}.c{}.bxu".format(gfa_name, gap_id, gap_len, args.chunk), "r"))
-                rbxu = sum(1 for line in open("{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, gap_id, gap_len, args.chunk), "r"))/4
-
-            elif gap_id == '*':
-                bxu = sum(1 for line in open("{}.{}-{}.g{}.c{}.bxu".format(gfa_name, l_contig, r_contig, gap_len, args.chunk), "r"))
-                rbxu = sum(1 for line in open("{}.{}-{}.g{}.c{}.rbxu.fastq".format(gfa_name, l_contig, r_contig, gap_len, args.chunk), "r"))/4
-
-            u_summary = [gap_id, l_contig, r_contig, gap_len, args.chunk, bxu, rbxu]
-            if os.path.exists(cwd + "/{}.union.sum".format(gfa_name)):
-                with open("{}.union.sum".format(gfa_name), "a") as union_sum:
-                    union_sum.write("\n" + '\t\t'.join(str(i) for i in u_summary))
-            else:
-                with open("{}.union.sum".format(gfa_name), "a") as union_sum:
-                    legend = ["Gap ID", "Left contig", "Right contig", "Gap size", "Chunk size", "Nb barcodes", "Nb reads associated"]
-                    union_sum.write('\t'.join(j for j in legend))
-                    union_sum.write("\n" + '\t\t'.join(str(i) for i in u_summary))
-
-            #----------------------------------------------------
-            # MindTheGap pipeline
-            #----------------------------------------------------
-            #Directory for saving the results from MindTheGap
-            if not os.path.exists(cwd + "/mtg_results"):
-                os.mkdir(cwd + "/mtg_results")
-            try:
-                os.chdir(cwd + "/mtg_results")
-            except:
-                print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
-                print("Restoring the path")
-                os.chdir(cwd)
-            pwd = os.getcwd()
-             
-            #Execute MindTheGap fill module on the union, in breakpoint mode
-            solution = False
-            for k in args.k_mtg:
-            
-                #----------------------------------------------------
-                # Breakpoint file, with offset of size k removed
-                #----------------------------------------------------
-                if gap_id != '*':
-                    with open("{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, gap_id, gap_len, args.chunk, k), "w") as bkpt:
-                        line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(gap_id, gap_len, l_contig, l_contig.orient, k)
-                        line2 = str(l_seq[(l_len - 2*k):(l_len - k)])
-                        line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(gap_id, gap_len, r_contig, r_contig.orient, k)
-       	       	        line4 = str(r_seq[k:2*k])
-                        line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(gap_id, gap_len, r_contig, gfapy.invert(r_contig.orient), k)
-                        line6 = str(rc(r_seq)[(r_len - 2*k):(r_len - k)])
-                        line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(gap_id, gap_len, l_contig, gfapy.invert(l_contig.orient), k)
-                        line8 = str(rc(l_seq)[k:2*k])
-       	       	        bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
-                    bkpt_file = pwd + "/{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, gap_id, gap_len, args.chunk, k)
-                
-                elif gap_id == '*':
-                    with open("{}.{}-{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, l_contig, r_contig, gap_len, args.chunk, k), "w") as bkpt:
-                        line1 = ">bkpt1_Gaplen.{0}_Contigs.{1}-{2} left_kmer.{1}{3}_len.{4} offset_rm\n".format(gap_len, l_contig, r_contig, l_contig.orient, k)
-                        line2 = str(l_seq[(l_len - 2*k):(l_len - k)])
-                        line3 = "\n>bkpt1_Gaplen.{0}_Contigs.{1}-{2} right_kmer.{2}{3}_len.{4} offset_rm\n".format(gap_len, l_contig, r_contig, r_contig.orient, k)
-       	       	        line4 = str(r_seq[k:2*k])
-                        line5 = "\n>bkpt2_Gaplen.{0}_Contigs.{1}-{2} left_kmer.{2}{3}_len.{4} offset_rm\n".format(gap_len, l_contig, r_contig, gfapy.invert(r_contig.orient), k)
-                        line6 = str(rc(r_seq)[(r_len - 2*k):(r_len - k)])
-                        line7 = "\n>bkpt2_Gaplen.{0}_Contigs.{1}-{2} right_kmer.{1}{3}_len.{4} offset_rm\n".format(gap_len, l_contig, r_contig, gfapy.invert(l_contig.orient), k)
-                        line8 = str(rc(l_seq)[k:2*k])
-       	       	        bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
-                    bkpt_file = pwd + "/{}.{}-{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, l_contig, r_contig, gap_len, args.chunk, k)
-
-                print("\nBreakpoint file (with offset of size k removed): " + bkpt_file)
-
-                #----------------------------------------------------
-                # Gapfilling
-                #----------------------------------------------------
-                for a in args.a_mtg:
-
-                    if gap_id != '*':
-                        print("\nGapfilling of {}.{}.g{}.c{} for k={} and a={} (union)".format(gfa_name, gap_id, gap_len, args.chunk, k, a))
-                        input_file = cwd + "/{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, gap_id, gap_len, args.chunk)
-                        bkpt_file = pwd + "/{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, gap_id, gap_len, args.chunk, k)
-                        output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, gap_id, gap_len, args.chunk, k, a)
-                        mtg_gapfill(input_file, bkpt_file, k, a, output)
-
-                        if os.path.getsize(pwd + "/{}.{}.g{}.c{}.k{}.a{}.bxu.insertions.fasta".format(gfa_name, gap_id, gap_len, args.chunk, k, a)) > 0:
-                            solution = True
-                            break
-
-                    elif gap_id == '*':
-                        print("\nGapfilling of {}.{}-{}.g{}.c{} for k={} and a={} (union)".format(gfa_name, l_contig, r_contig, gap_len, args.chunk, k, a))
-                        input_file = cwd + "/{}.{}-{}.g{}.c{}.rbxu.fastq".format(gfa_name, l_contig, r_contig, gap_len, args.chunk)
-                        bkpt_file = pwd + "/{}.{}-{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, l_contig, r_contig, gap_len, args.chunk, k)
-                        output = "{}.{}-{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, l_contig, r_contig, gap_len, args.chunk, k, a)
-                        mtg_gapfill(input_file, bkpt_file, k, a, output)
-
-                        if os.path.getsize(pwd + "/{}.{}-{}.g{}.c{}.k{}.a{}.bxu.insertions.fasta".format(gfa_name, l_contig, r_contig, gap_len, args.chunk, k, a)) > 0:
-                            solution = True
-                            break
-                
-                if solution == True:
-                    break
-            
-            if re.match('^.*\/mtg_results$', pwd) is None:
-                os.chdir(cwd)
-            else:
-                os.chdir(os.path.join(pwd, '..'))
-
-
-    except Exception as e:
-        print("\nException-")
-        print(e)
-        sys.exit(1)
-
-    
-    print("\nSummary of the union: " +gfa_name+".union.sum")
-    print("The results from MindTheGap are saved in " + pwd)
+from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill
 
 
 #----------------------------------------------------
-# gfa_handle function
-#----------------------------------------------------              
-def gfa_handle(contig):
-    name_ = contig.name
-    len_ = contig.line.slen
-    seq_path = contig.line.UR
+# Arg parser
+#----------------------------------------------------
+parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]", \
+                                formatter_class=argparse.RawTextHelpFormatter, \
+                                description=(''' \
+                                Gapfilling with 10X data, using MindTheGap in 'breakpoint' mode
+                                ----------------------------------------------------------------
+                                To be able to execute this script, you need to install a virtual environment containing Samtools, Biopython and Gfapy.
+                                You also need to install Con10X (especially BamExtractor and GetReads) and MindTheGap 
+                                Use MTG in breakpoint mode, but taking an offset of size k
+                                
+                                [Main options]: '-gfa': input GFA file containing the contigs paths
+                                                '-c': chunk size 
+                                                '-bam': BAM file
+                                                '-reads': file of indexed reads
+                                                '-index': barcodes index file
+                                                '-f': minimal frequence of extracted barcodes from BAM file
+                                                '-out': output directory [default './mtg10x_results']
 
-    for record in SeqIO.parse(seq_path, "fasta"): 
-        if contig.orient == "+":
-            sequence = record.seq
-            orient = "fwd"
-        elif contig.orient == "-":
-            sequence = rc(record.seq)
-            orient = "rev"
-    return name_, len_, sequence, orient
+                                [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
+                                                      '-kmer-size': size of a kmer [default '[51, 41, 31, 21]']
+                                                      '-abundance-min': minimal abundance threshold for solid kmers [default '[3, 2]']
+                                                      '-max-nodes': maximum number of nodes in contig graph [default '1000']
+                                                      '-max-length': maximum length of gapfilling (nt) [default '10000']
+                                                      '-nb-cores': number of cores [default '4']
+                                                      '-max-memory': max memory for graph building (in MBytes) [default '8000']
+                                '''))
+
+parserMain = parser.add_argument_group("[Main options]")
+parserMtg = parser.add_argument_group("[MindTheGap option]")
+
+parserMain.add_argument('-gfa', action="store", dest="gfa", help="input GFA file containing the contigs paths (format: xxx.gfa)", required=True)
+parserMain.add_argument('-c', action="store", dest="chunk", type=int, help="size of the chunk for gapfilling", required=True)
+parserMain.add_argument('-bam', action="store", dest="bam", help="BAM file containing the reads of the individual", required=True)
+parserMain.add_argument('-reads', action="store", dest="reads", help="file of indexed reads", required=True)
+parserMain.add_argument('-index', action="store", dest="index", help="barcodes index file", required=True)
+parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, help="minimal frequence of extracted barcodes from BAM file, in a specific region (chunk)")
+parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
+
+parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
+parserMtg.add_argument('-kmer-size', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
+parserMtg.add_argument('-abundance-min', action="store", dest="a_mtg", default=[3, 2], nargs='*', type=int, help="minimal abundance of kmers used for gapfilling")
+parserMtg.add_argument('-max-nodes', action="store", dest="max_nodes_mtg", type=int, default=1000, help="maximum number of nodes in contig graph")
+parserMtg.add_argument('-max-length', action="store", dest="max_length_mtg", type=int, default=10000, help="maximum length of gapfilling (nt)")
+parserMtg.add_argument('-nb-cores', action="store", dest="nb_cores_mtg", type=int, default=4, help="number of cores")
+parserMtg.add_argument('-max-memory', action="store", dest="max_memory_mtg", type=int, default=8000, help="max memory for graph building (in MBytes)")
+
+args = parser.parse_args()
+
+if re.match('^.*\.gfa$', args.gfa) is None:
+    parser.error("The suffix of the GFA file should be: '.gfa'")
+
+if re.match('^.*\.bam$', args.bam) is None:
+    parser.error("The suffix of the BAM file should be: '.bam'")
+
+if not os.path.exists(args.reads):
+    parser.error("The path of the file of indexed reads doesn't exist")
+
+if not os.path.exists(args.index):
+    parser.error("The path of the barcodes index file doesn't exist")
 
 #----------------------------------------------------
-# bam_extract function
+# Input files
 #----------------------------------------------------
-#Function to bam_extract the barcodes from the chunks with BamExtractor 
-def bam_extract(bam, region, barcodes):
-    command = ["BamExtractor", bam, region]
-    bamextractLog = os.path.join(logsDir, "{}_bamextract.log".format(gfa_name))
-    barcodes_occ = {}
-    with open("bam-extractor-stdout.txt", "w+") as f, open(bamextractLog, "a") as log:
-        subprocess.run(command, stdout=f, stderr=log)
-        f.seek(0)
-        for line in f.readlines():
-            #remove the '-1' at the end of the sequence
-            barc = line.split('-')[0]
+gfa_file = os.path.abspath(args.gfa)
+if not os.path.exists(gfa_file):
+    parser.error("The path of the GFA file doesn't exist")
+gfa_name = gfa_file.split('/')[-1]
+print("\nInput GFA file: " + gfa_file)
 
-            #count occurences of each barcode
-            if barc in barcodes_occ:
-                barcodes_occ[barc] += 1
-            else:
-                barcodes_occ[barc] = 1
+bam_file = os.path.abspath(args.bam)
+if not os.path.exists(bam_file): 
+    parser.error("The path of the BAM file doesn't exist")
+print("BAM file: " + bam_file)
+
+reads_file = os.path.abspath(args.reads)
+print("File of indexed reads: " + reads_file)
+
+index_file = os.path.abspath(args.index)
+print("Barcodes index file: " + index_file)
+
+#----------------------------------------------------
+# Directories for saving results
+#----------------------------------------------------
+cwd = os.getcwd() 
+if not os.path.exists(args.out_dir):
+    os.mkdir(args.out_dir)
+try:
+    os.chdir(args.out_dir)
+except:
+    print("Something wrong with specified directory. Exception-", sys.exc_info())
+    print("Restoring the path")
+    os.chdir(cwd)
+outDir = os.getcwd()
+print("\nThe results are saved in " + outDir)
+
+#----------------------------------------------------
+# Gapfilling pipeline
+#----------------------------------------------------
+try:
+    gfa = gfapy.Gfa.from_file(gfa_file)
+    for _gap_ in gfa.gaps:
+        gap = Gap(_gap_)
+        gap.info()
+        gap_label = gap.label()
         
-    #filter barcodes by freq
-    for (barc, occ) in barcodes_occ.items():
-        if occ >= args.freq:
-            barcodes.write(barc + "\n")
+        left_scaffold = Scaffold(_gap_, gap.left)
+        right_scaffold = Scaffold(_gap_, gap.right)
+        
+        #----------------------------------------------------
+        # BamExtractor
+        #----------------------------------------------------
+        #Obtain the left barcodes and store the elements in a set
+        left_region = left_scaffold.chunk(args.chunk)
+        left_barcodes_file = "{}{}.c{}.left.barcodes".format(left_scaffold.name, left_scaffold.orient, args.chunk)
 
-    #remove the raw file obtained from BamExtractor
-    subprocess.run("rm bam-extractor-stdout.txt", shell=True)
+        print("Barcodes from left chunk ({}): {}".format(left_region, left_barcodes_file))
+        with open(left_barcodes_file, "w+") as left_barcodes:
+            extract_barcodes(bam_file, left_region, args.freq, left_barcodes)
+            left_barcodes.seek(0)
+            left = set(left_barcodes.read().splitlines())
+    
+        #Obtain the right barcodes and store the elements in a set
+        right_region = right_scaffold.chunk(args.chunk)
+        right_barcodes_file = "{}{}.c{}.right.barcodes".format(right_scaffold.name, right_scaffold.orient, args.chunk)
 
-    return barcodes
+        print("Barcodes from right chunk ({}): {}".format(right_region, right_barcodes_file))
+        with open(right_barcodes_file, "w+") as right_barcodes:
+            extract_barcodes(bam_file, right_region, args.freq, right_barcodes)
+            right_barcodes.seek(0)
+            right = set(right_barcodes.read().splitlines())
 
-#----------------------------------------------------
-# get_reads function
-#----------------------------------------------------
-#Function to extract the reads associated with the barcodes
-def get_reads(barcodes, out_reads):    
-    reads = reads_file
-    index = index_file
-    command = ["GetReads", "-reads", reads, "-index", index, "-barcodes", barcodes]
-    getreadsLog = os.path.join(logsDir, "{}_getreads.log".format(gfa_name))
+        #Calculate the union 
+        union_barcodes_file = "{}.{}.g{}.c{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk)
+        print("Barcodes from the union (all barcodes): " + union_barcodes_file)
+        with open(union_barcodes_file, "w") as union_barcodes:
+            union = left | right
+            union_barcodes.write('\n'.join(barcode for barcode in union))
+        
+        #----------------------------------------------------
+        # GetReads
+        #----------------------------------------------------
+        #Union: extract the reads associated with the barcodes
+        union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
+        print("Extracting reads associated with the barcodes from union: " + union_reads_file)
+        with open(union_reads_file, "w") as union_reads:
+            get_reads(reads_file, index_file, union_barcodes_file, union_reads)
 
-    with open(getreadsLog, "a") as log:
-        subprocess.run(command, stdout=out_reads, stderr=log)
+        #----------------------------------------------------
+        # Summary of union (barcodes and reads)
+        #----------------------------------------------------
+        bxu = sum(1 for line in open(union_barcodes_file, "r"))
+        rbxu = sum(1 for line in open(union_reads_file, "r"))/4
+        union_summary = [gap.id, gap.left, gap.right, gap.length, args.chunk, bxu, rbxu]
+        
+        if os.path.exists(outDir + "/{}.union.sum".format(gfa_name)):
+            with open("{}.union.sum".format(gfa_name), "a") as union_sum:
+                union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+        else:
+            with open("{}.union.sum".format(gfa_name), "a") as union_sum:
+                legend = ["Gap ID", "Left scaffold", "Right scaffold", "Gap size", "Chunk size", "Nb barcodes", "Nb reads"]
+                union_sum.write('\t'.join(j for j in legend))
+                union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
 
-    return out_reads
+        #----------------------------------------------------
+        # MindTheGap pipeline
+        #----------------------------------------------------
+        #Directory for saving the results from MindTheGap
+        if not os.path.exists(outDir + "/mtg_results"):
+            os.mkdir(outDir + "/mtg_results")
+        try:
+            os.chdir(outDir + "/mtg_results")
+        except:
+            print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
+            print("Restoring the path")
+            os.chdir(outDir)
+        mtgDir = os.getcwd()
+            
+        #Execute MindTheGap fill module on the union, in breakpoint mode
+        solution = False
+        for k in args.k_mtg:
+        
+            #----------------------------------------------------
+            # Breakpoint file, with offset of size k removed
+            #----------------------------------------------------
+            bkpt_file = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gap_label), gap.length, args.chunk, k)
+            with open(bkpt_file, "w") as bkpt:
+                line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
+                line2 = str(left_scaffold.sequence()[(left_scaffold.len - 2*k):(left_scaffold.len - k)])
+                line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
+                line4 = str(right_scaffold.sequence()[k:2*k])
+                line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
+                line6 = str(rc(right_scaffold.sequence())[(right_scaffold.len - 2*k):(right_scaffold.len - k)])
+                line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
+                line8 = str(rc(left_scaffold.sequence())[k:2*k])
+                bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
+            print("\nBreakpoint file (with offset of size k removed): " + bkpt_file)
 
-#----------------------------------------------------
-# mtg_gapfill function
-#----------------------------------------------------
-#Function to execute MindTheGap fill module
-def mtg_gapfill(input_file, bkpt, k, a, output_prefix):
-    max_nodes = args.max_nodes_mtg
-    max_length = args.max_length_mtg
-    if max_length == 10000 and gap_len >= 10000:
-        max_length = gap_len + 1000
-    nb_cores = args.nb_cores_mtg
-    max_memory = args.max_memory_mtg
-    command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
-               "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-out", output_prefix]
-    mtgLog = os.path.join(logsDir, "{}_mtg.log".format(gfa_name))
+            #----------------------------------------------------
+            # Gapfilling
+            #----------------------------------------------------
+            for a in args.a_mtg:
 
-    with open(mtgLog, "a") as log:
-        subprocess.run(command, stdout=log, stderr=log)
+                print("\nGapfilling of {}.{}.g{}.c{} for k={} and a={} (union)".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a))
+                input_file = os.path.join(outDir, union_reads_file)
+                output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a)
+                max_nodes = args.max_nodes_mtg
+                max_length = args.max_length_mtg
+                if max_length == 10000 and gap.length >= 10000:
+                    max_length = gap.length + 1000
+                nb_cores = args.nb_cores_mtg
+                max_memory = args.max_memory_mtg
+                mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, output)
 
-    subprocess.run("rm -f *.h5", shell=True)
+                if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
+                    solution = True
+                    break
+
+            if solution == True:
+                break
+        
+        #Go in outDir for following gaps
+        os.chdir(outDir)
 
 
-if __name__ == "__main__":
-    main()
+except Exception as e:
+    print("\nException-")
+    print(e)
+    sys.exit(1)
+
+
+print("\nSummary of the union: " +gfa_name+".union.sum")
+print("The results from MindTheGap are saved in " + mtgDir)
