@@ -6,7 +6,8 @@ import argparse
 import re
 import gfapy
 from gfapy.sequence import rc
-from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill
+from Bio import SeqIO, Align
+from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align
 
 
 #----------------------------------------------------
@@ -26,8 +27,9 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_fil
                                                 '-bam': BAM file
                                                 '-reads': file of indexed reads
                                                 '-index': barcodes index file
-                                                '-f': minimal frequence of extracted barcodes from BAM file
+                                                '-f': minimal frequence of extracted barcodes from BAM file [default '2']
                                                 '-out': output directory [default './mtg10x_results']
+                                                '-refDir': directory containing the reference sequences if any 
 
                                 [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
                                                       '-k': size of a kmer [default '[51, 41, 31, 21]']
@@ -49,6 +51,7 @@ parserMain.add_argument('-reads', action="store", dest="reads", help="file of in
 parserMain.add_argument('-index', action="store", dest="index", help="barcodes index file", required=True)
 parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, help="minimal frequence of extracted barcodes from BAM file, in a specific region (chunk)")
 parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
+parserMain.add_argument('-refDir', action="store", dest="refDir", help="directory containing the reference sequences if any, for statistical purposes")
 
 parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
 parserMtg.add_argument('-k', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
@@ -67,12 +70,6 @@ if re.match('^.*.gfa$', args.gfa) is None:
 if re.match('^.*.bam$', args.bam) is None:
     parser.error("The suffix of the BAM file should be: '.bam'")
 
-if not os.path.exists(args.reads):
-    parser.error("The path of the file of indexed reads doesn't exist")
-
-if not os.path.exists(args.index):
-    parser.error("The path of the barcodes index file doesn't exist")
-
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
@@ -88,10 +85,19 @@ if not os.path.exists(bam_file):
 print("BAM file: " + bam_file)
 
 reads_file = os.path.abspath(args.reads)
+if not os.path.exists(reads_file):
+    parser.error("The path of the file of indexed reads doesn't exist")
 print("File of indexed reads: " + reads_file)
 
 index_file = os.path.abspath(args.index)
+if not os.path.exists(index_file):
+    parser.error("The path of the barcodes index file doesn't exist")
 print("Barcodes index file: " + index_file)
+
+if args.refDir is not None:
+    refDir = os.path.abspath(args.refDir)
+    if not os.path.exists(refDir):
+        parser.error("The path of the directory containing the reference sequences doesn't exist")
 
 #----------------------------------------------------
 # Directories for saving results
@@ -228,7 +234,26 @@ try:
                 mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
                 if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
+                    input_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
                     solution = True
+
+                    #----------------------------------------------------
+                    # Stats of the alignments query_seq vs reference_seq
+                    #----------------------------------------------------
+                    print("\nStatistical analysis...")
+                    
+                    #Get the reference sequence file
+                    if args.refDir is not None:
+                        ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
+
+                        if not os.path.isfile(ref_file):
+                            print("Something wrong with the specified reference file. Exception-", sys.exc_info())
+
+                        #Do statistics on the alignments of query_seq vs reference_seq
+                        else:
+                            statsDir = outDir + "/alignments_stats"
+                            stats_align(input_file, ref_file, str(gap_label), statsDir)
+                            
                     break
 
             if solution == True:
@@ -246,3 +271,4 @@ except Exception as e:
 
 print("\nSummary of the union: " +gfa_name+".union.sum")
 print("The results from MindTheGap are saved in " + mtgDir)
+print("The statistics from MTG10X are saved in " + statsDir)

@@ -1,10 +1,10 @@
 import os
 import sys
+import subprocess
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO
 from datetime import datetime
-import subprocess
 
 
 #----------------------------------------------------
@@ -25,9 +25,9 @@ class Gap:
 
     def info(self):
         if self.id == "*":
-            print("WORKING ON GAP: between scaffolds {} & {}; length {}\n".format(self.left, self.right, self.length))
+            print("\nWORKING ON GAP: between scaffolds {} & {}; length {}\n".format(self.left, self.right, self.length))
         else:
-            print("WORKING ON GAP: {}; length {}\n".format(self.id, self.length))
+            print("\nWORKING ON GAP: {}; length {}\n".format(self.id, self.length))
 
 
 #----------------------------------------------------
@@ -112,7 +112,7 @@ def get_reads(reads, index, barcodes, out_reads):
     with open(getreadsLog, "a") as log:
         subprocess.run(command, stdout=out_reads, stderr=log)
 
-    #remove the raw file obtained from BamExtractor
+    #remove the raw file obtained from GetReads
     if os.path.getsize(getreadsLog) <= 0:
         subprocess.run(["rm", getreadsLog])
 
@@ -132,9 +132,30 @@ def mtg_fill(input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory
         subprocess.run(command, stderr=log)
         output = subprocess.check_output(command)
 
-    #remove the raw files obtained from BamExtractor
+    #remove the raw files obtained from MindTheGap
     subprocess.run("rm -f *.h5", shell=True)
     if os.path.getsize(mtgfillLog) <= 0:
         subprocess.run(["rm", mtgfillLog])
+
+    return output
+
+
+#----------------------------------------------------
+# stats_align function
+#----------------------------------------------------
+#Function to do statistics on the alignment of a reference sequence and query sequences
+def stats_align(qry_file, ref_file, prefix, out_dir):
+    scriptPath = sys.path[0]
+    stats_align_command = os.path.join(scriptPath, "stats_alignment.py")
+    command = [stats_align_command, "-qry", qry_file, "-ref", ref_file, "-p", prefix, "-out", out_dir]
+    statsLog = "{}_stats_align.log".format(datetime.now())
+
+    with open(statsLog, "a") as log:
+        subprocess.run(command, stderr=log)
+        output = subprocess.check_output(command)
+
+    #remove the raw file obtained from statistics
+    if os.path.getsize(statsLog) <= 0:
+        subprocess.run(["rm", statsLog])
 
     return output
