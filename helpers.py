@@ -152,10 +152,7 @@ def stats_align(qry_file, ref_file, prefix, out_dir):
 
     with open(statsLog, "a") as log:
         subprocess.run(command, stderr=log)
-        output = subprocess.check_output(command)
 
     #remove the raw file obtained from statistics
     if os.path.getsize(statsLog) <= 0:
         subprocess.run(["rm", statsLog])
-
-    return output

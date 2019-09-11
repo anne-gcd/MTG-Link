@@ -51,12 +51,12 @@ if re.match('^.*.ingap.fasta$', args.reference) is None:
 qry_file = os.path.abspath(args.query)
 if not os.path.exists(args.query):
     parser.error("The path of the query file (inserted sequences file) doesn't exist")
-print("Query file: " + qry_file)
+print("\nQuery file: " + qry_file)
 
 ref_file = os.path.abspath(args.reference)
 if not os.path.exists(ref_file):
     parser.error("The path of the reference file doesn't exist")
-print("\nReference file: " + ref_file)
+print("Reference file: " + ref_file)
 
 #----------------------------------------------------
 # Directory for saving results
@@ -139,6 +139,11 @@ try:
             alignments = aligner.align(qry_seq, ref_seq)
             score = alignments[0].score
 
+            #Output stats file
+            output_file = outDir + "/" + args.prefix + ".alignment.stats"
+            stats_legend = ["Scaffolds", "Gap", "Chunk", "k", "a", "Strand", "Uniq_sol", "Len_R", "Len_Q", "Global_align", "Score", \
+                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
+
             #Get output values from NUCmer
             reader = csv.DictReader(open(coords_file), \
                                     fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
@@ -158,22 +163,18 @@ try:
                     cov_q = row["COV_Q"]
                     frame_r = row["FRM_R"]
                     frame_q = row["FRM_Q"]
-                    break
 
-            #Write stats results in output file
-            stats_legend = ["Scaffolds", "Gap", "Chunk", "k", "a", "Strand", "Uniq_sol", "Len_R", "Len_Q" "Global_align", "Score", \
-                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
-            stats = [scaffolds, g, c, k, a, strand, unique_sol, len_r, len_q, global_align, score, \
-                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q]
+                    #Write stats results in output file
+                    stats = [scaffolds, g, c, k, a, strand, unique_sol, len_r, len_q, global_align, score, \
+                            start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q]
 
-            output_file = outDir + "/" + args.prefix + ".alignment.stats"
-            if os.path.exists(output_file):
-                with open(output_file, "a") as output:
-                    output.write('\n' + '\t'.join(str(i) for i in stats))
-            else:
-                with open(output_file, "a") as output:
-                    output.write('\t'.join(j for j in stats_legend))
-                    output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
+                    if os.path.exists(output_file):
+                        with open(output_file, "a") as output:
+                            output.write('\n' + '\t'.join(str(i) for i in stats))
+                    else:
+                        with open(output_file, "a") as output:
+                            output.write('\t'.join(j for j in stats_legend))
+                            output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
             #Set back the reference sequence to the original one (not reversed)
             if strand == 'rev':
