@@ -98,11 +98,6 @@ try:
     if os.path.getsize(nucmerLog) <= 0:
         subprocess.run(["rm", nucmerLog])
 
-    #Get a reader for the NUCmer coords file
-    reader = csv.DictReader(open(coords_file), \
-                            fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
-                            delimiter='\t')
-
     #Get scaffolds, kmer size, abundance min, gap size and chunk size values
     scaffolds = id_.split('.')[0]
     kmer_size = qry_file.split('.')[-5]
@@ -150,6 +145,9 @@ try:
             score = alignments[0].score
 
             #Get output values from NUCmer
+            reader = csv.DictReader(open(coords_file), \
+                                    fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
+                                    delimiter='\t')
             for row in reader:
                 if row["TAG_2"] == qry_seq_id:
                     len_r = row["LEN_R"]
