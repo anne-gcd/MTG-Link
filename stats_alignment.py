@@ -25,7 +25,7 @@ aligner.target_end_extend_gap_score = -0.5
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry <query_sequences_file> -ref <'reference_sequence'> -p <output_file_prefix> [options]", \
+parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry <query_sequences_file> -ref <reference_sequence> -p <output_file_prefix> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=(''' \
                                 Statistics of the alignment of the inserted sequence obtained from MindTheGap (-qry) and the simulated gap (-ref)
@@ -98,6 +98,11 @@ try:
     if os.path.getsize(nucmerLog) <= 0:
         subprocess.run(["rm", nucmerLog])
 
+    #Get a reader for the NUCmer coords file
+    reader = csv.DictReader(open(coords_file), \
+                            fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
+                            delimiter='\t')
+
     #Get scaffolds, kmer size, abundance min, gap size and chunk size values
     scaffolds = id_.split('.')[0]
     kmer_size = qry_file.split('.')[-5]
@@ -109,6 +114,11 @@ try:
     chunk_size = id_.split('.')[2]
     c = int("".join(list(chunk_size)[1:]))
 
+    #Output stats file
+    output_file = outDir + "/" + args.prefix + ".alignment.stats"
+    stats_legend = ["Scaffolds", "Gap", "Chunk", "k", "a", "Strand", "Uniq_sol", "Len_R", "Len_Q", "Global_align", "Score", \
+                    "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
+
     #Alignment stats
     with open(ref_file, "r") as reference:
         for ref_record in SeqIO.parse(reference, "fasta"): #one loop (one reference seq)
@@ -117,7 +127,7 @@ try:
 
     with open(qry_file, "r") as query:
         for qry_record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query/inserted seq)
-            qry_seq_id = qry_record.description
+            qry_seq_id = qry_record.description.split(" ")[0]
             qry_seq = qry_record.seq
             qry_len = len(qry_seq) - k*2
 
@@ -139,15 +149,7 @@ try:
             alignments = aligner.align(qry_seq, ref_seq)
             score = alignments[0].score
 
-            #Output stats file
-            output_file = outDir + "/" + args.prefix + ".alignment.stats"
-            stats_legend = ["Scaffolds", "Gap", "Chunk", "k", "a", "Strand", "Uniq_sol", "Len_R", "Len_Q", "Global_align", "Score", \
-                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
-
             #Get output values from NUCmer
-            reader = csv.DictReader(open(coords_file), \
-                                    fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
-                                    delimiter='\t')
             for row in reader:
                 if row["TAG_2"] == qry_seq_id:
                     len_r = row["LEN_R"]

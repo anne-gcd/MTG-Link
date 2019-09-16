@@ -103,6 +103,8 @@ if args.refDir is not None:
 # Directories for saving results
 #----------------------------------------------------
 cwd = os.getcwd() 
+
+#outDir
 if not os.path.exists(args.out_dir):
     os.mkdir(args.out_dir)
 try:
@@ -113,6 +115,9 @@ except:
     os.chdir(cwd)
 outDir = os.getcwd()
 print("\nThe results are saved in " + outDir)
+
+#statsDir
+statsDir = outDir + "/alignments_stats"
 
 #----------------------------------------------------
 # Gapfilling pipeline
@@ -240,10 +245,9 @@ try:
                     #----------------------------------------------------
                     # Stats of the alignments query_seq vs reference_seq
                     #----------------------------------------------------
-                    print("\nStatistical analysis...")
-                    
                     #Get the reference sequence file
                     if args.refDir is not None:
+                        print("\nStatistical analysis...")
                         ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
 
                         if not os.path.isfile(ref_file):
@@ -251,7 +255,6 @@ try:
 
                         #Do statistics on the alignments of query_seq vs reference_seq
                         else:
-                            statsDir = outDir + "/alignments_stats"
                             stats_align(input_file, ref_file, str(gap_label), statsDir)
                             
                     break

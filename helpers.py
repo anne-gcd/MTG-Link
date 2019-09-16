@@ -69,7 +69,7 @@ class Scaffold(Gap):
 #----------------------------------------------------
 # extract_barcodes function
 #----------------------------------------------------
-#Function to extract the barcodes of reads aligned mapped on chunks, with BamExtractor 
+#Function to extract the barcodes of reads mapping on chunks, with BamExtractor 
 def extract_barcodes(bam, region, freq, out_barcodes):
     command = ["BamExtractor", bam, region]
     bamextractorLog = "{}_bamextractor.log".format(datetime.now())
