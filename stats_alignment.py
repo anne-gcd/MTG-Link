@@ -121,7 +121,7 @@ try:
             ref_len = len(ref_seq)
 
     with open(qry_file, "r") as query:
-        for qry_record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query/inserted seq)
+        for qry_record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
             qry_seq_id = qry_record.description.split(" ")[0]
             qry_seq = qry_record.seq
             qry_len = len(qry_seq) - k*2

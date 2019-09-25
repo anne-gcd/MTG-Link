@@ -156,3 +156,25 @@ def stats_align(qry_file, ref_file, prefix, out_dir):
     #remove the raw file obtained from statistics
     if os.path.getsize(statsLog) <= 0:
         subprocess.run(["rm", statsLog])
+
+
+#----------------------------------------------------
+# get_position_for_edges function
+#----------------------------------------------------
+def get_position_for_edges(orient1, orient2, length1, length2, k):
+    #Same orientation
+    if orient1 == orient2:
+        beg1 = str(length1 - 2*k)
+        end1 = str(length1) + "$"  
+        beg2 = str(0)
+        end2 = str(2*k)
+
+    #Opposite orientation
+    elif orient1 != orient2:
+        beg1 = str(length1 - 2*k)
+        end1 = str(length1) + "$"
+        beg2 = str(length2 - 2*k)
+        end2 = str(length2) + "$"
+
+    positions = [beg1, end1, beg2, end2]
+    return positions

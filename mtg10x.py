@@ -4,10 +4,11 @@ import os
 import sys
 import argparse
 import re
+import subprocess
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO, Align
-from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align
+from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align, get_position_for_edges
 
 
 #----------------------------------------------------
@@ -124,6 +125,22 @@ statsDir = outDir + "/alignments_stats"
 #----------------------------------------------------
 try:
     gfa = gfapy.Gfa.from_file(gfa_file)
+    out_gfa_file = "mtg10x_" + gfa_name
+
+    #----------------------------------------------------
+    # GFA output: case no gap
+    #----------------------------------------------------
+    #If no gap, rewrite all the lines into GFA output
+    if len(gfa.gaps) == 0:
+        with open(out_gfa_file, "w") as f:
+            out_gfa = gfapy.Gfa()
+            for line in gfa.lines:
+                out_gfa.add_line(str(line))
+            out_gfa.to_file(out_gfa_file)
+
+    #----------------------------------------------------   
+    # Fill the gaps
+    #----------------------------------------------------
     for _gap_ in gfa.gaps:
         gap = Gap(_gap_)
         gap.info()
@@ -131,7 +148,20 @@ try:
         
         left_scaffold = Scaffold(_gap_, gap.left)
         right_scaffold = Scaffold(_gap_, gap.right)
+
+        #Save current G line into a temporary file
+        with open("tmp.gap", "w") as tmp_gap:
+            tmp_gap.write(str(_gap_))
+            tmp_gap.seek(0)
         
+        #Rewrite the H and S lines into GFA output
+        with open(out_gfa_file, "w") as f:
+            out_gfa = gfapy.Gfa()
+            out_gfa.add_line("H\tVN:Z:2.0")
+            for line in gfa.segments:
+                out_gfa.add_line(str(line))
+            out_gfa.to_file(out_gfa_file)
+
         #----------------------------------------------------
         # BamExtractor
         #----------------------------------------------------
@@ -253,17 +283,81 @@ try:
                         if not os.path.isfile(ref_file):
                             print("Something wrong with the specified reference file. Exception-", sys.exc_info())
 
-                        #Do statistics on the alignments of query_seq vs reference_seq
+                        #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
                         else:
                             stats_align(input_file, ref_file, str(gap_label), statsDir)
                             
                     break
 
             if solution == True:
-                break
+                #GFA output directory
+                os.chdir(outDir)
+                print("\nCreating or appending the output GFA file...")
+
+                #----------------------------------------------------
+                # GFA output: case gap, solution found (=query)
+                #----------------------------------------------------
+                with open(input_file, "r") as sol_file:
+                    for qry_record in SeqIO.parse(sol_file, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
+                        qry_seq = qry_record.seq
+                        qry_len = len(qry_seq)
+                        qry_name = ""
+
+                        orient = "+"
+                        if "bkpt2" in str(qry_record.id):
+                            orient = "-"
+
+                        if "solution" in qry_record.description:
+                            qry_name = qry_record.description.split(" ")[-1]
+
+                        s1 = gap.left
+                        s2 = gap.right
+                        qry_name = str(s1) +"-"+ str(s2) + "_gapfill" + qry_name + orient
+
+                        #Save the found seq (query seq) to a file containing all gapfill seq
+                        with open("gapfill_seq.fasta", "a") as seq_fasta:
+                            seq_fasta.write(">{} _ len {}".format(qry_name, qry_len))
+                            seq_fasta.write("\n" + str(qry_seq) + "\n")
+                        qry_path = outDir + "/gapfill_seq.fasta"
         
-        #Go in outDir for following gaps
-        os.chdir(outDir)
+                        #Add the found seq (query seq) to GFA output (S line)
+                        out_gfa = gfapy.Gfa.from_file(out_gfa_file)
+                        out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(qry_name, qry_len, qry_path))
+
+                        #Write the two corresponding E lines into GFA output
+                        pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, qry_len, k)
+                        out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, qry_name, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+                        pos_2 = get_position_for_edges(orient, right_scaffold.orient, qry_len, right_scaffold.len, k)
+                        out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(qry_name, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+
+                        out_gfa.to_file(out_gfa_file)
+
+                break
+
+            #----------------------------------------------------
+            # GFA output: case gap, no solution
+            #----------------------------------------------------
+            else:
+                #GFA output directory
+                os.chdir(outDir)
+                print("\nCreating or appending the output GFA file...")
+
+                #Rewrite the current G line into GFA output
+                with open("tmp.gap", "r") as tmp_gap:
+                    out_gfa = gfapy.Gfa.from_file(out_gfa_file)
+                    for line in tmp_gap.readlines():
+                        out_gfa.add_line(line)
+                    out_gfa.to_file(out_gfa_file)
+        
+
+        #Remove the tmp.gap file
+        tmp_gap_file = os.path.join(outDir, "tmp.gap")
+        subprocess.run(["rm", tmp_gap_file])
+
+
+    #Give the output GFA file and the file containing the gapfill seq
+    print("GFA file: " + out_gfa_file)
+    print("Corresponding file containing all gapfill sequences: " + "gapfill_seq.fasta")
 
 
 except Exception as e:
@@ -275,3 +369,4 @@ except Exception as e:
 print("\nSummary of the union: " +gfa_name+".union.sum")
 print("The results from MindTheGap are saved in " + mtgDir)
 print("The statistics from MTG10X are saved in " + statsDir)
+print("The GFA output file and the sequences file are saved in " + outDir)
