@@ -14,7 +14,7 @@ from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]", \
+parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -in <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=(''' \
                                 Gapfilling with 10X data, using MindTheGap in 'breakpoint' mode
@@ -34,6 +34,7 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_fil
 
                                 [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
                                                       '-k': size of a kmer [default '[51, 41, 31, 21]']
+                                                      '--force': to force search on all k values
                                                       '-a': minimal abundance threshold for solid kmers [default '[3, 2]']
                                                       '-max-nodes': maximum number of nodes in contig graph [default '1000']
                                                       '-max-length': maximum length of gapfilling (nt) [default '10000']
@@ -45,7 +46,7 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -gfa <GFA_fil
 parserMain = parser.add_argument_group("[Main options]")
 parserMtg = parser.add_argument_group("[MindTheGap option]")
 
-parserMain.add_argument('-gfa', action="store", dest="gfa", help="input GFA file containing the contigs paths (format: xxx.gfa)", required=True)
+parserMain.add_argument('-in', action="store", dest="input", help="input GFA file containing the contigs paths (format: xxx.gfa)", required=True)
 parserMain.add_argument('-c', action="store", dest="chunk", type=int, help="size of the chunk for gapfilling", required=True)
 parserMain.add_argument('-bam', action="store", dest="bam", help="BAM file containing the reads of the individual", required=True)
 parserMain.add_argument('-reads', action="store", dest="reads", help="file of indexed reads", required=True)
@@ -56,6 +57,7 @@ parserMain.add_argument('-refDir', action="store", dest="refDir", help="director
 
 parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
 parserMtg.add_argument('-k', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
+parserMtg.add_argument("--force", action="store_true", help="to force search on all k values")
 parserMtg.add_argument('-a', action="store", dest="a_mtg", default=[3, 2], nargs='*', type=int, help="minimal abundance of kmers used for gapfilling")
 parserMtg.add_argument('-max-nodes', action="store", dest="max_nodes_mtg", type=int, default=1000, help="maximum number of nodes in contig graph")
 parserMtg.add_argument('-max-length', action="store", dest="max_length_mtg", type=int, default=10000, help="maximum length of gapfilling (nt)")
@@ -65,7 +67,7 @@ parserMtg.add_argument('-verbose', action="store", dest="verbose_mtg", type=int,
 
 args = parser.parse_args()
 
-if re.match('^.*.gfa$', args.gfa) is None:
+if re.match('^.*.gfa$', args.input) is None:
     parser.error("The suffix of the GFA file should be: '.gfa'")
 
 if re.match('^.*.bam$', args.bam) is None:
@@ -74,7 +76,7 @@ if re.match('^.*.bam$', args.bam) is None:
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
-gfa_file = os.path.abspath(args.gfa)
+gfa_file = os.path.abspath(args.input)
 if not os.path.exists(gfa_file):
     parser.error("The path of the GFA file doesn't exist")
 gfa_name = gfa_file.split('/')[-1]
@@ -241,6 +243,9 @@ try:
         #Execute MindTheGap fill module on the union, in breakpoint mode
         solution = False
         for k in args.k_mtg:
+
+            #MindTheGap output directory
+            os.chdir(mtgDir)
         
             #----------------------------------------------------
             # Breakpoint file, with offset of size k removed
@@ -293,7 +298,7 @@ try:
                         #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
                         else:
                             stats_align(input_file, ref_file, str(gap_label), statsDir)
-                            
+
                     break
 
             if solution == True:
@@ -316,6 +321,9 @@ try:
 
                         if "solution" in qry_record.description:
                             qry_name = qry_record.description.split(" ")[-1]
+
+                        if args.force:
+                            qry_name = qry_name + ".k" + str(k)
 
                         s1 = gap.left
                         s2 = gap.right
@@ -341,7 +349,8 @@ try:
 
                             out_gfa.to_file(out_gfa_file)
 
-                break
+                if not args.force:
+                    break
 
             #----------------------------------------------------
             # GFA output: case gap, no solution
