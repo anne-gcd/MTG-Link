@@ -70,10 +70,9 @@ class Scaffold(Gap):
 # extract_barcodes function
 #----------------------------------------------------
 #Function to extract the barcodes of reads mapping on chunks, with BamExtractor 
-def extract_barcodes(bam, region, freq, out_barcodes):
+def extract_barcodes(bam, region, out_barcodes, barcodes_occ):
     command = ["BamExtractor", bam, region]
     bamextractorLog = "{}_bamextractor.log".format(datetime.now())
-    barcodes_occ = {}
 
     with open("bam-extractor-stdout.txt", "w+") as f, open(bamextractorLog, "a") as log:
         subprocess.run(command, stdout=f, stderr=log)
@@ -82,23 +81,21 @@ def extract_barcodes(bam, region, freq, out_barcodes):
         for line in f.readlines():
             #remove the '-1' at the end of the sequence
             barcode_seq = line.split('-')[0]
-            #count occurences of each barcode
+            #count occurences of each barcode and save them in a dict
             if barcode_seq in barcodes_occ:
                 barcodes_occ[barcode_seq] += 1
             else:
                 barcodes_occ[barcode_seq] = 1
-        
-    #filter barcodes by freq
-    for (barcode, occurences) in barcodes_occ.items():
-        if occurences >= freq:
-            out_barcodes.write(barcode + "\n")
+
+            #write the barcodes' sequences to the output file
+            out_barcodes.write(barcode_seq + "\n")
 
     #remove the raw files obtained from BamExtractor
     subprocess.run("rm bam-extractor-stdout.txt", shell=True)
     if os.path.getsize(bamextractorLog) <= 0:
         subprocess.run(["rm", bamextractorLog])
 
-    return out_barcodes
+    return out_barcodes, barcodes_occ
 
 
 #----------------------------------------------------

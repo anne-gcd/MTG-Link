@@ -165,13 +165,16 @@ try:
         #----------------------------------------------------
         # BamExtractor
         #----------------------------------------------------
+        #Initiate a dictionary to count the occurences of each barcode
+        barcodes_occ = {}
+        
         #Obtain the left barcodes and store the elements in a set
         left_region = left_scaffold.chunk(args.chunk)
         left_barcodes_file = "{}{}.c{}.left.barcodes".format(left_scaffold.name, left_scaffold.orient, args.chunk)
 
         print("Barcodes from left chunk ({}): {}".format(left_region, left_barcodes_file))
         with open(left_barcodes_file, "w+") as left_barcodes:
-            extract_barcodes(bam_file, left_region, args.freq, left_barcodes)
+            extract_barcodes(bam_file, left_region, left_barcodes, barcodes_occ)
             left_barcodes.seek(0)
             left = set(left_barcodes.read().splitlines())
     
@@ -181,7 +184,7 @@ try:
 
         print("Barcodes from right chunk ({}): {}".format(right_region, right_barcodes_file))
         with open(right_barcodes_file, "w+") as right_barcodes:
-            extract_barcodes(bam_file, right_region, args.freq, right_barcodes)
+            extract_barcodes(bam_file, right_region, right_barcodes, barcodes_occ)
             right_barcodes.seek(0)
             right = set(right_barcodes.read().splitlines())
 
@@ -190,7 +193,10 @@ try:
         print("Barcodes from the union (all barcodes): " + union_barcodes_file)
         with open(union_barcodes_file, "w") as union_barcodes:
             union = left | right
-            union_barcodes.write('\n'.join(barcode for barcode in union))
+            #filter barcodes by freq
+            for (barcode, occurences) in barcodes_occ.items():
+                if occurences >= args.freq:
+                    union_barcodes.write(barcode + "\n")
         
         #----------------------------------------------------
         # GetReads
