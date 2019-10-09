@@ -282,7 +282,19 @@ try:
 
                 if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
                     input_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
-                    solution = True
+                    
+                    #If length(gap) provided, check that length(solution found) = length(gap) +/- 10% 
+                    if gap.length != "*":
+                        with open(input_file, "r") as query:
+                            for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
+                                seq = record.seq
+                                len_seq = len(seq) - k*2
+
+                                if len_seq >= 0.9*gap.length and len_seq <= 1.1*gap.length:
+                                    solution = True
+
+                    else:
+                        solution = True
 
                     #----------------------------------------------------
                     # Stats of the alignments query_seq vs reference_seq
@@ -299,7 +311,8 @@ try:
                         else:
                             stats_align(input_file, ref_file, str(gap_label), statsDir)
 
-                    break
+                    if solution == True:
+                        break
 
             if solution == True:
                 #GFA output directory
