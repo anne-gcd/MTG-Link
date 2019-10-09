@@ -338,7 +338,6 @@ try:
                         subprocess.run(["rm", insertion_fasta])
                         subprocess.run(["rm", insertion_vcf])
 
-
                 if solution == True:
                     #GFA output directory
                     os.chdir(outDir)
