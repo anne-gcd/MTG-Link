@@ -51,17 +51,13 @@ class Scaffold(Gap):
                 return rc(record.seq)
 
     def chunk(self, c):
-        if c > self.len:
-            sys.stderr.write("Error: The chunk size must be smaller than the length of the scaffolds\n")
-            sys.exit(2)
-        else:
-            if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):   #if left_fwd or right_rev
-                start = self.len - c
-                end = self.len
-            elif (self.orient == "+" and self.scaffold == self.right) or (self.orient == "-" and self.scaffold == self.left):  #if right_fwd or left_rev
-                start = 0
-                end = c
-            return str(self.name) +":"+ str(start) +"-"+ str(end)
+        if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):   #if left_fwd or right_rev
+            start = self.len - c
+            end = self.len
+        elif (self.orient == "+" and self.scaffold == self.right) or (self.orient == "-" and self.scaffold == self.left):  #if right_fwd or left_rev
+            start = 0
+            end = c
+        return str(self.name) +":"+ str(start) +"-"+ str(end)
 
 
 
