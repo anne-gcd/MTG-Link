@@ -238,6 +238,11 @@ try:
                     union_sum.write('\t'.join(j for j in legend))
                     union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
 
+            #Remove the barcodes files
+            subprocess.run(["rm", left_barcodes_file])
+            subprocess.run(["rm", right_barcodes_file])
+            subprocess.run(["rm", union_barcodes_file])
+
             #----------------------------------------------------
             # MindTheGap pipeline
             #----------------------------------------------------
@@ -325,6 +330,12 @@ try:
 
                         if solution == True:
                             break
+
+                    #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
+                    else:
+                        insertion_files = os.path.abspath(mtgDir +"/"+ output + ".insertions.*")
+                        subprocess.run(["rm", insertion_files])
+
 
                 if solution == True:
                     #GFA output directory
