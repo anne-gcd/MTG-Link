@@ -334,7 +334,7 @@ try:
                     #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
                     else:
                         insertion_files = os.path.abspath(mtgDir +"/"+ output + ".insertions.*")
-                        subprocess.run(["rm", insertion_files])
+                        subprocess.run(["rm", insertion_files], shell=True)
 
 
                 if solution == True:
