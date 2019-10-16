@@ -374,17 +374,29 @@ try:
                                 seq_fasta.write("\n" + str(qry_seq) + "\n")
             
                             with open(out_gfa_file, "a") as f:
-                                #Add the found seq (query seq) to GFA output (S line)
-                                out_gfa = gfapy.Gfa.from_file(out_gfa_file)
-                                out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(qry_name, qry_len, os.path.join(outDir, gapfill_file)))
+                                if qry_len < 2*k:
+                                    print("Query length is too short (<2*k): overlap of source and destination read")
+                                    print("Rewriting the gap line to the GFA output file...")
 
-                                #Write the two corresponding E lines into GFA output
-                                pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, qry_len, k)
-                                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, qry_name, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
-                                pos_2 = get_position_for_edges(orient, right_scaffold.orient, qry_len, right_scaffold.len, k)
-                                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(qry_name, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+                                    #Rewrite the current G line into GFA output
+                                    with open("tmp.gap", "r") as tmp_gap, open(out_gfa_file, "a") as f:
+                                        out_gfa = gfapy.Gfa.from_file(out_gfa_file)
+                                        for line in tmp_gap.readlines():
+                                            out_gfa.add_line(line)
+                                        out_gfa.to_file(out_gfa_file)
 
-                                out_gfa.to_file(out_gfa_file)
+                                else:
+                                    #Add the found seq (query seq) to GFA output (S line)
+                                    out_gfa = gfapy.Gfa.from_file(out_gfa_file)
+                                    out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(qry_name, qry_len, os.path.join(outDir, gapfill_file)))
+
+                                    #Write the two corresponding E lines into GFA output
+                                    pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, qry_len, k)
+                                    out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, qry_name, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+                                    pos_2 = get_position_for_edges(orient, right_scaffold.orient, qry_len, right_scaffold.len, k)
+                                    out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(qry_name, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+
+                                    out_gfa.to_file(out_gfa_file)
 
                     if not args.force:
                         break
