@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -in <GFA_file
                                                 '-f': minimal frequence of extracted barcodes from BAM file [default '2']
                                                 '-out': output directory [default './mtg10x_results']
                                                 '-refDir': directory containing the reference sequences if any 
+                                                '-line': line of GFA file input from which to start analysis 
 
                                 [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
                                                       '-k': size of a kmer [default '[51, 41, 31, 21]']
@@ -54,6 +55,7 @@ parserMain.add_argument('-index', action="store", dest="index", help="barcodes i
 parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, help="minimal frequence of extracted barcodes from BAM file, in a specific region (chunk)")
 parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
 parserMain.add_argument('-refDir', action="store", dest="refDir", help="directory containing the reference sequences if any, for statistical purposes")
+parserMain.add_argument('-line', action="store", dest="line", type=int, help="line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input)")
 
 parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
 parserMtg.add_argument('-k', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
@@ -144,7 +146,7 @@ try:
     # Fill the gaps
     #----------------------------------------------------
     #If gap, rewrite the H and S lines into GFA output
-    else:
+    if args.line is None:
         with open(out_gfa_file, "w") as f:
             out_gfa = gfapy.Gfa()
             out_gfa.add_line("H\tVN:Z:2.0")
@@ -152,13 +154,22 @@ try:
                 out_gfa.add_line(str(line))
             out_gfa.to_file(out_gfa_file)
         
-    for _gap_ in gfa.gaps:
-        gap = Gap(_gap_)
+    gaps = []
+    #If '-line' argument provided, start analysis from this line in GFA file input
+    if args.line is not None:
+        for _gap_ in gfa.gaps[(args.line - (len(gfa.segments)+2)):]:
+            gaps.append(_gap_)
+    else:
+        for _gap_ in gfa.gaps:
+            gaps.append(_gap_)
+
+    for current_gap in gaps:
+        gap = Gap(current_gap)
         gap.info()
         gap_label = gap.label()
         
-        left_scaffold = Scaffold(_gap_, gap.left)
-        right_scaffold = Scaffold(_gap_, gap.right)
+        left_scaffold = Scaffold(current_gap, gap.left)
+        right_scaffold = Scaffold(current_gap, gap.right)
 
         #If chunk size larger than length of scaffold(s), abort tentative of gapfilling for this scaffold
         if args.chunk > left_scaffold.len or args.chunk > right_scaffold.len:
@@ -167,14 +178,14 @@ try:
             #Rewrite the current G line into GFA output
             with open(out_gfa_file, "a") as f:
                 out_gfa = gfapy.Gfa.from_file(out_gfa_file)
-                out_gfa.add_line(str(_gap_))
+                out_gfa.add_line(str(current_gap))
                 out_gfa.to_file(out_gfa_file)
             continue
 
         else:
             #Save current G line into a temporary file
             with open("tmp.gap", "w") as tmp_gap:
-                tmp_gap.write(str(_gap_))
+                tmp_gap.write(str(current_gap))
                 tmp_gap.seek(0)
 
             #----------------------------------------------------
