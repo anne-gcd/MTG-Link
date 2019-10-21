@@ -171,3 +171,54 @@ def get_position_for_edges(orient1, orient2, length1, length2, k):
 
     positions = [beg1, end1, beg2, end2]
     return positions
+
+
+#----------------------------------------------------
+# output_gfa_with_solution function
+#----------------------------------------------------
+#Function to update the GFA when a solution is found for a gap
+def output_gfa_with_solution(outDir, record, k, s1, s2, left_scaffold, right_scaffold, gfa_name, gfa_output_file):
+    seq = record.seq
+    length_seq = len(seq)
+    sol_name = ".k" + str(k)
+    orient = "+"
+
+    if "bkpt2" in str(record.id):
+        orient = "-"
+    if "solution" in record.description:
+        sol_name = record.description.split(" ")[-1] + sol_name
+
+
+    sol_name = str(s1) +":"+ str(s2) + "_gf" + sol_name + orient
+
+    #Save the found seq to a file containing all gapfill seq
+    gapfill_file = gfa_name + ".gapfill_seq.fasta"
+    print("Corresponding file containing all gapfill sequences: " + gapfill_file)
+    with open(gapfill_file, "a") as seq_fasta:
+        seq_fasta.write(">{} _ len {}".format(sol_name, length_seq))
+        seq_fasta.write("\n" + str(seq) + "\n")
+
+    with open(gfa_output_file, "a") as f:
+        if length_seq < 2*k:
+            print("Query length is too short (<2*k): overlap of source and destination read")
+            print("Rewriting the gap line to the GFA output file...")
+
+            #Rewrite the current G line into GFA output
+            with open("tmp.gap", "r") as tmp_gap, open(gfa_output_file, "a") as f:
+                out_gfa = gfapy.Gfa.from_file(gfa_output_file)
+                for line in tmp_gap.readlines():
+                    out_gfa.add_line(line)
+                out_gfa.to_file(gfa_output_file)
+
+        else:
+            #Add the found seq (query seq) to GFA output (S line)
+            out_gfa = gfapy.Gfa.from_file(gfa_output_file)
+            out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(sol_name, length_seq, os.path.join(outDir, gapfill_file)))
+
+            #Write the two corresponding E lines into GFA output
+            pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, length_seq, k)
+            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, sol_name, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+            pos_2 = get_position_for_edges(orient, right_scaffold.orient, length_seq, right_scaffold.len, k)
+            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(sol_name, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+
+            out_gfa.to_file(gfa_output_file)
