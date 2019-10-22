@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import subprocess
 import gfapy
 from gfapy.sequence import rc
@@ -45,10 +46,11 @@ class Scaffold(Gap):
     
     def sequence(self):
         for record in SeqIO.parse(self.seq_path, "fasta"):
-            if self.orient == "+":
-                return record.seq
-            elif self.orient == "-":
-                return rc(record.seq)
+            if re.match(self.name, record.id):
+                if self.orient == "+":
+                    return record.seq
+                elif self.orient == "-":
+                    return rc(record.seq)
 
     def chunk(self, c):
         if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):   #if left_fwd or right_rev
