@@ -37,6 +37,7 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -in <GFA_file
                                                       '-k': size of a kmer [default '[51, 41, 31, 21]']
                                                       '--force': to force search on all k values
                                                       '-a': minimal abundance threshold for solid kmers [default '[3, 2]']
+                                                      '-ext': extension size of the gap on both sides
                                                       '-max-nodes': maximum number of nodes in contig graph [default '1000']
                                                       '-max-length': maximum length of gapfilling (nt) [default '10000']
                                                       '-nb-cores': number of cores [default '4']
@@ -61,6 +62,7 @@ parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint fi
 parserMtg.add_argument('-k', action="store", dest= "k_mtg", default=[51, 41, 31, 21],  nargs='*', type=int, help="kmer size used for gapfilling")
 parserMtg.add_argument("--force", action="store_true", help="to force search on all k values")
 parserMtg.add_argument('-a', action="store", dest="a_mtg", default=[3, 2], nargs='*', type=int, help="minimal abundance of kmers used for gapfilling")
+parserMtg.add_argument('-ext', action="store", dest="ext", type=int, help="size of the extension of the gap, on both sides [by default k]; determine start/end of gapfilling")
 parserMtg.add_argument('-max-nodes', action="store", dest="max_nodes_mtg", type=int, default=1000, help="maximum number of nodes in contig graph")
 parserMtg.add_argument('-max-length', action="store", dest="max_length_mtg", type=int, default=10000, help="maximum length of gapfilling (nt)")
 parserMtg.add_argument('-nb-cores', action="store", dest="nb_cores_mtg", type=int, default=4, help="number of cores")
@@ -278,16 +280,22 @@ try:
                 #----------------------------------------------------
                 # Breakpoint file, with offset of size k removed
                 #----------------------------------------------------
+                #variable 'ext' is the size of the extension of the gap, on both sides [by default k]
+                if args.ext is None:
+                    ext = k
+                else:
+                    ext = args.ext
+
                 bkpt_file = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gap_label), gap.length, args.chunk, k)
                 with open(bkpt_file, "w") as bkpt:
                     line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
-                    line2 = str(left_scaffold.sequence()[(left_scaffold.len - 2*k):(left_scaffold.len - k)])
+                    line2 = str(left_scaffold.sequence()[(left_scaffold.len - ext - k):(left_scaffold.len - ext)])
                     line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
-                    line4 = str(right_scaffold.sequence()[k:2*k])
+                    line4 = str(right_scaffold.sequence()[ext:(ext + k)])
                     line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
-                    line6 = str(rc(right_scaffold.sequence())[(right_scaffold.len - 2*k):(right_scaffold.len - k)])
+                    line6 = str(rc(right_scaffold.sequence())[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
                     line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
-                    line8 = str(rc(left_scaffold.sequence())[k:2*k])
+                    line8 = str(rc(left_scaffold.sequence())[ext:(ext + k)])
                     bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
                 print("\nBreakpoint file (with offset of size k removed): " + bkpt_file)
 
@@ -319,7 +327,7 @@ try:
                             with open(input_file, "r") as query:
                                 for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
                                     seq = record.seq
-                                    len_seq = len(seq) - k*2
+                                    len_seq = len(seq) - ext - k
 
                                     if len_seq >= 0.9*gap.length and len_seq <= 1.1*gap.length:
                                         solution = True
