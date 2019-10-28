@@ -329,7 +329,7 @@ try:
                                     seq = record.seq
                                     len_seq = len(seq) - 2*ext
 
-                                    if len_seq >= 0.9*gap.length and len_seq <= 1.1*gap.length:
+                                    if len_seq >= 0.85*gap.length and len_seq <= 1.15*gap.length:
                                         solution = True
                                         
                                         #GFA output directory
