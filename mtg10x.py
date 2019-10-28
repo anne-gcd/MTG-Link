@@ -327,7 +327,7 @@ try:
                             with open(input_file, "r") as query:
                                 for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
                                     seq = record.seq
-                                    len_seq = len(seq) - ext - k
+                                    len_seq = len(seq) - 2*ext
 
                                     if len_seq >= 0.9*gap.length and len_seq <= 1.1*gap.length:
                                         solution = True
