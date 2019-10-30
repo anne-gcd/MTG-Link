@@ -323,7 +323,7 @@ try:
                         # GFA output: case gap, solution found (=query), length(gap) known
                         #-------------------------------------------------------------------
                         #If length(gap) provided, check that length(solution found) = length(gap) +/- 10% 
-                        if gap.length != "*":
+                        if gap.length != 0:
                             with open(input_file, "r") as query:
                                 for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
                                     seq = record.seq
