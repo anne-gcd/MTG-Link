@@ -2,5 +2,7 @@
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
 biopython
+blast=2.9.0=pl526h979a64d_3
 gfapy=1.0.0
+mummer=3.23=pl526_8
 samtools=1.6=h244ad75_4
