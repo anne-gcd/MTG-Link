@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry
                                 '''))
 
 parser.add_argument("-qry", "--query", action="store", help="file containing the inserted sequences obtained from MindTheGap (format: 'xxx.insertions.fasta')", required=True)
-parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the simulated gap (format: 'xxx.ingap.fasta')", required=True)
+parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the simulated gap (format: 'xxx.ingap.fasta') OR file containing the sequences of the scaffolds (format: 'xxx.fasta')", required=True)
 parser.add_argument("-p", "--prefix", action="store", help="prefix of output file to save the statistical results", required=True)
 parser.add_argument("-out", "--outDir", action="store", default="./mtg10x_results/alignments_stats", help="output directory for saving results")
 
@@ -42,8 +42,8 @@ args = parser.parse_args()
 if re.match('^.*.insertions.fasta$', args.query) is None:
     parser.error("The suffix of the inserted sequences (query sequences) file should be: '.insertions.fasta'")
 
-if re.match('^.*.ingap.fasta$', args.reference) is None:
-    parser.error("The suffix of the reference sequence file should be: '.ingap.fasta'")
+if re.match('^.*.fasta$', args.reference) is None:
+    parser.error("The suffix of the reference sequence file should be: '.fasta'")
 
 #----------------------------------------------------
 # Input files
@@ -73,113 +73,268 @@ except:
 outDir = os.getcwd()
 print("\nThe results are saved in " + outDir)
 
-#----------------------------------------------------
-# Statistics about the alignment
-#----------------------------------------------------
 try:
-    #Run NUCmer
-    qry_id = qry_file.split('.k')[0]
-    id_ = qry_id.split('gfa.')[1]
-    prefix = id_ + ".ref_qry"
+    #-----------------------------------------------------------------------------
+    # Statistics about the alignment if Ref = reference sequence of simulated gap
+    #-----------------------------------------------------------------------------
+    if re.match('^.*.ingap.fasta$', args.reference):
 
-    nucmerLog = "{}_nucmer.log".format(id_)
-    delta_file = prefix + ".delta"
-    coords_file = prefix + ".coords"
+        #Run NUCmer
+        qry_id = qry_file.split('.k')[0]
+        id_ = qry_id.split('gfa.')[1]
+        prefix = id_ + ".ref_qry"
 
-    nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
-    coords_command = ["show-coords", "-rcdlT", delta_file]
+        nucmerLog = "{}_nucmer.log".format(id_)
+        delta_file = prefix + ".delta"
+        coords_file = prefix + ".coords"
 
-    with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
-        subprocess.run(nucmer_command, stderr=log)
-        subprocess.run(coords_command, stdout=coords, stderr=log)
-        print(subprocess.check_output(coords_command))
+        nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
+        coords_command = ["show-coords", "-rcdlT", delta_file]
 
-    #Remove the raw file obtained from NUCmer
-    if os.path.getsize(nucmerLog) <= 0:
-        subprocess.run(["rm", nucmerLog])
+        with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
+            subprocess.run(nucmer_command, stderr=log)
+            subprocess.run(coords_command, stdout=coords, stderr=log)
+            print(subprocess.check_output(coords_command))
 
-    #Get scaffolds, kmer size, abundance min, gap size and chunk size values
-    scaffolds = id_.split('.')[0]
-    kmer_size = qry_file.split('.')[-5]
-    k = int("".join(list(kmer_size)[1:]))
-    abundance_min = qry_file.split('.')[-4]
-    a = int("".join(list(abundance_min)[1:]))
-    gap_size = id_.split('.')[1]
-    g = int("".join(list(gap_size)[1:]))
-    chunk_size = id_.split('.')[2]
-    c = int("".join(list(chunk_size)[1:]))
+        #Remove the raw file obtained from NUCmer
+        if os.path.getsize(nucmerLog) <= 0:
+            subprocess.run(["rm", nucmerLog])
 
-    #Output stats file
-    output_file = outDir + "/" + args.prefix + ".alignment.stats"
-    stats_legend = ["Scaffolds", "Gap", "Chunk", "k", "a", "Strand", "Uniq_sol", "Len_R", "Len_Q", "Global_align", "Score", \
-                    "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
+        #Get scaffolds, kmer size, abundance min, gap size and chunk size values
+        scaffolds = id_.split('.')[0]
+        kmer_size = qry_file.split('.')[-5]
+        k = int("".join(list(kmer_size)[1:]))
+        abundance_min = qry_file.split('.')[-4]
+        a = int("".join(list(abundance_min)[1:]))
+        gap_size = id_.split('.')[1]
+        g = int("".join(list(gap_size)[1:]))
+        chunk_size = id_.split('.')[2]
+        c = int("".join(list(chunk_size)[1:]))
 
-    #Alignment stats
-    with open(ref_file, "r") as reference:
-        for ref_record in SeqIO.parse(reference, "fasta"): #one loop (one reference seq)
-            ref_seq = ref_record.seq
-            ref_len = len(ref_seq)
+        #Output stats file
+        output_file = outDir + "/" + args.prefix + ".alignment.stats"
+        stats_legend = ["Scaffolds", "Gap", "Chunk", "k", "a", "Strand", "Uniq_sol", "Len_R", "Len_Q", "Global_align", "Score", \
+                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
 
-    with open(qry_file, "r") as query:
-        for qry_record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
-            qry_seq_id = qry_record.description.split(" ")[0]
-            qry_seq = qry_record.seq
-            qry_len = len(qry_seq) - k*2
+        #Alignment stats
+        with open(ref_file, "r") as reference:
+            for ref_record in SeqIO.parse(reference, "fasta"): #one loop (one reference seq)
+                ref_seq = ref_record.seq
+                ref_len = len(ref_seq)
 
-            strand = "fwd"
-            unique_sol = True
-            global_align = "N"
+        with open(qry_file, "r") as query:
+            for qry_record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
+                qry_seq_id = qry_record.description.split(" ")[0]
+                qry_seq = qry_record.seq
+                qry_len = len(qry_seq) - k*2
 
-            if "bkpt2" in str(qry_record.id):
-                strand = "rev"
-                ref_seq = rc(ref_seq)
+                strand = "fwd"
+                unique_sol = True
+                global_align = "N"
 
-            if "solution" in qry_record.description:
-                unique_sol = qry_record.description.split(" ")[-1]
+                if "bkpt2" in str(qry_record.id):
+                    strand = "rev"
+                    ref_seq = rc(ref_seq)
 
-            if qry_len > 0.9*ref_len and qry_len < 1.1*ref_len:
-                global_align = "Y"
+                if "solution" in qry_record.description:
+                    unique_sol = qry_record.description.split(" ")[-1]
 
-            #Run Bio.Align
-            alignments = aligner.align(qry_seq, ref_seq)
-            score = alignments[0].score
+                if qry_len > 0.9*ref_len and qry_len < 1.1*ref_len:
+                    global_align = "Y"
 
-            #Get output values from NUCmer
-            reader = csv.DictReader(open(coords_file), \
+                #Run Bio.Align
+                alignments = aligner.align(qry_seq, ref_seq)
+                score = alignments[0].score
+
+                #Get output values from NUCmer
+                reader = csv.DictReader(open(coords_file), \
+                                        fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
+                                        delimiter='\t')
+                for row in reader:
+                    if row["TAG_2"] == qry_seq_id:
+                        len_r = row["LEN_R"]
+                        len_q = row["LEN_Q"]
+                        start_r = row["S1"]
+                        end_r = row["E1"]
+                        start_q = row["S2"]
+                        end_q = row["E2"]
+                        len_align_r = row["LEN_1"]
+                        len_align_q = row["LEN_2"]
+                        identity = row["%_IDY"]
+                        cov_r = row["COV_R"]
+                        cov_q = row["COV_Q"]
+                        frame_r = row["FRM_R"]
+                        frame_q = row["FRM_Q"]
+
+                        #Write stats results in output file
+                        stats = [scaffolds, g, c, k, a, strand, unique_sol, len_r, len_q, global_align, score, \
+                                start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q]
+
+                        if os.path.exists(output_file):
+                            with open(output_file, "a") as output:
+                                output.write('\n' + '\t'.join(str(i) for i in stats))
+                        else:
+                            with open(output_file, "a") as output:
+                                output.write('\t'.join(j for j in stats_legend))
+                                output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
+
+                #Set back the reference sequence to the original one (not reversed)
+                if strand == 'rev':
+                    ref_seq = rc(ref_seq)
+   
+
+    #-----------------------------------------------------------------------------
+    # Statistics about the alignment if Ref = scaffolds' sequences
+    #-----------------------------------------------------------------------------
+    else:
+
+        #----------------------------------------------------
+        # Alignment Ref vs Qry (extension vs scaffolds' seq)
+        #----------------------------------------------------
+        #Run NUCmer to obtain alignment of extension portions (-ext) against the scaffolds' sequences
+        id_ = qry_file.split('.')[-9]
+        prefix = id_ + ".ref_qry"
+
+        nucmerLog = "{}_nucmer_ref_qry.log".format(id_)
+        delta_file = prefix + ".delta"
+        coords_file = prefix + ".coords"
+
+        nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
+        coords_command = ["show-coords", "-rcdlT", delta_file]
+
+        with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
+            subprocess.run(nucmer_command, stderr=log)
+            subprocess.run(coords_command, stdout=coords, stderr=log)
+            print(subprocess.check_output(coords_command))
+
+        #Output stats file of alignment query vs ref
+        ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
+        stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
+        
+        #Get the gap size, chunk size, kmer size and abundance min values
+        gap_size = qry_file.split('.')[-8]
+        g = int("".join(list(gap_size)[1:]))
+        if g == 0:
+            g = "NA"
+        chunk_size = qry_file.split('.')[-7]
+        c = int("".join(list(chunk_size)[1:]))
+        kmer_size = qry_file.split('.')[-6]
+        k = int("".join(list(kmer_size)[1:]))
+        abundance_min = qry_file.split('.')[-5]
+        a = int("".join(list(abundance_min)[1:]))
+
+        #Get output values from NUCmer:
+        reader = csv.DictReader(open(coords_file), \
                                     fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
                                     delimiter='\t')
-            for row in reader:
-                if row["TAG_2"] == qry_seq_id:
-                    len_r = row["LEN_R"]
-                    len_q = row["LEN_Q"]
-                    start_r = row["S1"]
-                    end_r = row["E1"]
-                    start_q = row["S2"]
-                    end_q = row["E2"]
-                    len_align_r = row["LEN_1"]
-                    len_align_q = row["LEN_2"]
-                    identity = row["%_IDY"]
-                    cov_r = row["COV_R"]
-                    cov_q = row["COV_Q"]
-                    frame_r = row["FRM_R"]
-                    frame_q = row["FRM_Q"]
 
-                    #Write stats results in output file
-                    stats = [scaffolds, g, c, k, a, strand, unique_sol, len_r, len_q, global_align, score, \
-                            start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q]
+        rows = list(reader)
+        for row in rows[3:]:
+            if row["TAG_1"] in str(id_):
 
-                    if os.path.exists(output_file):
-                        with open(output_file, "a") as output:
-                            output.write('\n' + '\t'.join(str(i) for i in stats))
-                    else:
-                        with open(output_file, "a") as output:
-                            output.write('\t'.join(j for j in stats_legend))
-                            output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
+                len_q = row["LEN_Q"]
+                ref = row["TAG_1"]
+                len_r = row["LEN_R"]
+                start_r = row["S1"]
+                end_r = row["E1"]
+                start_q = row["S2"]
+                end_q = row["E2"]
+                len_align_r = row["LEN_1"]
+                len_align_q = row["LEN_2"]
+                identity = row["%_IDY"]
+                cov_r = row["COV_R"]
+                cov_q = row["COV_Q"]
+                frame_r = row["FRM_R"]
+                frame_q = row["FRM_Q"]
+                solution = str(row["TAG_2"]).split('_sol_')[1]
 
-            #Set back the reference sequence to the original one (not reversed)
-            if strand == 'rev':
-                ref_seq = rc(ref_seq)
-   
+                if "bkpt1" in str(row["TAG_2"]):
+                    strand = "fwd"
+                else:
+                    strand = "rev"
+                
+                #Write stats results in output file
+                stats = [id_, g, c, k, a, strand, solution, len_q, ref, len_r, \
+                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q]
+
+                if os.path.exists(ref_qry_output):
+                    with open(ref_qry_output, "a") as output:
+                        output.write('\n' + '\t'.join(str(i) for i in stats))
+                else:
+                    with open(ref_qry_output, "a") as output:
+                        output.write('\t'.join(j for j in stats_legend))
+                        output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
+
+        #----------------------------------------------------
+        # Alignment Qry vs Qry (fwd vs ref)
+        #----------------------------------------------------
+        #Run NUCmer to obtain alignment of fwd strand solution against rev strand solution
+        prefix_qry = id_ + ".qry_qry"
+        nucmerLog_qry = "{}_nucmer_qry_qry.log".format(id_)
+        delta_file_qry = prefix_qry + ".delta"
+        coords_file_qry = prefix_qry + ".coords"
+
+        nucmer_command_qry = ["nucmer", "-p", prefix_qry, qry_file, qry_file]
+        coords_command_qry = ["show-coords", "-rcdlT", delta_file_qry]
+
+        with open(coords_file_qry, "w") as coords_qry, open(nucmerLog_qry, "a") as log:
+            subprocess.run(nucmer_command_qry, stderr=log)
+            subprocess.run(coords_command_qry, stdout=coords_qry, stderr=log)
+            print(subprocess.check_output(coords_command_qry))
+
+        #Output stats file of alignment query vs ref
+        qry_qry_output = outDir + "/" + args.prefix + ".qry_qry.alignment.stats"
+        stats_legend_qry = ["Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
+                            "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2"]
+
+        #Get output values from NUCmer:
+        reader_qry = csv.DictReader(open(coords_file_qry), \
+                                    fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
+                                    delimiter='\t')
+
+        rows_qry = list(reader_qry)
+        for row in rows_qry[3:]:
+
+            len_q1 = row["LEN_R"]
+            len_q2 = row["LEN_Q"]
+            start_q1 = row["S1"]
+            end_q1 = row["E1"]
+            start_q2 = row["S2"]
+            end_q2 = row["E2"]
+            len_align_q1 = row["LEN_1"]
+            len_align_q2 = row["LEN_2"]
+            identity = row["%_IDY"]
+            cov_q1 = row["COV_R"]
+            cov_q2 = row["COV_Q"]
+            frame_q1 = row["FRM_R"]
+            frame_q2 = row["FRM_Q"]
+
+            if "bkpt1" in str(row["TAG_1"]):
+                strand_q1 = "fwd"
+            else:
+                strand_q1 = "rev"
+
+            if "bkpt1" in str(row["TAG_2"]):
+                strand_q2 = "fwd"
+            else:
+                strand_q2 = "rev"
+            
+            solution_1 = strand_q1 + str(row["TAG_1"]).split('_sol_')[1]
+            solution_2 = strand_q2 + str(row["TAG_2"]).split('_sol_')[1]
+
+            #Write stats results in output file
+            stats_qry = [id_, g, c, k, a, solution_1, len_q1, solution_2, len_q2, \
+                        start_q1, end_q1, start_q2, end_q2, len_align_q1, len_align_q2, identity, cov_q1, cov_q2, frame_q1, frame_q2]
+
+            if os.path.exists(qry_qry_output):
+                with open(qry_qry_output, "a") as output_qry:
+                    output_qry.write('\n' + '\t'.join(str(i) for i in stats_qry))
+            else:
+                with open(qry_qry_output, "a") as output_qry:
+                    output_qry.write('\t'.join(j for j in stats_legend_qry))
+                    output_qry.write('\n'+'\n' + '\t'.join(str(i) for i in stats_qry))
+
 
 except Exception as e:
     print("\nException-")

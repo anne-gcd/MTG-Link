@@ -30,7 +30,8 @@ parser = argparse.ArgumentParser(prog="mtg10x.py", usage="%(prog)s -in <GFA_file
                                                 '-index': barcodes index file
                                                 '-f': minimal frequence of extracted barcodes from BAM file [default '2']
                                                 '-out': output directory [default './mtg10x_results']
-                                                '-refDir': directory containing the reference sequences if any 
+                                                '-refDir': directory containing the reference sequences if any
+                                                '-scaffolds': file containing the sequences of the scaffolds
                                                 '-line': line of GFA file input from which to start analysis 
 
                                 [MindTheGap options]: '-bkpt': breakpoint file (with possibly offset of size k removed)              
@@ -50,12 +51,13 @@ parserMtg = parser.add_argument_group("[MindTheGap option]")
 
 parserMain.add_argument('-in', action="store", dest="input", help="input GFA file containing the contigs paths (format: xxx.gfa)", required=True)
 parserMain.add_argument('-c', action="store", dest="chunk", type=int, help="size of the chunk for gapfilling", required=True)
-parserMain.add_argument('-bam', action="store", dest="bam", help="BAM file containing the reads of the individual", required=True)
+parserMain.add_argument('-bam', action="store", dest="bam", help="BAM file containing the reads of the individual (format: xxx.bam)", required=True)
 parserMain.add_argument('-reads', action="store", dest="reads", help="file of indexed reads", required=True)
 parserMain.add_argument('-index', action="store", dest="index", help="barcodes index file", required=True)
 parserMain.add_argument('-f', action="store", dest="freq", type=int, default=2, help="minimal frequence of extracted barcodes from BAM file, in a specific region (chunk)")
 parserMain.add_argument('-out', action="store", dest="out_dir", default="./mtg10x_results", help="output directory for result files")
 parserMain.add_argument('-refDir', action="store", dest="refDir", help="directory containing the reference sequences if any, for statistical purposes")
+parserMain.add_argument('-scaffolds', action="store", dest="scaffs", help="file containing the sequences of the scaffolds (format: xxx.fasta)", required=True)
 parserMain.add_argument('-line', action="store", dest="line", type=int, help="line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input)")
 
 parserMtg.add_argument('-bkpt', action="store", dest="bkpt", help="breakpoint file in fasta format")
@@ -76,6 +78,9 @@ if re.match('^.*.gfa$', args.input) is None:
 
 if re.match('^.*.bam$', args.bam) is None:
     parser.error("The suffix of the BAM file should be: '.bam'")
+
+if re.match('^.*.fasta$', args.scaffs) is None:
+    parser.error("The suffix of the file containing the sequences of the scaffolds should be: '.fasta'")
 
 #----------------------------------------------------
 # Input files
@@ -105,6 +110,11 @@ if args.refDir is not None:
     refDir = os.path.abspath(args.refDir)
     if not os.path.exists(refDir):
         parser.error("The path of the directory containing the reference sequences doesn't exist")
+
+scaffs_file = os.path.abspath(args.scaffs)
+if not os.path.exists(scaffs_file):
+    parser.error("The path of the file of scaffolds' sequences doesn't exist")
+print("File of scaffolds' sequences: " + scaffs_file)
 
 #----------------------------------------------------
 # Directories for saving results
@@ -317,7 +327,18 @@ try:
                     mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
                     if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
-                        input_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
+                        insertion_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
+
+                        #Modify the 'insertion_file' and save it to a new file ('input_file') so that the 'solution x/y' part appears in record.id (and not just in record.description)
+                        input_file = os.path.abspath(mtgDir +"/"+ output + "..insertions.fasta")
+                        with open(insertion_file, "r") as original, open(input_file, "w") as corrected:
+                            records = SeqIO.parse(original, "fasta")
+                            for record in records:
+                                if "solution" in record.description:
+                                    record.id = record.id + "_sol_" + record.description.split (" ")[-1]
+                                else:
+                                    record.id = record.id + "_sol_1/1"
+                                SeqIO.write(record, corrected, "fasta")
 
                         #-------------------------------------------------------------------
                         # GFA output: case gap, solution found (=query), length(gap) known
@@ -357,16 +378,23 @@ try:
                         # Stats of the alignments query_seq vs reference_seq
                         #----------------------------------------------------
                         #Get the reference sequence file
-                        if args.refDir is not None:
+                        if args.refDir is not None or args.scaffs is not None:
                             print("\nStatistical analysis...")
-                            ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
-
+                            
+                            if args.refDir is not None:
+                                ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
+                            else:
+                                ref_file = scaffs_file
+                            
                             if not os.path.isfile(ref_file):
                                 print("Something wrong with the specified reference file. Exception-", sys.exc_info())
 
                             #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
                             else:
                                 stats_align(input_file, ref_file, str(gap_label), statsDir)
+
+                                #remove the 'input_file' once done with it
+                                subprocess.run(["rm", input_file])
 
                         if solution == True:
                             break
