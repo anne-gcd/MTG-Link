@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import sys
 import argparse
+import csv
 import re
 import subprocess
 import gfapy
@@ -340,64 +341,131 @@ try:
                                     record.id = record.id + "_sol_1/1"
                                 SeqIO.write(record, corrected, "fasta")
 
-                        #-------------------------------------------------------------------
-                        # GFA output: case gap, solution found (=query), length(gap) known
-                        #-------------------------------------------------------------------
-                        #If length(gap) provided, check that length(solution found) = length(gap) +/- 10% 
-                        if gap.length != 0:
-                            with open(input_file, "r") as query:
-                                for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
-                                    seq = record.seq
-                                    len_seq = len(seq) - 2*ext
-
-                                    if len_seq >= 0.85*gap.length and len_seq <= 1.15*gap.length:
-                                        solution = True
-                                        
-                                        #GFA output directory
-                                        os.chdir(outDir)
-                                        print("\nCreating or appending the output GFA file...")
-
-                                        output_gfa_with_solution(outDir, record, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
-
-                        else:
-                            solution = True
-
-                            #-------------------------------------------------------------------
-                            # GFA output: case gap, solution found (=query), length(gap) unknown
-                            #-------------------------------------------------------------------
-                            #GFA output directory
-                            os.chdir(outDir)
-                            print("\nCreating or appending the output GFA file...")
-
-                            with open(input_file, "r") as sol_file:
-                                for qry_record in SeqIO.parse(sol_file, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
-                                   output_gfa_with_solution(outDir, qry_record, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
-
-
                         #----------------------------------------------------
                         # Stats of the alignments query_seq vs reference_seq
                         #----------------------------------------------------
                         #Get the reference sequence file
                         if args.refDir is not None or args.scaffs is not None:
                             print("\nStatistical analysis...")
-                            
+
                             if args.refDir is not None:
                                 ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
                             else:
                                 ref_file = scaffs_file
-                            
+
                             if not os.path.isfile(ref_file):
                                 print("Something wrong with the specified reference file. Exception-", sys.exc_info())
 
                             #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
                             else:
-                                stats_align(input_file, ref_file, str(gap_label), statsDir)
+                                prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
+                                stats_align(input_file, ref_file, str(ext), prefix, statsDir)
 
-                                #remove the 'input_file' once done with it
-                                subprocess.run(["rm", input_file])
+                            #----------------------------------------------------
+                            # Estimate quality of gapfilled sequence
+                            #----------------------------------------------------
+                            #Reader for alignment stats' files
+                            ref_qry_output = open(statsDir + "/" + prefix + ".ref_qry.alignment.stats")
+                            qry_qry_output = open(statsDir + "/" + prefix + ".qry_qry.alignment.stats")
 
+                            reader_ext_stats = csv.DictReader(ref_qry_output, \
+                                                            fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                                                                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                                                            delimiter='\t')
+
+                            reader_revcomp_stats = csv.DictReader(qry_qry_output, \
+                                                                fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
+                                                                            "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
+                                                                delimiter='\t')
+                            
+                            #Obtain a quality score for each gapfilled seq
+                            insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
+                            with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
+                                for record in SeqIO.parse(query, "fasta"):
+
+                                    #quality score for stats about the extension
+                                    quality_ext_left = []
+                                    quality_ext_right = []
+                                    for row in reader_ext_stats:
+                                        if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
+                                            quality_ext_left.append(row["Quality"])
+                                        elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
+                                            quality_ext_right.append(row["Quality"])
+                                    if quality_ext_left == []:
+                                        quality_ext_left.append('D')
+                                    if quality_ext_right == []:
+                                        quality_ext_right.append('D')
+
+                                    ref_qry_output.seek(0)
+
+                                    #quality score for stats about the reverse complement strand
+                                    quality_revcomp = []
+                                    for row in reader_revcomp_stats:
+                                        if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
+                                            or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
+                                            quality_revcomp.append(row["Quality"])
+                                    if quality_revcomp == []:
+       	       	       	       	       	quality_revcomp.append('D')
+                                    qry_qry_output.seek(0)
+
+                                    #global quality score
+                                    quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
+                                    
+                                    record.description = "Quality " + str(quality_gapfilled_seq)
+                                    SeqIO.write(record, qualified, "fasta")
+
+                                    #If at least one good solution amongst all solution found, stop searching
+                                    if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
+                                        solution = True
+
+                                qualified.seek(0)
+
+                            #remove the 'input_file' once done with it
+                            subprocess.run(["rm", input_file])
+
+                            #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
+                            subprocess.run(["rm", insertion_file])
+                            subprocess.run(['mv', insertion_quality_file, insertion_file])
+
+
+                        #-------------------------------------------------------------------
+                        # GFA output: case gap, solution found (=query), length(gap) known
+                        #-------------------------------------------------------------------
+                        #If length(gap) provided, check that length(solution found) = length(gap) +/- 10% 
+                        if gap.length != 0 and solution == True:
+                            with open(insertion_file, "r") as query:
+                                for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
+                                    seq = record.seq
+                                    len_seq = len(seq) - 2*ext
+
+                                    if len_seq >= 0.85*gap.length and len_seq <= 1.15*gap.length:
+                                        solution = True
+
+                                        #Update GFA with only the good solutions (the ones having a good quality score)
+                                        if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
+                                            os.chdir(outDir)
+                                            print("\nCreating or appending the output GFA file...")
+                                            output_gfa_with_solution(outDir, record, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
+                                        
+                                        break
+
+                                    else:
+                                        solution = False
+      
+                        #-------------------------------------------------------------------
+                        # GFA output: case gap, solution found (=query), length(gap) unknown
+                        #-------------------------------------------------------------------
+                        #Update GFA with only the good solutions (the ones having a good quality score)
                         if solution == True:
+                            with open(insertion_file, "r") as query:
+                                for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
+                                    if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
+                                        os.chdir(outDir)
+                                        print("\nCreating or appending the output GFA file...")
+                                        output_gfa_with_solution(outDir, record, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
+                            
                             break
+
 
                     #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
                     else:

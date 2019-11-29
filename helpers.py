@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 import re
@@ -139,10 +140,10 @@ def mtg_fill(input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory
 # stats_align function
 #----------------------------------------------------
 #Function to do statistics on the alignment of a reference sequence and query sequences
-def stats_align(qry_file, ref_file, prefix, out_dir):
+def stats_align(qry_file, ref_file, ext, prefix, out_dir):
     scriptPath = sys.path[0]
     stats_align_command = os.path.join(scriptPath, "stats_alignment.py")
-    command = [stats_align_command, "-qry", qry_file, "-ref", ref_file, "-p", prefix, "-out", out_dir]
+    command = [stats_align_command, "-qry", qry_file, "-ref", ref_file, "-ext", ext, "-p", prefix, "-out", out_dir]
     statsLog = "{}_stats_align.log".format(datetime.now())
 
     with open(statsLog, "a") as log:

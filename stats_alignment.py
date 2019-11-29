@@ -9,6 +9,7 @@ import subprocess
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO, Align
+from Bio.Seq import Seq
 
 
 #PairwiseAligner object
@@ -25,15 +26,16 @@ aligner.target_end_extend_gap_score = -0.5
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry <query_sequences_file> -ref <reference_sequence> -p <output_file_prefix> [options]", \
+parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry <query_sequences_file> -ref <reference_sequence> -ext <extension_size> -p <output_file_prefix> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=(''' \
-                                Statistics of the alignment of the inserted sequence obtained from MindTheGap (-qry) and the simulated gap (-ref)
+                                Statistics about the inserted sequence obtained from MindTheGap (-qry)
                                 Note: there are kmer flanking regions on the edges of the inserted sequence
                                 '''))
 
 parser.add_argument("-qry", "--query", action="store", help="file containing the inserted sequences obtained from MindTheGap (format: 'xxx.insertions.fasta')", required=True)
 parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the simulated gap (format: 'xxx.ingap.fasta') OR file containing the sequences of the scaffolds (format: 'xxx.fasta')", required=True)
+parser.add_argument("-ext", "--ext", action="store", type=int, help="size of the gap, on both sides; determine start/end of gapfilling")
 parser.add_argument("-p", "--prefix", action="store", help="prefix of output file to save the statistical results", required=True)
 parser.add_argument("-out", "--outDir", action="store", default="./mtg10x_results/alignments_stats", help="output directory for saving results")
 
@@ -186,13 +188,16 @@ try:
     #-----------------------------------------------------------------------------
     # Statistics about the alignment if Ref = scaffolds' sequences
     #-----------------------------------------------------------------------------
-    else:
+    if re.match('^.*.fasta$', args.reference):
 
         #----------------------------------------------------
         # Alignment Ref vs Qry (extension vs scaffolds' seq)
         #----------------------------------------------------
         #Run NUCmer to obtain alignment of extension portions (-ext) against the scaffolds' sequences
-        id_ = qry_file.split('.')[-9]
+        qry_id = qry_file.split('.')[-9]
+        qry_k = qry_file.split('.')[-6]
+        qry_a = qry_file.split('.')[-5]
+        id_ = str(qry_id) + "." + str(qry_k) + "." + str(qry_a)
         prefix = id_ + ".ref_qry"
 
         nucmerLog = "{}_nucmer_ref_qry.log".format(id_)
@@ -205,12 +210,11 @@ try:
         with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
             subprocess.run(nucmer_command, stderr=log)
             subprocess.run(coords_command, stdout=coords, stderr=log)
-            print(subprocess.check_output(coords_command))
 
         #Output stats file of alignment query vs ref
         ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
         stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q"]
+                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
         #Get the gap size, chunk size, kmer size and abundance min values
         gap_size = qry_file.split('.')[-8]
@@ -219,10 +223,8 @@ try:
             g = "NA"
         chunk_size = qry_file.split('.')[-7]
         c = int("".join(list(chunk_size)[1:]))
-        kmer_size = qry_file.split('.')[-6]
-        k = int("".join(list(kmer_size)[1:]))
-        abundance_min = qry_file.split('.')[-5]
-        a = int("".join(list(abundance_min)[1:]))
+        k = int("".join(list(qry_k)[1:]))
+        a = int("".join(list(qry_a)[1:]))
 
         #Get output values from NUCmer:
         reader = csv.DictReader(open(coords_file), \
@@ -231,7 +233,7 @@ try:
 
         rows = list(reader)
         for row in rows[3:]:
-            if row["TAG_1"] in str(id_):
+            if row["TAG_1"] in str(qry_id):
 
                 len_q = row["LEN_Q"]
                 ref = row["TAG_1"]
@@ -253,10 +255,51 @@ try:
                     strand = "fwd"
                 else:
                     strand = "rev"
+
+                # Estimate quality of gapfilled sequence
+                left = str(qry_id).split('_')[0]
+                left_scaffold = left[:-1]
+                right = str(qry_id).split('_')[1]
+                right_scaffold = right[:-1]
+                error_10_perc = int(0.1 * args.ext)
+
+                #ref = Left scaffold
+                if ref == left_scaffold:
+                    #extension of qry match perfectly as expected to ref
+                    if (('+' in left and int(start_r) == (int(len_r) - args.ext + 1) and int(end_r) == int(len_r)) and ((strand == "fwd" and int(start_q) == 1 and int(end_q) == args.ext) or (strand == "rev" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext + 1)))) \
+                        or (('-' in left and int(start_r) == 1 and int(end_r) == args.ext) and ((strand == "fwd" and int(start_q) == args.ext and int(end_q) == 1) or (strand == "rev" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)))):
+                        quality_rq = 'A'
+                    #extension of qry almost match as expected to ref (+-10% of extension size) 
+                    elif (('+' in left and int(start_r) in range((int(len_r)-args.ext+1 - error_10_perc), (int(len_r)-args.ext+1 + error_10_perc+1)) and int(end_r) in range((int(len_r) - error_10_perc), (int(len_r)+1))) and ((strand == "fwd" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))))) \
+                        or (('-' in left and int(start_r) in range(1, (1 + error_10_perc+1)) and int(end_r) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) and ((strand == "fwd" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))))):
+                        quality_rq = 'B'
+                    #extension of qry almost match (+-ext) as expected to ref
+                    elif (('+' in left and int(start_r) >= (int(len_r) - args.ext + 1)) and ((strand == "fwd" and int(end_q) <= 2*args.ext) or (strand == "rev" and int(end_q) >= (int(len_q) - 2*args.ext)))) \
+                        or (('-' in left and int(end_r) <= args.ext) and ((strand == "fwd" and int(start_q) <= 2*args.ext) or (strand == "rev" and int(start_q) >= (int(len_q) - 2*args.ext)))):
+                        quality_rq = 'C'
+                    else:
+                        quality_rq = 'D'
+
+                #ref = Right scaffold
+                elif ref == right_scaffold:
+                    #extension of qry match perfectly as expected to ref
+                    if (('+' in right and int(start_r) == 1 and int(end_r) == args.ext) and ((strand == "fwd" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)) or (strand == "rev" and int(start_q) == args.ext and int(end_q) == 1))) \
+                        or (('-' in right and int(start_r) == (int(len_r) - args.ext + 1) and int(end_r) == int(len_r)) and ((strand == "fwd" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext +1)) or (strand == "rev" and int(start_q) == 1 and int(end_q) == args.ext))):
+                        quality_rq = 'A'
+                    #extension of qry almost match as expected to ref (+-10% of extension size) 
+                    elif (('+' in right and int(start_r) in range(1, (1 + error_10_perc+1)) and int(end_r) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) and ((strand == "fwd" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))) or (strand == "rev" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))))) \
+                        or (('-' in right and int(start_r) in range((int(len_r)-args.ext+1 - error_10_perc), (int(len_r)-args.ext+1 + error_10_perc+1)) and int(end_r) in range((int(len_r) - error_10_perc), (int(len_r)+1))) and ((strand == "fwd" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))))):
+                        quality_rq = 'B'
+                    #extension of qry almost match (+-ext) as expected to ref
+                    elif (('+' in right and int(end_r) <= args.ext) and ((strand == "fwd" and int(start_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(start_q) <= 2*args.ext))) \
+                        or (('-' in right and int(start_r) >= (int(len_r) - args.ext + 1)) and ((strand == "fwd" and int(end_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(end_q) <= 2*args.ext))):
+                        quality_rq = 'C'
+                    else:
+                        quality_rq = 'D'
                 
                 #Write stats results in output file
-                stats = [id_, g, c, k, a, strand, solution, len_q, ref, len_r, \
-                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q]
+                stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
+                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                 if os.path.exists(ref_qry_output):
                     with open(ref_qry_output, "a") as output:
@@ -266,14 +309,15 @@ try:
                         output.write('\t'.join(j for j in stats_legend))
                         output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
+
         #----------------------------------------------------
-        # Alignment Qry vs Qry (fwd vs ref)
+        # Alignment Qry vs Qry (fwd vs rev)
         #----------------------------------------------------
         #Run NUCmer to obtain alignment of fwd strand solution against rev strand solution
         prefix_qry = id_ + ".qry_qry"
         nucmerLog_qry = "{}_nucmer_qry_qry.log".format(id_)
         delta_file_qry = prefix_qry + ".delta"
-        coords_file_qry = prefix_qry + ".coords"
+        coords_file_qry = prefix_qry + ".coords"          
 
         nucmer_command_qry = ["nucmer", "-p", prefix_qry, qry_file, qry_file]
         coords_command_qry = ["show-coords", "-rcdlT", delta_file_qry]
@@ -281,12 +325,11 @@ try:
         with open(coords_file_qry, "w") as coords_qry, open(nucmerLog_qry, "a") as log:
             subprocess.run(nucmer_command_qry, stderr=log)
             subprocess.run(coords_command_qry, stdout=coords_qry, stderr=log)
-            print(subprocess.check_output(coords_command_qry))
 
         #Output stats file of alignment query vs ref
         qry_qry_output = outDir + "/" + args.prefix + ".qry_qry.alignment.stats"
         stats_legend_qry = ["Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
-                            "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2"]
+                            "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"]
 
         #Get output values from NUCmer:
         reader_qry = csv.DictReader(open(coords_file_qry), \
@@ -323,9 +366,32 @@ try:
             solution_1 = strand_q1 + str(row["TAG_1"]).split('_sol_')[1]
             solution_2 = strand_q2 + str(row["TAG_2"]).split('_sol_')[1]
 
+            # Estimate quality of gapfilled sequence (only for fwd vs rc_rev)
+            if solution_1 != solution_2:
+                
+                #lengths of both sequences are equal +-10%
+                if int(len_q1) in range((int(len_q2) - int(0.1*int(len_q2))), (int(len_q2) + int(0.1*int(len_q2)))):
+                    #both sequences match to each other along all their length
+                    if int(len_align_q1) == int(len_q1) and int(len_align_q2) == int(len_q2):
+                        quality_qq = 'A'
+                    #one sequence match to the other along all its length or both sequences match to each other along their length +-10%
+                    elif (int(len_align_q1) == int(len_q1) or int(len_align_q2) == int(len_q2)) or (int(len_align_q1) in range((int(len_q1) - int(0.1*int(len_q1))), (int(len_q1) + int(0.1*int(len_q1)))) or (int(len_align_q2) in range((int(len_q2) - int(0.1*int(len_q2))), (int(len_q2) + int(0.1*int(len_q2)))))):
+                        quality_qq = 'B'
+                    #both sequences match to each other, but not along all their length (>= 50% of their length align)
+                    elif int(len_align_q1) >= int(0.5*int(len_q1)) and int(len_align_q2) >= int(0.5*int(len_q2)):
+                        quality_qq = 'C'
+                    else:
+                        quality_qq = 'D'
+                #lengths of both sequences are not equal +-10%
+                else:
+                    quality_qq = 'D'
+
+            else:
+                quality_qq = 'D'
+
             #Write stats results in output file
-            stats_qry = [id_, g, c, k, a, solution_1, len_q1, solution_2, len_q2, \
-                        start_q1, end_q1, start_q2, end_q2, len_align_q1, len_align_q2, identity, cov_q1, cov_q2, frame_q1, frame_q2]
+            stats_qry = [qry_id, g, c, k, a, solution_1, len_q1, solution_2, len_q2, \
+                        start_q1, end_q1, start_q2, end_q2, len_align_q1, len_align_q2, identity, cov_q1, cov_q2, frame_q1, frame_q2, quality_qq]
 
             if os.path.exists(qry_qry_output):
                 with open(qry_qry_output, "a") as output_qry:
