@@ -456,7 +456,7 @@ try:
                         # GFA output: case gap, solution found (=query), length(gap) unknown
                         #-------------------------------------------------------------------
                         #Update GFA with only the good solutions (the ones having a good quality score)
-                        if solution == True:
+                        elif solution == True:
                             with open(insertion_file, "r") as query:
                                 for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
                                     if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):

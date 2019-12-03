@@ -183,14 +183,11 @@ def get_position_for_edges(orient1, orient2, length1, length2, k):
 def output_gfa_with_solution(outDir, record, k, s1, s2, left_scaffold, right_scaffold, gfa_name, gfa_output_file):
     seq = record.seq
     length_seq = len(seq)
-    sol_name = ".k" + str(k)
+    sol_name = record.id.split("_")[-1] + ".k" + str(k)
     orient = "+"
 
     if "bkpt2" in str(record.id):
         orient = "-"
-    if "solution" in record.description:
-        sol_name = record.description.split(" ")[-1] + sol_name
-
 
     sol_name = str(s1) +":"+ str(s2) + "_gf" + sol_name + orient
 
