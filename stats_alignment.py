@@ -401,6 +401,80 @@ try:
                     output_qry.write('\t'.join(j for j in stats_legend_qry))
                     output_qry.write('\n'+'\n' + '\t'.join(str(i) for i in stats_qry))
 
+        #If alignment in multiple chunks, calculate the appropriate quality score
+        with open(qry_qry_output, "r") as f:
+            f.seek(0)
+            reader = csv.DictReader(f, fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
+                                    "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
+                                    delimiter='\t')
+
+            rows = list(reader)
+            lack_Q1 = 0
+            lack_Q2 = 0
+            for i in range(1, len(rows_qry)):
+                if ("fwd" in rows[i]["Solution1"]) and ("rev" in rows[i]["Solution2"]):
+
+                    qry_id = rows[i]["Gap"]
+                    g = rows[i]["Len_gap"]
+                    c = rows[i]["Chunk"]
+                    k = rows[i]["k"]
+                    a = rows[i]["a"]
+                    solution1 = rows[i]["Solution1"]
+                    solution2 = rows[i]["Solution2"]
+                    len_Q1 = int(rows[i]["Len_Q1"])
+                    len_Q2 = int(rows[i]["Len_Q2"])
+                    frame_Q1 = rows[i]["Frame_Q1"]
+                    frame_Q2 = rows[i]["Frame_Q2"]
+
+                    if (solution1 != rows[i-1]["Solution1"]) or (solution2 != rows[i-1]["Solution2"]):
+                        start_Q1 = int(rows[i]["Start_Q1"])
+                        end_Q2 = int(rows[i]["Start_Q2"])
+                        lack_Q1 += (start_Q1 - 1)
+                        lack_Q2 += (len_Q2 - end_Q2)
+
+                    if (solution1 == rows[i-1]["Solution1"]) and (solution2 == rows[i-1]["Solution2"]):
+                        if int(rows[i]["Start_Q1"]) > int(rows[i-1]["End_Q1"]):
+                            lack_Q1 += (int(rows[i]["Start_Q1"]) - int(rows[i-1]["End_Q1"]))
+
+                        if int(rows[i]["Start_Q2"]) < int(rows[i-1]["End_Q2"]):
+                            lack_Q2 += (int(rows[i-1]["End_Q2"]) - int(rows[i]["Start_Q2"]))
+
+                    if (solution1 != rows[i+1]["Solution1"]) or (solution2 != rows[i+1]["Solution2"]):
+                        end_Q1 = int(rows[i]["End_Q1"])
+                        start_Q2 = int(rows[i]["End_Q2"])
+                        lack_Q1 += (len_Q1 - end_Q1)
+                        lack_Q2 += (start_Q2 - 1)
+
+                elif ("fwd" in rows[i-1]["Solution1"]) and ("rev" in rows[i-1]["Solution2"]):
+                    break
+
+            len_align_Q1 = len_Q1 - lack_Q1
+            len_align_Q2 = len_Q2 - lack_Q2
+
+            identity = "/"
+            cov_Q1 = "/"
+            cov_Q2 = "/"
+
+            #Assign a quality score
+            #both sequences match to each other along all their length
+            if len_align_Q1 == len_Q1 and len_align_Q2 == len_Q2:
+                quality_qq = 'A'
+            #one sequence match to the other along all its length or both sequences match to each other along their length +-10%
+            elif (len_align_Q1 == len_Q1 or len_align_Q2 == len_Q2) or (len_align_Q1 in range((len_Q1 - int(0.1*len_Q1)), (len_Q1 + int(0.1*len_Q1))) or len_align_Q2 in range((len_Q2 - int(0.1*len_Q2)), (len_Q2 + int(0.1*len_Q2)))):
+                quality_qq = 'B'
+            #both sequences match to each other, but not along all their length (>= 50% of their length align)
+            elif len_align_Q1 >= int(0.5*len_Q1) and len_align_Q2 >= int(0.5*len_Q2):
+                quality_qq = 'C'
+            else:
+                quality_qq = 'D'
+
+            #Write stats results in output file
+            stats_qry = [qry_id, g, c, k, a, solution1, len_Q1, solution2, len_Q2, \
+                        start_Q1, end_Q1, start_Q2, end_Q2, len_align_Q1, len_align_Q2, identity, cov_Q1, cov_Q2, frame_Q1, frame_Q2, quality_qq]
+
+            with open(qry_qry_output, "a") as output_qry:
+                output_qry.write('\n' + '\t'.join(str(i) for i in stats_qry))
+                
 
 except Exception as e:
     print("\nException-")
