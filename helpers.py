@@ -129,7 +129,7 @@ def mtg_fill(input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory
         output = subprocess.check_output(command)
 
     #remove the raw files obtained from MindTheGap
-    subprocess.run("rm -f *.h5", shell=True)
+    # subprocess.run("rm -f *.h5", shell=True)
     if os.path.getsize(mtgfillLog) <= 0:
         subprocess.run(["rm", mtgfillLog])
 
@@ -150,6 +150,8 @@ def stats_align(qry_file, ref_file, ext, prefix, out_dir):
         subprocess.run(command, stderr=log)
 
     #remove the raw file obtained from statistics
+    subprocess.run("rm -f *.delta", shell=True)
+    subprocess.run("rm -f *.unsorted", shell=True)
     if os.path.getsize(statsLog) <= 0:
         subprocess.run(["rm", statsLog])
 

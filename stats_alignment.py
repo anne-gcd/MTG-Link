@@ -317,22 +317,28 @@ try:
         prefix_qry = id_ + ".qry_qry"
         nucmerLog_qry = "{}_nucmer_qry_qry.log".format(id_)
         delta_file_qry = prefix_qry + ".delta"
-        coords_file_qry = prefix_qry + ".coords"          
+        coords_file_qry = prefix_qry + ".coords.unsorted"          
 
-        nucmer_command_qry = ["nucmer", "-p", prefix_qry, qry_file, qry_file]
+        nucmer_command_qry = ["nucmer", "--maxmatch", "-r", "-p", prefix_qry, qry_file, qry_file]
         coords_command_qry = ["show-coords", "-rcdlT", delta_file_qry]
 
         with open(coords_file_qry, "w") as coords_qry, open(nucmerLog_qry, "a") as log:
             subprocess.run(nucmer_command_qry, stderr=log)
             subprocess.run(coords_command_qry, stdout=coords_qry, stderr=log)
+        
+        #Sort the 'xxx.coords.unsorted' file for further analysis
+        coords_qry_sorted_file = prefix_qry + ".coords"
+        sort_command_qry = ["sort", "-n", coords_file_qry]
+        with open(coords_qry_sorted_file, "w") as coords_qry_sorted:
+            subprocess.run(sort_command_qry, stdout=coords_qry_sorted)
 
         #Output stats file of alignment query vs ref
-        qry_qry_output = outDir + "/" + args.prefix + ".qry_qry.alignment.stats"
+        qry_qry_output = outDir + "/" + args.prefix + ".qry_qry.alignment.stats.unsorted"
         stats_legend_qry = ["Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
                             "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"]
 
         #Get output values from NUCmer:
-        reader_qry = csv.DictReader(open(coords_file_qry), \
+        reader_qry = csv.DictReader(open(coords_qry_sorted_file), \
                                     fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
                                     delimiter='\t')
 
@@ -401,8 +407,14 @@ try:
                     output_qry.write('\t'.join(j for j in stats_legend_qry))
                     output_qry.write('\n'+'\n' + '\t'.join(str(i) for i in stats_qry))
 
+        #sort the 'xxx.align;ent.stats.unsorted' file for further analysis
+        qry_qry_sorted = outDir + "/" + args.prefix + ".qry_qry.alignment.stats"
+        order_command_qry = ["sort", "-n", qry_qry_output]
+        with open(qry_qry_sorted, "w") as f_sorted:
+            subprocess.run(order_command_qry, stdout=f_sorted)
+
         #If alignment in multiple chunks, calculate the appropriate quality score
-        with open(qry_qry_output, "r") as f:
+        with open(qry_qry_sorted, "r") as f:
             f.seek(0)
             reader = csv.DictReader(f, fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
                                     "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
@@ -472,7 +484,7 @@ try:
             stats_qry = [qry_id, g, c, k, a, solution1, len_Q1, solution2, len_Q2, \
                         start_Q1, end_Q1, start_Q2, end_Q2, len_align_Q1, len_align_Q2, identity, cov_Q1, cov_Q2, frame_Q1, frame_Q2, quality_qq]
 
-            with open(qry_qry_output, "a") as output_qry:
+            with open(qry_qry_sorted, "a") as output_qry:
                 output_qry.write('\n' + '\t'.join(str(i) for i in stats_qry))
                 
 
