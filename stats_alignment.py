@@ -309,7 +309,6 @@ try:
                         output.write('\t'.join(j for j in stats_legend))
                         output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
-
         #----------------------------------------------------
         # Alignment Qry vs Qry (fwd vs rev)
         #----------------------------------------------------

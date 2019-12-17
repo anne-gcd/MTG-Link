@@ -9,7 +9,7 @@ import subprocess
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO, Align
-from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align, get_position_for_edges, output_gfa_with_solution
+from helpers_bx import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align, get_position_for_edges, output_gfa_with_solution
 
 
 #----------------------------------------------------
@@ -103,9 +103,7 @@ if not os.path.exists(reads_file):
 print("File of indexed reads: " + reads_file)
 
 index_file = os.path.abspath(args.index)
-if not os.path.exists(index_file):
-    parser.error("The path of the barcodes index file doesn't exist")
-print("Barcodes index file: " + index_file)
+print("Barcodes index file (prefix): " + index_file)
 
 if args.refDir is not None:
     refDir = os.path.abspath(args.refDir)
@@ -377,7 +375,7 @@ try:
                                                                 fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
                                                                             "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
                                                                 delimiter='\t')
-
+                            
                             #Obtain a quality score for each gapfilled seq
                             insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
                             with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
