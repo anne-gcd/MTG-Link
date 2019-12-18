@@ -363,67 +363,74 @@ try:
                             # Estimate quality of gapfilled sequence
                             #----------------------------------------------------
                             #Reader for alignment stats' files
-                            ref_qry_output = open(statsDir + "/" + prefix + ".ref_qry.alignment.stats")
-                            qry_qry_output = open(statsDir + "/" + prefix + ".qry_qry.alignment.stats")
+                            ref_qry_file = statsDir + "/" + prefix + ".ref_qry.alignment.stats"
+                            qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
-                            reader_ext_stats = csv.DictReader(ref_qry_output, \
-                                                            fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                                                                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
-                                                            delimiter='\t')
+                            if not os.path.exists(ref_qry_file) or not os.path.exists(qry_qry_file):
+                                solution = False
 
-                            reader_revcomp_stats = csv.DictReader(qry_qry_output, \
-                                                                fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
-                                                                            "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
+                            else:
+                                ref_qry_output = open(ref_qry_file)
+                                qry_qry_output = open(qry_qry_file)
+
+                                reader_ext_stats = csv.DictReader(ref_qry_output, \
+                                                                fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                                                                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
                                                                 delimiter='\t')
-                            
-                            #Obtain a quality score for each gapfilled seq
-                            insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
-                            with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
-                                for record in SeqIO.parse(query, "fasta"):
 
-                                    #quality score for stats about the extension
-                                    quality_ext_left = []
-                                    quality_ext_right = []
-                                    for row in reader_ext_stats:
-                                        if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
-                                            quality_ext_left.append(row["Quality"])
-                                        elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
-                                            quality_ext_right.append(row["Quality"])
-                                    if quality_ext_left == []:
-                                        quality_ext_left.append('D')
-                                    if quality_ext_right == []:
-                                        quality_ext_right.append('D')
+                                reader_revcomp_stats = csv.DictReader(qry_qry_output, \
+                                                                    fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
+                                                                                "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
+                                                                    delimiter='\t')
+                                
+                                #Obtain a quality score for each gapfilled seq
+                                insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
+                                with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
+                                    for record in SeqIO.parse(query, "fasta"):
 
-                                    ref_qry_output.seek(0)
+                                        #quality score for stats about the extension
+                                        quality_ext_left = []
+                                        quality_ext_right = []
+                                        for row in reader_ext_stats:
+                                            if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
+                                                quality_ext_left.append(row["Quality"])
+                                            elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
+                                                quality_ext_right.append(row["Quality"])
+                                        if quality_ext_left == []:
+                                            quality_ext_left.append('D')
+                                        if quality_ext_right == []:
+                                            quality_ext_right.append('D')
 
-                                    #quality score for stats about the reverse complement strand
-                                    quality_revcomp = []
-                                    for row in reader_revcomp_stats:
-                                        if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
-                                            or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
-                                            quality_revcomp.append(row["Quality"])
-                                    if quality_revcomp == []:
-                                        quality_revcomp.append('D')
-                                    qry_qry_output.seek(0)
+                                        ref_qry_output.seek(0)
 
-                                    #global quality score
-                                    quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
-                                    
-                                    record.description = "Quality " + str(quality_gapfilled_seq)
-                                    SeqIO.write(record, qualified, "fasta")
+                                        #quality score for stats about the reverse complement strand
+                                        quality_revcomp = []
+                                        for row in reader_revcomp_stats:
+                                            if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
+                                                or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
+                                                quality_revcomp.append(row["Quality"])
+                                        if quality_revcomp == []:
+                                            quality_revcomp.append('D')
+                                        qry_qry_output.seek(0)
 
-                                    #If at least one good solution amongst all solution found, stop searching
-                                    if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
-                                        solution = True
+                                        #global quality score
+                                        quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
+                                        
+                                        record.description = "Quality " + str(quality_gapfilled_seq)
+                                        SeqIO.write(record, qualified, "fasta")
 
-                                qualified.seek(0)
+                                        #If at least one good solution amongst all solution found, stop searching
+                                        if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
+                                            solution = True
 
-                            #remove the 'input_file' once done with it
-                            subprocess.run(["rm", input_file])
+                                    qualified.seek(0)
 
-                            #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
-                            subprocess.run(["rm", insertion_file])
-                            subprocess.run(['mv', insertion_quality_file, insertion_file])
+                                #remove the 'input_file' once done with it
+                                subprocess.run(["rm", input_file])
+
+                                #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
+                                subprocess.run(["rm", insertion_file])
+                                subprocess.run(['mv', insertion_quality_file, insertion_file])
 
 
                         #-------------------------------------------------------------------
