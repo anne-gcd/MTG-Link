@@ -452,7 +452,7 @@ try:
                                         if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
                                             os.chdir(outDir)
                                             print("\nCreating or appending the output GFA file...")
-                                            output_gfa_with_solution(outDir, record, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
+                                            output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
                                         
                                         break
 
@@ -469,7 +469,7 @@ try:
                                     if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
                                         os.chdir(outDir)
                                         print("\nCreating or appending the output GFA file...")
-                                        output_gfa_with_solution(outDir, record, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
+                                        output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
                             
                             break
 

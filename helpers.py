@@ -159,19 +159,19 @@ def stats_align(qry_file, ref_file, ext, prefix, out_dir):
 #----------------------------------------------------
 # get_position_for_edges function
 #----------------------------------------------------
-def get_position_for_edges(orient1, orient2, length1, length2, k):
+def get_position_for_edges(orient1, orient2, length1, length2, ext, k):
     #Same orientation
     if orient1 == orient2:
-        beg1 = str(length1 - 2*k)
+        beg1 = str(length1 - ext - k)
         end1 = str(length1) + "$"  
         beg2 = str(0)
-        end2 = str(2*k)
+        end2 = str(ext + k)
 
     #Opposite orientation
     elif orient1 != orient2:
-        beg1 = str(length1 - 2*k)
+        beg1 = str(length1 - ext - k)
         end1 = str(length1) + "$"
-        beg2 = str(length2 - 2*k)
+        beg2 = str(length2 - ext - k)
         end2 = str(length2) + "$"
 
     positions = [beg1, end1, beg2, end2]
@@ -182,7 +182,7 @@ def get_position_for_edges(orient1, orient2, length1, length2, k):
 # output_gfa_with_solution function
 #----------------------------------------------------
 #Function to update the GFA when a solution is found for a gap
-def output_gfa_with_solution(outDir, record, k, s1, s2, left_scaffold, right_scaffold, gfa_name, gfa_output_file):
+def output_gfa_with_solution(outDir, record, ext, k, s1, s2, left_scaffold, right_scaffold, gfa_name, gfa_output_file):
     seq = record.seq
     length_seq = len(seq)
     sol_name = record.id.split("_")[-1] + ".k" + str(k)
@@ -218,9 +218,9 @@ def output_gfa_with_solution(outDir, record, k, s1, s2, left_scaffold, right_sca
             out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(sol_name, length_seq, os.path.join(outDir, gapfill_file)))
 
             #Write the two corresponding E lines into GFA output
-            pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, length_seq, k)
+            pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, length_seq, ext, k)
             out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, sol_name, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
-            pos_2 = get_position_for_edges(orient, right_scaffold.orient, length_seq, right_scaffold.len, k)
+            pos_2 = get_position_for_edges(orient, right_scaffold.orient, length_seq, right_scaffold.len, ext, k)
             out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(sol_name, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
 
             out_gfa.to_file(gfa_output_file)
