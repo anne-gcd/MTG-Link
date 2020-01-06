@@ -158,20 +158,38 @@ def stats_align(qry_file, ref_file, ext, prefix, out_dir):
 #----------------------------------------------------
 # get_position_for_edges function
 #----------------------------------------------------
-def get_position_for_edges(orient1, orient2, length1, length2, ext, k):
+def get_position_for_edges(orient1, orient2, length1, length2, ext):
     #Same orientation
     if orient1 == orient2:
-        beg1 = str(length1 - ext - k)
-        end1 = str(length1) + "$"  
-        beg2 = str(0)
-        end2 = str(ext + k)
+
+        #forward orientations
+        if orient1 == "+":
+            beg1 = str(length1 - ext)
+            end1 = str(length1) + "$"  
+            beg2 = str(1)
+            end2 = str(ext)
+
+        #reverse orientations
+        elif orient1 == "-":
+            beg1 = str(1)
+            end1 = str(ext)
+            beg2 = str(length2 - ext)
+            end2 = str(length2) + "$"
 
     #Opposite orientation
     elif orient1 != orient2:
-        beg1 = str(length1 - ext - k)
+
+        #first seq in fwd orientation and second seq in rev orientation
+        beg1 = str(length1 - ext)
         end1 = str(length1) + "$"
-        beg2 = str(length2 - ext - k)
+        beg2 = str(length2 - ext)
         end2 = str(length2) + "$"
+
+        #first seq in rev orientation and first seq in fwd orientation
+        beg1 = str(1)
+        end1 = str(ext)
+        beg2 = str(ext)
+        end2 = str(1)
 
     positions = [beg1, end1, beg2, end2]
     return positions
@@ -185,12 +203,15 @@ def output_gfa_with_solution(outDir, record, ext, k, s1, s2, left_scaffold, righ
     seq = record.seq
     length_seq = len(seq)
     sol_name = record.id.split("_")[-1] + ".k" + str(k)
-    orient = "+"
+    orient_sign = "+"
+    orient = "fwd"
 
     if "bkpt2" in str(record.id):
-        orient = "-"
+        orient_sign = "-"
+        orient = "rev"
 
     sol_name = str(s1) +":"+ str(s2) + "_gf" + sol_name + orient
+    solution = sol_name + orient_sign
 
     #Save the found seq to a file containing all gapfill seq
     gapfill_file = gfa_name + ".gapfill_seq.fasta"
@@ -200,8 +221,8 @@ def output_gfa_with_solution(outDir, record, ext, k, s1, s2, left_scaffold, righ
         seq_fasta.write("\n" + str(seq) + "\n")
 
     with open(gfa_output_file, "a") as f:
-        if length_seq < 2*k:
-            print("Query length is too short (<2*k): overlap of source and destination read")
+        if length_seq < 2*ext:
+            print("Query length is too short (<2*ext): overlap of source and destination read")
             print("Rewriting the gap line to the GFA output file...")
 
             #Rewrite the current G line into GFA output
@@ -217,9 +238,9 @@ def output_gfa_with_solution(outDir, record, ext, k, s1, s2, left_scaffold, righ
             out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(sol_name, length_seq, os.path.join(outDir, gapfill_file)))
 
             #Write the two corresponding E lines into GFA output
-            pos_1 = get_position_for_edges(left_scaffold.orient, orient, left_scaffold.len, length_seq, ext, k)
-            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, sol_name, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
-            pos_2 = get_position_for_edges(orient, right_scaffold.orient, length_seq, right_scaffold.len, ext, k)
-            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(sol_name, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+            pos_1 = get_position_for_edges(left_scaffold.orient, orient_sign, left_scaffold.len, length_seq, ext)
+            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, solution, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+            pos_2 = get_position_for_edges(orient_sign, right_scaffold.orient, length_seq, right_scaffold.len, ext)
+            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(solution, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
 
             out_gfa.to_file(gfa_output_file)
