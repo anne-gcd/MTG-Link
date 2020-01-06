@@ -485,7 +485,14 @@ try:
 
             with open(qry_qry_sorted, "a") as output_qry:
                 output_qry.write('\n' + '\t'.join(str(i) for i in stats_qry))
-                
+
+
+        #Remove the raw file obtained from statistics ('.delta', '.coords', '.unsorted' files)
+        subprocess.run(["rm", delta_file])
+        subprocess.run(["rm", delta_file_qry])
+        subprocess.run(["rm", coords_file])
+        subprocess.run(["rm", coords_file_qry])
+
 
 except Exception as e:
     print("\nException-")
