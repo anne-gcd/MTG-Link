@@ -184,323 +184,316 @@ try:
 
         #If chunk size larger than length of scaffold(s), abort tentative of gapfilling for this scaffold
         if args.chunk > left_scaffold.len or args.chunk > right_scaffold.len:
-            print("The chunk size was not smaller than the length of the scaffolds: tentative of gapfilling aborted\n")
+            args.chunk = min(left_scaffold.len, right_scaffold.len)
+            print("The chunk size was not smaller than the length of the scaffolds: it was set to the minimal scaffold length\n")
 
-            #Rewrite the current G line into GFA output
-            with open(out_gfa_file, "a") as f:
-                out_gfa = gfapy.Gfa.from_file(out_gfa_file)
-                out_gfa.add_line(str(current_gap))
-                out_gfa.to_file(out_gfa_file)
-            continue
+        #Save current G line into a temporary file
+        with open("tmp.gap", "w") as tmp_gap:
+            tmp_gap.write(str(current_gap))
+            tmp_gap.seek(0)
 
-        else:
-            #Save current G line into a temporary file
-            with open("tmp.gap", "w") as tmp_gap:
-                tmp_gap.write(str(current_gap))
-                tmp_gap.seek(0)
-
-            #----------------------------------------------------
-            # BamExtractor
-            #----------------------------------------------------
-            #Initiate a dictionary to count the occurences of each barcode
-            barcodes_occ = {}
-            
-            #Obtain the left barcodes and store the elements in a set
-            left_region = left_scaffold.chunk(args.chunk)
-            left_barcodes_file = "{}{}.c{}.left.barcodes".format(left_scaffold.name, left_scaffold.orient, args.chunk)
-
-            print("Barcodes from left chunk ({}): {}".format(left_region, left_barcodes_file))
-            with open(left_barcodes_file, "w+") as left_barcodes:
-                extract_barcodes(bam_file, left_region, left_barcodes, barcodes_occ)
-                left_barcodes.seek(0)
-                left = set(left_barcodes.read().splitlines())
+        #----------------------------------------------------
+        # BamExtractor
+        #----------------------------------------------------
+        #Initiate a dictionary to count the occurences of each barcode
+        barcodes_occ = {}
         
-            #Obtain the right barcodes and store the elements in a set
-            right_region = right_scaffold.chunk(args.chunk)
-            right_barcodes_file = "{}{}.c{}.right.barcodes".format(right_scaffold.name, right_scaffold.orient, args.chunk)
+        #Obtain the left barcodes and store the elements in a set
+        left_region = left_scaffold.chunk(args.chunk)
+        left_barcodes_file = "{}{}.c{}.left.barcodes".format(left_scaffold.name, left_scaffold.orient, args.chunk)
 
-            print("Barcodes from right chunk ({}): {}".format(right_region, right_barcodes_file))
-            with open(right_barcodes_file, "w+") as right_barcodes:
-                extract_barcodes(bam_file, right_region, right_barcodes, barcodes_occ)
-                right_barcodes.seek(0)
-                right = set(right_barcodes.read().splitlines())
+        print("Barcodes from left chunk ({}): {}".format(left_region, left_barcodes_file))
+        with open(left_barcodes_file, "w+") as left_barcodes:
+            extract_barcodes(bam_file, left_region, left_barcodes, barcodes_occ)
+            left_barcodes.seek(0)
+            left = set(left_barcodes.read().splitlines())
+    
+        #Obtain the right barcodes and store the elements in a set
+        right_region = right_scaffold.chunk(args.chunk)
+        right_barcodes_file = "{}{}.c{}.right.barcodes".format(right_scaffold.name, right_scaffold.orient, args.chunk)
 
-            #Calculate the union 
-            union_barcodes_file = "{}.{}.g{}.c{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk)
-            print("Barcodes from the union (all barcodes): " + union_barcodes_file)
-            with open(union_barcodes_file, "w") as union_barcodes:
-                union = left | right
-                #filter barcodes by freq
-                for (barcode, occurences) in barcodes_occ.items():
-                    if occurences >= args.freq:
-                        union_barcodes.write(barcode + "\n")
+        print("Barcodes from right chunk ({}): {}".format(right_region, right_barcodes_file))
+        with open(right_barcodes_file, "w+") as right_barcodes:
+            extract_barcodes(bam_file, right_region, right_barcodes, barcodes_occ)
+            right_barcodes.seek(0)
+            right = set(right_barcodes.read().splitlines())
+
+        #Calculate the union 
+        union_barcodes_file = "{}.{}.g{}.c{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk)
+        print("Barcodes from the union (all barcodes): " + union_barcodes_file)
+        with open(union_barcodes_file, "w") as union_barcodes:
+            union = left | right
+            #filter barcodes by freq
+            for (barcode, occurences) in barcodes_occ.items():
+                if occurences >= args.freq:
+                    union_barcodes.write(barcode + "\n")
+        
+        #----------------------------------------------------
+        # GetReads
+        #----------------------------------------------------
+        #Union: extract the reads associated with the barcodes
+        union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
+        print("Extracting reads associated with the barcodes from union: " + union_reads_file)
+        with open(union_reads_file, "w") as union_reads:
+            get_reads(reads_file, index_file, union_barcodes_file, union_reads)
+
+        #----------------------------------------------------
+        # Summary of union (barcodes and reads)
+        #----------------------------------------------------
+        bxu = sum(1 for line in open(union_barcodes_file, "r"))
+        rbxu = sum(1 for line in open(union_reads_file, "r"))/4
+        union_summary = [gap.id, gap.left, gap.right, gap.length, args.chunk, bxu, rbxu]
+        
+        if os.path.exists(outDir + "/{}.union.sum".format(gfa_name)):
+            with open("{}.union.sum".format(gfa_name), "a") as union_sum:
+                union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+        else:
+            with open("{}.union.sum".format(gfa_name), "a") as union_sum:
+                legend = ["Gap ID", "Left scaffold", "Right scaffold", "Gap size", "Chunk size", "Nb barcodes", "Nb reads"]
+                union_sum.write('\t'.join(j for j in legend))
+                union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+
+        #Remove the barcodes files
+        subprocess.run(["rm", left_barcodes_file])
+        subprocess.run(["rm", right_barcodes_file])
+        subprocess.run(["rm", union_barcodes_file])
+
+        #----------------------------------------------------
+        # MindTheGap pipeline
+        #----------------------------------------------------
+        #Directory for saving the results from MindTheGap
+        if not os.path.exists(outDir + "/mtg_results"):
+            os.mkdir(outDir + "/mtg_results")
+        try:
+            os.chdir(outDir + "/mtg_results")
+        except:
+            print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
+            print("Restoring the path")
+            os.chdir(outDir)
+        mtgDir = os.getcwd()
             
-            #----------------------------------------------------
-            # GetReads
-            #----------------------------------------------------
-            #Union: extract the reads associated with the barcodes
-            union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
-            print("Extracting reads associated with the barcodes from union: " + union_reads_file)
-            with open(union_reads_file, "w") as union_reads:
-                get_reads(reads_file, index_file, union_barcodes_file, union_reads)
+        #Execute MindTheGap fill module on the union, in breakpoint mode
+        solution = False
+        for k in args.k_mtg:
 
+            #MindTheGap output directory
+            os.chdir(mtgDir)
+        
             #----------------------------------------------------
-            # Summary of union (barcodes and reads)
+            # Breakpoint file, with offset of size k removed
             #----------------------------------------------------
-            bxu = sum(1 for line in open(union_barcodes_file, "r"))
-            rbxu = sum(1 for line in open(union_reads_file, "r"))/4
-            union_summary = [gap.id, gap.left, gap.right, gap.length, args.chunk, bxu, rbxu]
-            
-            if os.path.exists(outDir + "/{}.union.sum".format(gfa_name)):
-                with open("{}.union.sum".format(gfa_name), "a") as union_sum:
-                    union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+            #variable 'ext' is the size of the extension of the gap, on both sides [by default k]
+            if args.ext is None:
+                ext = k
             else:
-                with open("{}.union.sum".format(gfa_name), "a") as union_sum:
-                    legend = ["Gap ID", "Left scaffold", "Right scaffold", "Gap size", "Chunk size", "Nb barcodes", "Nb reads"]
-                    union_sum.write('\t'.join(j for j in legend))
-                    union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+                ext = args.ext
 
-            #Remove the barcodes files
-            subprocess.run(["rm", left_barcodes_file])
-            subprocess.run(["rm", right_barcodes_file])
-            subprocess.run(["rm", union_barcodes_file])
+            bkpt_file = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gap_label), gap.length, args.chunk, k)
+            with open(bkpt_file, "w") as bkpt:
+                line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
+                line2 = str(left_scaffold.sequence()[(left_scaffold.len - ext - k):(left_scaffold.len - ext)])
+                line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
+                line4 = str(right_scaffold.sequence()[ext:(ext + k)])
+                line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
+                line6 = str(rc(right_scaffold.sequence())[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
+                line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
+                line8 = str(rc(left_scaffold.sequence())[ext:(ext + k)])
+                bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
+            print("\nBreakpoint file (with offset of size k removed): " + bkpt_file)
 
             #----------------------------------------------------
-            # MindTheGap pipeline
+            # Gapfilling
             #----------------------------------------------------
-            #Directory for saving the results from MindTheGap
-            if not os.path.exists(outDir + "/mtg_results"):
-                os.mkdir(outDir + "/mtg_results")
-            try:
-                os.chdir(outDir + "/mtg_results")
-            except:
-                print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
-                print("Restoring the path")
-                os.chdir(outDir)
-            mtgDir = os.getcwd()
-                
-            #Execute MindTheGap fill module on the union, in breakpoint mode
-            solution = False
-            for k in args.k_mtg:
+            for a in args.a_mtg:
 
-                #MindTheGap output directory
-                os.chdir(mtgDir)
-            
-                #----------------------------------------------------
-                # Breakpoint file, with offset of size k removed
-                #----------------------------------------------------
-                #variable 'ext' is the size of the extension of the gap, on both sides [by default k]
-                if args.ext is None:
-                    ext = k
-                else:
-                    ext = args.ext
+                print("\nGapfilling of {}.{}.g{}.c{} for k={} and a={} (union)".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a))
+                input_file = os.path.join(outDir, union_reads_file)
+                output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a)
+                max_nodes = args.max_nodes_mtg
+                max_length = args.max_length_mtg
+                if max_length == 10000 and gap.length >= 10000:
+                    max_length = gap.length + 1000
+                nb_cores = args.nb_cores_mtg
+                max_memory = args.max_memory_mtg
+                verbose = args.verbose_mtg
+                mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
-                bkpt_file = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gap_label), gap.length, args.chunk, k)
-                with open(bkpt_file, "w") as bkpt:
-                    line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
-                    line2 = str(left_scaffold.sequence()[(left_scaffold.len - ext - k):(left_scaffold.len - ext)])
-                    line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
-                    line4 = str(right_scaffold.sequence()[ext:(ext + k)])
-                    line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
-                    line6 = str(rc(right_scaffold.sequence())[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
-                    line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
-                    line8 = str(rc(left_scaffold.sequence())[ext:(ext + k)])
-                    bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
-                print("\nBreakpoint file (with offset of size k removed): " + bkpt_file)
+                if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
+                    insertion_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
 
-                #----------------------------------------------------
-                # Gapfilling
-                #----------------------------------------------------
-                for a in args.a_mtg:
+                    #Modify the 'insertion_file' and save it to a new file ('input_file') so that the 'solution x/y' part appears in record.id (and not just in record.description)
+                    input_file = os.path.abspath(mtgDir +"/"+ output + "..insertions.fasta")
+                    with open(insertion_file, "r") as original, open(input_file, "w") as corrected:
+                        records = SeqIO.parse(original, "fasta")
+                        for record in records:
+                            if "solution" in record.description:
+                                record.id = record.id + "_sol_" + record.description.split (" ")[-1]
+                            else:
+                                record.id = record.id + "_sol_1/1"
+                            SeqIO.write(record, corrected, "fasta")
 
-                    print("\nGapfilling of {}.{}.g{}.c{} for k={} and a={} (union)".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a))
-                    input_file = os.path.join(outDir, union_reads_file)
-                    output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a)
-                    max_nodes = args.max_nodes_mtg
-                    max_length = args.max_length_mtg
-                    if max_length == 10000 and gap.length >= 10000:
-                        max_length = gap.length + 1000
-                    nb_cores = args.nb_cores_mtg
-                    max_memory = args.max_memory_mtg
-                    verbose = args.verbose_mtg
-                    mtg_fill(input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
+                    #----------------------------------------------------
+                    # Stats of the alignments query_seq vs reference_seq
+                    #----------------------------------------------------
+                    #Get the reference sequence file
+                    if args.refDir is not None or args.scaffs is not None:
+                        print("\nStatistical analysis...")
 
-                    if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
-                        insertion_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
+                        if args.refDir is not None:
+                            ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
+                        else:
+                            ref_file = scaffs_file
 
-                        #Modify the 'insertion_file' and save it to a new file ('input_file') so that the 'solution x/y' part appears in record.id (and not just in record.description)
-                        input_file = os.path.abspath(mtgDir +"/"+ output + "..insertions.fasta")
-                        with open(insertion_file, "r") as original, open(input_file, "w") as corrected:
-                            records = SeqIO.parse(original, "fasta")
-                            for record in records:
-                                if "solution" in record.description:
-                                    record.id = record.id + "_sol_" + record.description.split (" ")[-1]
-                                else:
-                                    record.id = record.id + "_sol_1/1"
-                                SeqIO.write(record, corrected, "fasta")
+                        if not os.path.isfile(ref_file):
+                            print("Something wrong with the specified reference file. Exception-", sys.exc_info())
+
+                        #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
+                        else:
+                            prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
+                            stats_align(input_file, ref_file, str(ext), prefix, statsDir)
 
                         #----------------------------------------------------
-                        # Stats of the alignments query_seq vs reference_seq
+                        # Estimate quality of gapfilled sequence
                         #----------------------------------------------------
-                        #Get the reference sequence file
-                        if args.refDir is not None or args.scaffs is not None:
-                            print("\nStatistical analysis...")
+                        #Reader for alignment stats' files
+                        ref_qry_file = statsDir + "/" + prefix + ".ref_qry.alignment.stats"
+                        qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
-                            if args.refDir is not None:
-                                ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
-                            else:
-                                ref_file = scaffs_file
+                        if not os.path.exists(ref_qry_file) or not os.path.exists(qry_qry_file):
+                            solution = False
 
-                            if not os.path.isfile(ref_file):
-                                print("Something wrong with the specified reference file. Exception-", sys.exc_info())
+                        else:
+                            ref_qry_output = open(ref_qry_file)
+                            qry_qry_output = open(qry_qry_file)
 
-                            #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
-                            else:
-                                prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
-                                stats_align(input_file, ref_file, str(ext), prefix, statsDir)
+                            reader_ext_stats = csv.DictReader(ref_qry_output, \
+                                                            fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                                                                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                                                            delimiter='\t')
 
-                            #----------------------------------------------------
-                            # Estimate quality of gapfilled sequence
-                            #----------------------------------------------------
-                            #Reader for alignment stats' files
-                            ref_qry_file = statsDir + "/" + prefix + ".ref_qry.alignment.stats"
-                            qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
-
-                            if not os.path.exists(ref_qry_file) or not os.path.exists(qry_qry_file):
-                                solution = False
-
-                            else:
-                                ref_qry_output = open(ref_qry_file)
-                                qry_qry_output = open(qry_qry_file)
-
-                                reader_ext_stats = csv.DictReader(ref_qry_output, \
-                                                                fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                                                                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                            reader_revcomp_stats = csv.DictReader(qry_qry_output, \
+                                                                fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
+                                                                            "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
                                                                 delimiter='\t')
+                            
+                            #Obtain a quality score for each gapfilled seq
+                            insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
+                            with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
+                                for record in SeqIO.parse(query, "fasta"):
 
-                                reader_revcomp_stats = csv.DictReader(qry_qry_output, \
-                                                                    fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
-                                                                                "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
-                                                                    delimiter='\t')
-                                
-                                #Obtain a quality score for each gapfilled seq
-                                insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
-                                with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
-                                    for record in SeqIO.parse(query, "fasta"):
+                                    #quality score for stats about the extension
+                                    quality_ext_left = []
+                                    quality_ext_right = []
+                                    for row in reader_ext_stats:
+                                        if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
+                                            quality_ext_left.append(row["Quality"])
+                                        elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
+                                            quality_ext_right.append(row["Quality"])
+                                    if quality_ext_left == []:
+                                        quality_ext_left.append('D')
+                                    if quality_ext_right == []:
+                                        quality_ext_right.append('D')
 
-                                        #quality score for stats about the extension
-                                        quality_ext_left = []
-                                        quality_ext_right = []
-                                        for row in reader_ext_stats:
-                                            if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
-                                                quality_ext_left.append(row["Quality"])
-                                            elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
-                                                quality_ext_right.append(row["Quality"])
-                                        if quality_ext_left == []:
-                                            quality_ext_left.append('D')
-                                        if quality_ext_right == []:
-                                            quality_ext_right.append('D')
+                                    ref_qry_output.seek(0)
 
-                                        ref_qry_output.seek(0)
+                                    #quality score for stats about the reverse complement strand
+                                    quality_revcomp = []
+                                    for row in reader_revcomp_stats:
+                                        if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
+                                            or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
+                                            quality_revcomp.append(row["Quality"])
+                                    if quality_revcomp == []:
+                                        quality_revcomp.append('D')
+                                    qry_qry_output.seek(0)
 
-                                        #quality score for stats about the reverse complement strand
-                                        quality_revcomp = []
-                                        for row in reader_revcomp_stats:
-                                            if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
-                                                or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
-                                                quality_revcomp.append(row["Quality"])
-                                        if quality_revcomp == []:
-                                            quality_revcomp.append('D')
-                                        qry_qry_output.seek(0)
+                                    #global quality score
+                                    quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
+                                    
+                                    record.description = "Quality " + str(quality_gapfilled_seq)
+                                    SeqIO.write(record, qualified, "fasta")
 
-                                        #global quality score
-                                        quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
-                                        
-                                        record.description = "Quality " + str(quality_gapfilled_seq)
-                                        SeqIO.write(record, qualified, "fasta")
-
-                                        #If at least one good solution amongst all solution found, stop searching
-                                        if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
-                                            solution = True
-
-                                    qualified.seek(0)
-
-                                #remove the 'input_file' once done with it
-                                subprocess.run(["rm", input_file])
-
-                                #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
-                                subprocess.run(["rm", insertion_file])
-                                subprocess.run(['mv', insertion_quality_file, insertion_file])
-
-
-                        #-------------------------------------------------------------------
-                        # GFA output: case gap, solution found (=query), length(gap) known
-                        #-------------------------------------------------------------------
-                        #If length(gap) provided, check that length(solution found) = length(gap) +/- 10% 
-                        if gap.length != 0 and solution == True:
-                            with open(insertion_file, "r") as query:
-                                for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
-                                    seq = record.seq
-                                    len_seq = len(seq) - 2*ext
-
-                                    if len_seq >= 0.85*gap.length and len_seq <= 1.15*gap.length:
+                                    #If at least one good solution amongst all solution found, stop searching
+                                    if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
                                         solution = True
 
-                                        #Update GFA with only the good solutions (the ones having a good quality score)
-                                        if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
-                                            os.chdir(outDir)
-                                            print("\nCreating or appending the output GFA file...")
-                                            output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
-                                        
-                                        break
+                                qualified.seek(0)
 
-                                    else:
-                                        solution = False
-      
-                        #-------------------------------------------------------------------
-                        # GFA output: case gap, solution found (=query), length(gap) unknown
-                        #-------------------------------------------------------------------
-                        #Update GFA with only the good solutions (the ones having a good quality score)
-                        elif solution == True:
-                            with open(insertion_file, "r") as query:
-                                for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
+                            #remove the 'input_file' once done with it
+                            subprocess.run(["rm", input_file])
+
+                            #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
+                            subprocess.run(["rm", insertion_file])
+                            subprocess.run(['mv', insertion_quality_file, insertion_file])
+
+
+                    #-------------------------------------------------------------------
+                    # GFA output: case gap, solution found (=query), length(gap) known
+                    #-------------------------------------------------------------------
+                    #If length(gap) provided, check that length(solution found) = length(gap) +/- 10% 
+                    if gap.length != 0 and solution == True:
+                        with open(insertion_file, "r") as query:
+                            for record in SeqIO.parse(query, "fasta"): #x records loops (x = nb of query (e.g. nb of inserted seq))
+                                seq = record.seq
+                                len_seq = len(seq) - 2*ext
+
+                                if len_seq >= 0.85*gap.length and len_seq <= 1.15*gap.length:
+                                    solution = True
+
+                                    #Update GFA with only the good solutions (the ones having a good quality score)
                                     if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
                                         os.chdir(outDir)
                                         print("\nCreating or appending the output GFA file...")
                                         output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
-                            
-                            break
+                                    
+                                    break
+
+                                else:
+                                    solution = False
+    
+                    #-------------------------------------------------------------------
+                    # GFA output: case gap, solution found (=query), length(gap) unknown
+                    #-------------------------------------------------------------------
+                    #Update GFA with only the good solutions (the ones having a good quality score)
+                    elif solution == True:
+                        with open(insertion_file, "r") as query:
+                            for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
+                                if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
+                                    os.chdir(outDir)
+                                    print("\nCreating or appending the output GFA file...")
+                                    output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
+                        
+                        break
 
 
-                    #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
-                    else:
-                        insertion_fasta = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
-                        insertion_vcf = os.path.abspath(mtgDir +"/"+ output + ".insertions.vcf")
-                        subprocess.run(["rm", insertion_fasta])
-                        subprocess.run(["rm", insertion_vcf])
+                #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
+                else:
+                    insertion_fasta = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
+                    insertion_vcf = os.path.abspath(mtgDir +"/"+ output + ".insertions.vcf")
+                    subprocess.run(["rm", insertion_fasta])
+                    subprocess.run(["rm", insertion_vcf])
 
-                if solution == True and not args.force:
-                    break
+            if solution == True and not args.force:
+                break
 
-                #----------------------------------------------------
-                # GFA output: case gap, no solution
-                #----------------------------------------------------
-                elif k == min(args.k_mtg) and a == min(args.a_mtg):
-                    #GFA output directory
-                    os.chdir(outDir)
-                    print("\nCreating or appending the output GFA file...")
+            #----------------------------------------------------
+            # GFA output: case gap, no solution
+            #----------------------------------------------------
+            elif k == min(args.k_mtg) and a == min(args.a_mtg):
+                #GFA output directory
+                os.chdir(outDir)
+                print("\nCreating or appending the output GFA file...")
 
-                    #Rewrite the current G line into GFA output
-                    with open("tmp.gap", "r") as tmp_gap, open(out_gfa_file, "a") as f:
-                        out_gfa = gfapy.Gfa.from_file(out_gfa_file)
-                        for line in tmp_gap.readlines():
-                            out_gfa.add_line(line)
-                        out_gfa.to_file(out_gfa_file)
-            
+                #Rewrite the current G line into GFA output
+                with open("tmp.gap", "r") as tmp_gap, open(out_gfa_file, "a") as f:
+                    out_gfa = gfapy.Gfa.from_file(out_gfa_file)
+                    for line in tmp_gap.readlines():
+                        out_gfa.add_line(line)
+                    out_gfa.to_file(out_gfa_file)
+        
 
-            #Remove the tmp.gap file
-            tmp_gap_file = os.path.join(outDir, "tmp.gap")
-            subprocess.run(["rm", tmp_gap_file])
+        #Remove the tmp.gap file
+        tmp_gap_file = os.path.join(outDir, "tmp.gap")
+        subprocess.run(["rm", tmp_gap_file])
 
 
     #Give the output GFA file and the file containing the gapfill seq
