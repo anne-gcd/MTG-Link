@@ -57,13 +57,14 @@ print("\nThe results are saved in " + outDir)
 try:
     output_gfa = outDir + "/" + gfa_name + "_1.0.gfa"
 
-    #Iterate over the 'Edge' lines of the input GFA (GFA 2.0)
+    #Open the GFA files
     with open(input_gfa, "r") as f2, open(output_gfa, "a") as f1:
         gfa2 = gfapy.Gfa.from_file(input_gfa)
         gfa1 = gfapy.Gfa.from_file(output_gfa)
 
         gfa1.add_line("H\tVN:Z:1.0")
 
+        #Iterate over the 'Segment' lines of the input GFA (GFA 2.0) and rewrite them with GFA 1.0 formatting
         for line in gfa2.segments:
 
             name = str(line).split('\t')[1]
@@ -72,6 +73,7 @@ try:
 
             gfa1.add_line("S\t{}\t*\tLN:i:{}\t{}".format(name, length, sequence_file))
 
+        #Iterate over the 'Edge' lines of the input GFA (GFA 2.0) and rewrite them with GFA 1.0 formatting
         for line in gfa2.edges:
 
             s1_orient = str(line).split('\t')[2]
