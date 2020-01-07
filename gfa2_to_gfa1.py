@@ -10,14 +10,13 @@ import gfapy
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="gfa.2_to_gfa.1.py", usage="%(prog)s -in <input_gfa_2.0)> -ext <extension_gap_size> -out <output_directory>", \
+parser = argparse.ArgumentParser(prog="gfa.2_to_gfa.1.py", usage="%(prog)s -in <input_gfa_2.0)> -out <output_directory>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=(''' \
                                 Convert a GFA 2.0 file into a GFA 1.0 file
                                 '''))
 
 parser.add_argument("-in", "--input", action="store", help="GFA 2.0 file (format: 'xxx.gfa')", required=True)
-parser.add_argument("-ext", "--extension", action="store", type=int, help="size of the extension of the gap", required=True)
 parser.add_argument("-out", "--outDir", action="store", help="output directory for saving the GFA 1.0 file", required=True)
 
 args = parser.parse_args()
@@ -33,8 +32,6 @@ if not os.path.exists(args.input):
     parser.error("The path of the input GFA file doesn't exist")
 gfa_name = (input_gfa.split('/')[-1]).split('.gfa')[0]
 print("\nInput GFA file: " + input_gfa)
-
-ext = args.extension
 
 #----------------------------------------------------
 # Directory for saving results
@@ -56,6 +53,8 @@ print("\nThe results are saved in " + outDir)
 #----------------------------------------------------
 try:
     output_gfa = outDir + "/" + gfa_name + "_1.0.gfa"
+    path = []
+    overlaps = []
 
     #Open the GFA files
     with open(input_gfa, "r") as f2, open(output_gfa, "a") as f1:
@@ -87,6 +86,20 @@ try:
             overlap_length = int((str(line).split('\t')[-2]).split('$')[0]) - int(str(line).split('\t')[-3]) + 1
 
             gfa1.add_line("L\t{}\t{}\t{}\t{}\t{}M".format(s1, orient1, s2, orient2, overlap_length))
+
+            if ("fwd" in s1_orient) or ("fwd" in s2_orient):
+                if s1_orient not in path:
+                    path.append(s1_orient)
+                if s2_orient not in path:
+                    path.append(s2_orient)
+
+                overlap = str(overlap_length) + "M"
+                overlaps.append(overlap)
+
+        #Add a 'Path' line to the GFA 1.0 output
+        assembly_path = ','.join(path)
+        assembly_overlaps = ','.join(overlaps)
+        gfa1.add_line("P\tpath\t{}\t{}".format(assembly_path, assembly_overlaps))
 
         gfa1.to_file(output_gfa)
 
