@@ -166,12 +166,12 @@ def get_position_for_edges(orient1, orient2, length1, length2, ext):
         if orient1 == "+":
             beg1 = str(length1 - ext)
             end1 = str(length1) + "$"  
-            beg2 = str(1)
+            beg2 = str(0)
             end2 = str(ext)
 
         #reverse orientations
         elif orient1 == "-":
-            beg1 = str(1)
+            beg1 = str(0)
             end1 = str(ext)
             beg2 = str(length2 - ext)
             end2 = str(length2) + "$"
@@ -186,10 +186,10 @@ def get_position_for_edges(orient1, orient2, length1, length2, ext):
         end2 = str(length2) + "$"
 
         #first seq in rev orientation and first seq in fwd orientation
-        beg1 = str(1)
+        beg1 = str(0)
         end1 = str(ext)
         beg2 = str(ext)
-        end2 = str(1)
+        end2 = str(0)
 
     positions = [beg1, end1, beg2, end2]
     return positions
