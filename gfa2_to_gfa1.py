@@ -83,7 +83,7 @@ try:
             s2 = "".join(list(s2_orient)[:-1])
             orient2 = list(s2_orient)[-1]
 
-            overlap_length = int((str(line).split('\t')[-2]).split('$')[0]) - int(str(line).split('\t')[-3]) + 1
+            overlap_length = int((str(line).split('\t')[-2]).split('$')[0]) - int(str(line).split('\t')[-3])
 
             gfa1.add_line("L\t{}\t{}\t{}\t{}\t{}M".format(s1, orient1, s2, orient2, overlap_length))
 
