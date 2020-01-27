@@ -139,8 +139,7 @@ try:
 
 except Exception as e:
     print("\nException-")
-    exc_type, exc_tb = sys.exc_info()
-    print(exc_type, exc_tb.tb_lineno)
+    print(e)
     sys.exit(1)
 
 
