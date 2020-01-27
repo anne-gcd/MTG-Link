@@ -71,17 +71,20 @@ try:
 
         #Dictionary containing the scaffolds sequences and the gapfilled sequences
         for seq_link in fasta_links:
-            with open(seq_link, "r") as input_fasta:
-                current_name = ""
-                current_seq = ""
+            if seq_link == "GFAPY_virtual_line":
+                continue
+            else:
+                with open(seq_link, "r") as input_fasta:
+                    current_name = ""
+                    current_seq = ""
 
-                for line in input_fasta:    
-                    #header line
-                    if line[0] == ">":
-                        current_name = (line.lstrip(">")).rstrip("\n").split(" ")[0]
-                    else:
-                        current_seq += line.rstrip('\n')
-                        all_seq[current_name] = current_seq
+                    for line in input_fasta:    
+                        #header line
+                        if line[0] == ">":
+                            current_name = (line.lstrip(">")).rstrip("\n").split(" ")[0]
+                        else:
+                            current_seq += line.rstrip('\n')
+                            all_seq[current_name] = current_seq
                   
         #Get the paths from the 'Path' line of the input GFA
         #only the fwd gapfilled seq were kept to construct the path
@@ -144,3 +147,6 @@ except Exception as e:
 
 
 print("\nThe FASTA output file is saved in " + outDir)
+
+
+#TODO: return gaps as Ns regions
