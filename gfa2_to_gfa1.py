@@ -87,6 +87,7 @@ try:
 
             gfa1.add_line("L\t{}\t{}\t{}\t{}\t{}M".format(s1, orient1, s2, orient2, overlap_length))
 
+            #Only keep the fwd gapfilled seq to construct the path
             if ("fwd" in s1_orient) or ("fwd" in s2_orient):
                 if s1_orient not in path:
                     path.append(s1_orient)
