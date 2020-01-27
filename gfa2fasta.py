@@ -89,6 +89,7 @@ try:
         #Get the paths from the 'Path' line of the input GFA
         #only the fwd gapfilled seq were kept to construct the path
         for line in gfa.paths:
+            line = str(line).split('\t')
             scaffolds = str(line[2]).split(',')
             overlap_lengths = str(line[3]).split(',')
 
@@ -103,14 +104,13 @@ try:
             #Attn: remove overlap only on scaffolds, not on gapfilled seq
             #initiation
             if i == 0:
-                over = overlap_lengths[i][:-1]
+                over = int(overlap_lengths[i][:-1])
                 assembly += sequence[:-over]
             
             #last scaffold
             elif i == len(scaffolds)-1:
-                over = overlap_lengths[i-1][:-1]
+                over = int(overlap_lengths[i-1][:-1])
                 assembly += sequence[over:]
-
 
             #if gapfilled sequence
             elif i % 2 == 1:
@@ -118,7 +118,7 @@ try:
 
             #if scaffold
             else:
-                over = overlap_lengths[i][:-1]
+                over = int(overlap_lengths[i][:-1])
                 assembly += (sequence[over:])[:-over]
 
             i += 1
