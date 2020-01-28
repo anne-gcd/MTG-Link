@@ -180,16 +180,18 @@ def get_position_for_edges(orient1, orient2, length1, length2, ext):
     elif orient1 != orient2:
 
         #first seq in fwd orientation and second seq in rev orientation
-        beg1 = str(length1 - ext)
-        end1 = str(length1) + "$"
-        beg2 = str(length2 - ext)
-        end2 = str(length2) + "$"
+        if orient1 == "+":
+            beg1 = str(length1 - ext)
+            end1 = str(length1) + "$"
+            beg2 = str(length2 - ext)
+            end2 = str(length2) + "$"
 
         #first seq in rev orientation and first seq in fwd orientation
-        beg1 = str(0)
-        end1 = str(ext)
-        beg2 = str(ext)
-        end2 = str(0)
+        elif orient1 == "-":
+            beg1 = str(0)
+            end1 = str(ext)
+            beg2 = str(0)
+            end2 = str(ext)
 
     positions = [beg1, end1, beg2, end2]
     return positions
