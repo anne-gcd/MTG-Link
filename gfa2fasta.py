@@ -56,7 +56,6 @@ print("The results are saved in " + outDir)
 try:
     all_seq = {}
     fasta_links = []
-    assembly = ""
     i = 0
     with open(gfa_file, "r") as f:
         gfa = gfapy.Gfa.from_file(gfa_file)
@@ -75,15 +74,12 @@ try:
                 continue
             else:
                 with open(seq_link, "r") as input_fasta:
-                    current_name = ""
-                    current_seq = ""
-
                     for line in input_fasta:    
                         #header line
                         if line[0] == ">":
                             current_name = (line.lstrip(">")).rstrip("\n").split(" ")[0]
                         else:
-                            current_seq += line.rstrip('\n')
+                            current_seq = line.rstrip('\n')
                             all_seq[current_name] = current_seq
                   
         #Get the paths from the 'Path' line of the input GFA
@@ -93,52 +89,54 @@ try:
             scaffolds = str(line[2]).split(',')
             overlap_lengths = str(line[3]).split(',')
 
-            strand = scaffolds[i][-1:]
-            #fwd strand
-            if strand == "+":
-                sequence = all_seq[scaffolds[i][:-1]]
-            #rev strand
-            if strand == "-":
-                sequence = rc(all_seq[scaffolds[i][:-1]])
+            #Iterate over the different scaffolds of the path
+            assembly = ""
+            for i in range(len(scaffolds)):
 
-            #Attn: remove overlap only on scaffolds, not on gapfilled seq
-            #initiation
-            if i == 0:
-                over = int(overlap_lengths[i][:-1])
-                assembly += sequence[:-over]
+                #fwd strand
+                strand = scaffolds[i][-1:]
+                if strand == "+":
+                    sequence = all_seq[scaffolds[i][:-1]]
+                #rev strand
+                if strand == "-":
+                    sequence = rc(all_seq[scaffolds[i][:-1]])
+
+                #Attn: remove overlap only on scaffolds, not on gapfilled seq
+                #initiation
+                if i == 0:
+                    over = int(overlap_lengths[i][:-1])
+                    assembly += sequence[:-over]
+                
+                #last scaffold
+                elif i == len(scaffolds)-1:
+                    over = int(overlap_lengths[i-1][:-1])
+                    assembly += sequence[over:]
+
+                #if gapfilled sequence
+                elif i % 2 == 1:
+                    assembly += sequence
+
+                #if scaffold
+                else:
+                    over = int(overlap_lengths[i][:-1])
+                    assembly += (sequence[over:])[:-over]
+
+            #Write the assembly sequence to the FASTA file
+            fasta_name = gfa_name.split('.gfa')[0] + "_assembly.fasta"
+            name = ""
+            for i in range(0, len(scaffolds), 2):
+                name += scaffolds[i][:-1]
+                if scaffolds[i][-1:] == "+":
+                    name += "f_"
+                else:
+                    name += "r_"
+            name = name[:-1]    #to remove the last '_' char
+            name += " len " + str(len(assembly))
+
+            with open(fasta_name, "w") as fasta:
+                fasta.write(">" + name)
+                fasta.write("\n" + str(assembly) + "\n")
             
-            #last scaffold
-            elif i == len(scaffolds)-1:
-                over = int(overlap_lengths[i-1][:-1])
-                assembly += sequence[over:]
-
-            #if gapfilled sequence
-            elif i % 2 == 1:
-                assembly += all_seq[scaffolds[i][:-1]]
-
-            #if scaffold
-            else:
-                over = int(overlap_lengths[i][:-1])
-                assembly += (sequence[over:])[:-over]
-
-            i += 1
-
-    #Write the assembly sequence to the FASTA file
-    fasta_name = gfa_name.split('.gfa')[0] + "_assembly.fasta"
-    name = ""
-    for i in range(0, len(scaffolds), 2):
-        name += scaffolds[i][:-1]
-        if scaffolds[i][-1:] == "+":
-            name += "f_"
-        else:
-            name += "r_"
-    name = name[:-1]    #to remove the last '_' char
-    name += " len " + str(len(assembly))
-
-    with open(fasta_name, "w") as fasta:
-        fasta.write(">" + name)
-        fasta.write("\n" + str(assembly) + "\n")
-    
 
 except Exception as e:
     print("\nException-")
