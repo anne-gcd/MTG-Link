@@ -444,11 +444,10 @@ try:
                                         os.chdir(outDir)
                                         print("\nCreating or appending the output GFA file...")
                                         output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
-                                    
-                                    break
 
                                 else:
                                     solution = False
+                                    os.chdir(mtgDir)
     
                     #-------------------------------------------------------------------
                     # GFA output: case gap, solution found (=query), length(gap) unknown
@@ -457,13 +456,21 @@ try:
                     elif solution == True:
                         with open(insertion_file, "r") as query:
                             for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
-                                if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
+                                seq = record.seq
+                                
+                                if (len(seq) > 2*ext) and (re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description)):
                                     os.chdir(outDir)
                                     print("\nCreating or appending the output GFA file...")
                                     output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
                         
+                                else:
+                                    solution = False
+
+                    if solution == True: 
                         break
 
+                    elif solution == False:
+                        os.chdir(mtgDir)
 
                 #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
                 else:
