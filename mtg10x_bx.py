@@ -456,20 +456,25 @@ try:
                     elif solution == True:
                         with open(insertion_file, "r") as query:
                             for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
+                                solutions = []
                                 seq = record.seq
+                                strand = str(record.id).split('_')[0][-1]
                                 
                                 if (len(seq) > 2*ext) and (re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description)):
+                                    check = "True_" + str(strand)
+                                    solutions.append(check)
                                     os.chdir(outDir)
                                     print("\nCreating or appending the output GFA file...")
                                     output_gfa_with_solution(outDir, record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold, gfa_name, out_gfa_file)
                         
                                 else:
-                                    solution = False
+                                    check = "False_" + str(strand)
+                                    solutions.append(check)
 
-                    if solution == True: 
+                    if "True_1" and "True_2" in solutions: 
                         break
 
-                    elif solution == False:
+                    else:
                         os.chdir(mtgDir)
 
                 #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
