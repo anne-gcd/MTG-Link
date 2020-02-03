@@ -222,8 +222,6 @@ def get_output_for_gfa(record, ext, k, s1, s2, left_scaffold, right_scaffold):
     return output_for_gfa
 
 
-
-#TODO: to modify according to the new function get_output_for_gfa
 #----------------------------------------------------
 # output_gfa_with_solution function
 #----------------------------------------------------

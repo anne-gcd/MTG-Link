@@ -11,7 +11,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO, Align
-from helpers_bx import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align, get_position_for_edges, get_output_for_gfa, update_gfa_with_solution
+from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_align, get_position_for_edges, get_output_for_gfa, update_gfa_with_solution
 
 
 #----------------------------------------------------
