@@ -27,7 +27,7 @@ class Gap:
 
     def info(self):
         if self.id == "*":
-            print("\nWORKING ON GAP: between scaffolds {} & {}; length {}\n".format(self.left, self.right, self.length))
+            print("\nWORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
         else:
             print("\nWORKING ON GAP: {}; length {}\n".format(self.id, self.length))
 
@@ -54,13 +54,30 @@ class Scaffold(Gap):
                     return rc(record.seq)
 
     def chunk(self, c):
-        if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):   #if left_fwd or right_rev
-            start = self.len - c
-            end = self.len
-        elif (self.orient == "+" and self.scaffold == self.right) or (self.orient == "-" and self.scaffold == self.left):  #if right_fwd or left_rev
-            start = 0
-            end = c
-        return str(self.name) +":"+ str(start) +"-"+ str(end)
+        #----------------------------------------------------
+        # For simulated datasets
+        #----------------------------------------------------
+        if ('-L' in self.name) or ('-R' in self.name):
+            if self.scaffold == self.left:          #if left scaffold
+                start = self.len - c
+                end = self.len
+            elif self.scaffold == self.right:       #if right scaffold
+                start = self.len + self.length
+                end = self.len + self.length + c
+            contig_name = str(self.name).split("-")[0]
+            return str(contig_name) +":"+ str(start) +"-"+ str(end)
+
+        #----------------------------------------------------
+        # For real datasets
+        #----------------------------------------------------
+        else:
+            if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):   #if left_fwd or right_rev
+                start = self.len - c
+                end = self.len
+            elif (self.orient == "+" and self.scaffold == self.right) or (self.orient == "-" and self.scaffold == self.left):  #if right_fwd or left_rev
+                start = 0
+                end = c
+            return str(self.name) +":"+ str(start) +"-"+ str(end)
 
 
 
@@ -223,7 +240,7 @@ def get_output_for_gfa(record, ext, k, s1, s2, left_scaffold, right_scaffold):
 
 
 #----------------------------------------------------
-# output_gfa_with_solution function
+# update_gfa_with_solution function
 #----------------------------------------------------
 #Function to update the GFA when a solution is found for a gap
 def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
