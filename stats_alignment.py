@@ -37,7 +37,7 @@ parser.add_argument("-qry", "--query", action="store", help="file containing the
 parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the simulated gap (format: 'xxx.ingap.fasta') or the sequences of the contigs (format: 'xxx.fasta')", required=True)
 parser.add_argument("-ext", "--ext", action="store", type=int, help="size of the gap, on both sides; determine start/end of gapfilling")
 parser.add_argument("-p", "--prefix", action="store", help="prefix of output file to save the statistical results", required=True)
-parser.add_argument("-out", "--outDir", action="store", default="./mtg10x_results/alignments_stats", help="output directory for saving results")
+parser.add_argument("-out", "--outDir", action="store", default="./mtglink_results/alignments_stats", help="output directory for saving results")
 
 args = parser.parse_args()
 

@@ -29,7 +29,7 @@ parserMain.add_argument('-bam', dest="bam", action="store", help="BAM file: link
 parserMain.add_argument('-reads', dest="reads", action="store", help="File of indexed reads (format: xxx.fastq | xxx.fq)", required=True)
 parserMain.add_argument('-index', dest="index", action="store", help="Prefix of barcodes index file (format: xxx.shelve)", required=True)
 parserMain.add_argument('-f', dest="freq", action="store", type=int, default=2, help="Minimal frequence of barcodes extracted in the chunk of size '-c' [default: 2]")
-parserMain.add_argument('-out', dest="outDir", action="store", default="./mtg10x_results", help="Output directory [default './mtg10x_results']")
+parserMain.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default './mtglink_results']")
 parserMain.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any")
 parserMain.add_argument('-contigs', dest="contigs", action="store", help="File containing the sequences of the contigs (format: xxx.fasta | xxx.fa)")
 parserMain.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
@@ -491,7 +491,7 @@ def gapfilling(current_gap):
 #----------------------------------------------------
 try:
     gfa = gfapy.Gfa.from_file(gfa_file)
-    out_gfa_file = "mtg10x_" + gfa_name
+    out_gfa_file = "mtglink_" + gfa_name
 
     #----------------------------------------------------
     # GFA output: case no gap
@@ -570,7 +570,7 @@ except Exception as e:
 
 print("\nSummary of the union: " +gfa_name+".union.sum")
 print("The results from MindTheGap are saved in " + mtgDir)
-print("The statistics from MTG10X are saved in " + statsDir)
+print("The statistics from MTG-Link are saved in " + statsDir)
 print("The GFA output file and the sequences file are saved in " + outDir)
 
 
