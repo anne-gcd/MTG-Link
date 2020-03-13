@@ -403,13 +403,6 @@ def gapfilling(current_gap):
 
                 output_for_gfa = []
                 solutions = []
-
-
-#TODO: Merge case length gap unknown and known: OK
-#TODO: Separate Ref = simulated gap or Ref = scaffold's seq
-
-
-
                 #-------------------------------------------------------------------
                 # GFA output: case gap, solution found (=query)
                 #-------------------------------------------------------------------
@@ -462,6 +455,7 @@ def gapfilling(current_gap):
 
             #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
             else:
+                output_for_gfa = []
                 insertion_fasta = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
                 insertion_vcf = os.path.abspath(mtgDir +"/"+ output + ".insertions.vcf")
                 subprocess.run(["rm", insertion_fasta])
