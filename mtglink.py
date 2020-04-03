@@ -33,6 +33,7 @@ parserMain.add_argument('-out', dest="outDir", action="store", default="./mtglin
 parserMain.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any")
 parserMain.add_argument('-contigs', dest="contigs", action="store", help="File containing the sequences of the contigs (format: xxx.fasta | xxx.fa)")
 parserMain.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
+parserMain.add_argument('--rbxu', action="store_true", help="If the reads of the union are already extracted, provide this argument '--rbxu'")
 
 parserMtg.add_argument('-bkpt', dest="breakpoint", action="store", help="Breakpoint file (with possibly offset of size k removed) (format: xxx.fasta | xxx.fa) [optional]")
 parserMtg.add_argument('-k', dest="kmer", action="store", default=[51, 41, 31, 21],  nargs='*', type=int, help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
@@ -184,9 +185,12 @@ def gapfilling(current_gap):
     # GetReads
     #----------------------------------------------------
     #Union: extract the reads associated with the barcodes
-    union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
-    with open(union_reads_file, "w") as union_reads:
-        get_reads(reads_file, index_file, gap_label, union_barcodes_file, union_reads)
+    if not args.rbxu:
+        union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
+        with open(union_reads_file, "w") as union_reads:
+            get_reads(reads_file, index_file, gap_label, union_barcodes_file, union_reads)
+    else:
+        union_reads_file = os.path.abspath("{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk))
 
     #----------------------------------------------------
     # Summary of union (barcodes and reads)
