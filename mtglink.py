@@ -122,6 +122,8 @@ statsDir = outDir + "/alignments_stats"
 #----------------------------------------------------
 def gapfilling(current_gap):
 
+    os.chdir(outDir)
+
     #Open the input GFA file to get the corresponding Gap line
     gfa = gfapy.Gfa.from_file(gfa_file)
     for _gap_ in gfa.gaps:
