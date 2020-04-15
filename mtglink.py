@@ -199,6 +199,12 @@ def gapfilling(current_gap):
     rbxu = sum(1 for line in open(union_reads_file, "r"))/4
     union_summary = [str(gap.id), str(gap.left), str(gap.right), gap.length, args.chunk, bxu, rbxu]
 
+    multiLog = str(gap_label) + "_multi.log"
+
+    with open(multiLog, "a") as log:
+        log.write("Union summary:\n")
+        log.write(str(union_summary))
+
     #Remove the barcodes files
     subprocess.run(["rm", left_barcodes_file])
     subprocess.run(["rm", right_barcodes_file])
@@ -488,6 +494,10 @@ def gapfilling(current_gap):
     os.chdir(outDir)
     subprocess.run(["rm", tmp_gap_file])
 
+    with open(multiLog, "a") as log:
+        log.write("\nOutput for GFA:\n")
+        log.write(str(output_for_gfa))
+
 
     return union_summary, output_for_gfa
 
@@ -535,25 +545,25 @@ try:
             _gap_ = str(_gap_)
             gaps.append(_gap_)
 
-        p = Pool()
+    p = Pool()
 
-        with open("{}.union.sum".format(gfa_name), "w") as union_sum:
-            legend = ["Gap ID", "Left scaffold", "Right scaffold", "Gap size", "Chunk size", "Nb barcodes", "Nb reads"]
-            union_sum.write('\t'.join(j for j in legend))
+    with open("{}.union.sum".format(gfa_name), "w") as union_sum:
+        legend = ["Gap ID", "Left scaffold", "Right scaffold", "Gap size", "Chunk size", "Nb barcodes", "Nb reads"]
+        union_sum.write('\t'.join(j for j in legend))
 
-            for union_summary, output_for_gfa in p.map(gapfilling, gaps):
-                #Write all union_summary (obtained for each gap) from 'gapfilling' into the 'union_sum' file
-                union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+        for union_summary, output_for_gfa in p.map(gapfilling, gaps):
+            #Write all union_summary (obtained for each gap) from 'gapfilling' into the 'union_sum' file
+            union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
 
-                #Output the 'output_for_gfa' results (obtained for each gap) from 'gapfilling' in the output GFA file
-                print("\nCreating the output GFA file...")
-                if len(output_for_gfa[0]) > 1:          #solution found for the current gap
-                    for output in output_for_gfa:
-                        update_gfa_with_solution(outDir, gfa_name, output, out_gfa_file)
-                else:                                   #no solution found for the current gap
-                    out_gfa = gfapy.Gfa.from_file(out_gfa_file)
-                    out_gfa.add_line(output_for_gfa[0][0])
-                    out_gfa.to_file(out_gfa_file)
+            #Output the 'output_for_gfa' results (obtained for each gap) from 'gapfilling' in the output GFA file
+            print("\nCreating the output GFA file...")
+            if len(output_for_gfa[0]) > 1:          #solution found for the current gap
+                for output in output_for_gfa:
+                    update_gfa_with_solution(outDir, gfa_name, output, out_gfa_file)
+            else:                                   #no solution found for the current gap
+                out_gfa = gfapy.Gfa.from_file(out_gfa_file)
+                out_gfa.add_line(output_for_gfa[0][0])
+                out_gfa.to_file(out_gfa_file)
 
     #Remove the raw files obtained from MindTheGap
     os.chdir(mtgDir)
