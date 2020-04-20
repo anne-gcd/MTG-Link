@@ -302,9 +302,9 @@ def gapfilling(current_gap):
                     qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
                     if not os.path.exists(ref_qry_file):
-                        parser.error("The 'xxx.ref_qry.alignment.stats' file doesn't exits")
+                        parser.error("The '{}.ref_qry.alignment.stats' file doesn't exits".format(prefix))
                     elif not os.path.exists(qry_qry_file):
-                        parser.error("The 'xxx.qry_qry.alignment.stats' file doesn't exits")
+                        parser.error("The '{}.qry_qry.alignment.stats' file doesn't exits".format(prefix))
 
                     else:
                         ref_qry_output = open(ref_qry_file)
