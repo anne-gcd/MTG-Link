@@ -42,9 +42,9 @@ parserMtg.add_argument('-a', dest="abundance_threshold", action="store", default
 parserMtg.add_argument('-ext', dest="extension", action="store", type=int, help="Extension size of the gap on both sides (bp); determine start/end of gapfilling [default: '-k']")
 parserMtg.add_argument('-max-nodes', dest="max_nodes", action="store", type=int, default=1000, help="Maximum number of nodes in contig graph [default: 1000]")
 parserMtg.add_argument('-max-length', dest="max_length", action="store", type=int, default=10000, help="Maximum length of gapfilling (bp) [default: 10000]")
-parserMtg.add_argument('-nb-cores', dest="nb_cores", action="store", type=int, default=4, help="Number of cores [default: 4]")
-parserMtg.add_argument('-max-memory', dest="max_memory", action="store", type=int, default=8000, help="Max memory for graph building (in MBytes) [default: 8000]")
-parserMtg.add_argument('-verbose', dest="verbosity", action="store", type=int, default=1, help="Verbosity level [default: 1]")
+parserMtg.add_argument('-nb-cores', dest="nb_cores", action="store", type=int, default=1, help="Number of cores [default: 1]")
+parserMtg.add_argument('-max-memory', dest="max_memory", action="store", type=int, help="Max memory for graph building (in MBytes)")
+parserMtg.add_argument('-verbose', dest="verbosity", action="store", type=int, default=0, help="Verbosity level [default: 0]")
 
 args = parser.parse_args()
 
@@ -256,7 +256,10 @@ def gapfilling(current_gap):
             if max_length == 10000 and gap.length >= 10000:
                 max_length = gap.length + 1000
             nb_cores = args.nb_cores
-            max_memory = args.max_memory
+            if args.max_memory is not None:
+                max_memory = args.max_memory
+            else:
+                max_memory = 0
             verbose = args.verbosity
             mtg_fill(gap_label, input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
