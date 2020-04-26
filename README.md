@@ -13,10 +13,12 @@ The **MTG-Link** tool uses other tools relying on[GATB-CORE](http://gatb-core.gf
 
 ### External dependencies
 
-To run MTG-Link, you need to install a virtual environment containing *Samtools*, *Biopython*, *Gfapy*, *Blast* and *Mummer* librairies.  
+To run MTG-Link, you need to install a virtual environment containing *Samtools*, *Biopython*, *Gfapy*, *Blast*, *Mummer*, *Pathos* and *indexed_gzip* librairies.  
 
-You can install them via the conda package manager:
-`conda install -c bioconda samtools biopython gfapy blast mummer`
+You can install them via the conda package manager:  
+`conda install -c bioconda samtools biopython gfapy blast mummer`  
+`conda install -c conda-forge pathos`  
+`conda install -c conda-forge indexed_gzip`  
 
 Alternatively, you can install them via the requirements.txt file:
 To install a list of packages into a specified conda environment, do the following:  
