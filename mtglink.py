@@ -568,6 +568,8 @@ try:
                 out_gfa.add_line(output_for_gfa[0][0])
                 out_gfa.to_file(out_gfa_file)
 
+        p.close()
+
     #Remove the raw files obtained from MindTheGap
     os.chdir(mtgDir)
     # subprocess.run("rm -f *.h5", shell=True)
