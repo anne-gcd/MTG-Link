@@ -324,9 +324,14 @@ def gapfilling(current_gap):
                                                             delimiter='\t')
                         
                         #Obtain a quality score for each gapfilled seq
+                        solutions = []
+                        output_for_gfa = []
                         insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
                         with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
                             for record in SeqIO.parse(query, "fasta"):
+
+                                seq = record.seq
+                                strand = str(record.id).split('_')[0][-1]
 
                                 #----------------------------------------------------
                                 #Ref = reference sequence of simulated gap
@@ -359,12 +364,16 @@ def gapfilling(current_gap):
                                     record.description = "Quality " + str(quality_gapfilled_seq)
                                     SeqIO.write(record, qualified, "fasta")
 
-                                    #If at least one good solution amongst all solution found, stop searching
-                                    if re.match('^.*Quality [AB]{2}$', record.description):
-                                        solution = True
+                                    #Update GFA with only the good solutions (the ones having a good quality score)
+                                    if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
+                                        check = "True_" + str(strand)
+                                        solutions.append(check)
+                                        gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
+                                        output_for_gfa.append(gfa_output)
                                     else:
-                                        solution = False
-
+                                        check = "False_" + str(strand)
+                                        solutions.append(check)
+     
                                 #----------------------------------------------------
                                 #Ref = contigs' sequences
                                 #----------------------------------------------------
@@ -400,11 +409,16 @@ def gapfilling(current_gap):
                                     record.description = "Quality " + str(quality_gapfilled_seq)
                                     SeqIO.write(record, qualified, "fasta")
 
-                                    #If at least one good solution amongst all solution found, stop searching
-                                    if re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description):
-                                        solution = True
+                                    #Update GFA with only the good solutions (the ones having a good quality score)
+                                    if (len(seq) > 2*ext) and (re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description)):
+                                        check = "True_" + str(strand)
+                                        solutions.append(check)
+                                        gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
+                                        output_for_gfa.append(gfa_output)
+
                                     else:
-                                        solution = False
+                                        check = "False_" + str(strand)
+                                        solutions.append(check)
 
                             qualified.seek(0)
 
@@ -416,51 +430,9 @@ def gapfilling(current_gap):
                         subprocess.run(['mv', insertion_quality_file, insertion_file])
 
 
-                output_for_gfa = []
-                solutions = []
-                #-------------------------------------------------------------------
-                # GFA output: case gap, solution found (=query)
-                #-------------------------------------------------------------------
-                if solution == True:
-                    with open(insertion_file, "r") as query:
-                        for record in SeqIO.parse(query, "fasta"):  #x records loops (x = nb of query (e.g. nb of inserted seq))
-                            solutions = []
-                            seq = record.seq
-                            strand = str(record.id).split('_')[0][-1]
-
-                            #----------------------------------------------------
-                            #Ref = reference sequence of simulated gap
-                            #----------------------------------------------------
-                            if args.refDir is not None:
-                                #Update GFA with only the good solutions (the ones having a good quality score)
-                                if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
-                                    check = "True_" + str(strand)
-                                    solutions.append(check)
-                                    gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
-                                    output_for_gfa.append(gfa_output)
-                                
-                                else:
-                                    check = "False_" + str(strand)
-                                    solutions.append(check)
-
-                            #----------------------------------------------------
-                            #Ref = contigs' sequences
-                            #----------------------------------------------------
-                            elif args.contigs is not None:
-                                #Update GFA with only the good solutions (the ones having a good quality score)
-                                if (len(seq) > 2*ext) and (re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description)):
-                                    check = "True_" + str(strand)
-                                    solutions.append(check)
-                                    gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
-                                    output_for_gfa.append(gfa_output)
-
-                                else:
-                                    check = "False_" + str(strand)
-                                    solutions.append(check)
-
-
-                #Check if good solutions obtained for both fwd and rev strands
-                if solution == True and ("True_1" and "True_2" in solutions): 
+                #If at least one good solution for both fwd and rev strands amongst all solution found, stop searching
+                if ("True_1" and "True_2" in solutions): 
+                    solution = True
                     break
 
                 else:
@@ -551,12 +523,12 @@ try:
     p = Pool()
 
     with open("{}.union.sum".format(gfa_name), "w") as union_sum:
-        legend = ["Gap ID", "Left scaffold", "Right scaffold", "Gap size", "Chunk size", "Nb barcodes", "Nb reads"]
+        legend = ["Gap_ID", "Left_scaffold", "Right_scaffold", "Gap_size", "Chunk_size", "Nb_barcodes", "Nb_reads"]
         union_sum.write('\t'.join(j for j in legend))
 
         for union_summary, output_for_gfa in p.map(gapfilling, gaps):
             #Write all union_summary (obtained for each gap) from 'gapfilling' into the 'union_sum' file
-            union_sum.write("\n" + '\t\t'.join(str(i) for i in union_summary))
+            union_sum.write("\n" + '\t'.join(str(i) for i in union_summary))
 
             #Output the 'output_for_gfa' results (obtained for each gap) from 'gapfilling' in the output GFA file
             print("\nCreating the output GFA file...")
