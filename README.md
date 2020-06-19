@@ -6,7 +6,7 @@ MTG-Link is a novel **gap-filling** tool for draft genome assemblies, dedicated 
 It is a Python pipeline combining the local assembly tool **MindTheGap** and an efficient read subsampling based on the barcode information.
 It takes as input a set of reads, a GFA file and a BAM file. It outputs the results in a GFA file. 
 
-The **MTG-Link** tool uses other tools relying on[GATB-CORE](http://gatb-core.gforge.inria.fr/doc/api/) library.
+The **MTG-Link** tool uses other tools relying on [GATB-CORE](http://gatb-core.gforge.inria.fr/doc/api/) library.
 
 
 ## Installation
@@ -69,7 +69,7 @@ The MTG-Link command line interface is composed of multiple parameters. You can 
 ```
 ./mtglink.py --help
 
-usage: mtglink.py -in <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]
+usage: mtglink.py -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -fastq <reads_file> -index <index_file> -f <freq_barcodes> [options]
                                 
 Gapfilling with linked read data, using MindTheGap in 'breakpoint' mode
 
@@ -77,11 +77,11 @@ optional arguments:
   -h, --help            show this help message and exit
 
 [Main options]:
-  -in INPUT             Input GFA file (format: xxx.gfa)
+  -gfa INPUT             Input GFA file (format: xxx.gfa)
   -c CHUNK              Chunk size (bp)
   -bam BAM              BAM file: linked reads mapped on current genome
                         assembly (format: xxx.bam)
-  -reads READS          File of indexed reads (format: xxx.fastq | xxx.fq)
+  -fastq READS          File of indexed reads (format: xxx.fastq | xxx.fq)
   -index INDEX          Prefix of barcodes index file (format: xxx.shelve)
   -f FREQ               Minimal frequence of barcodes extracted in the chunk
                         of size '-c' [default: 2]

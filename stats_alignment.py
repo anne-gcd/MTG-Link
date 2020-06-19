@@ -84,7 +84,7 @@ try:
         #----------------------------------------------------
         # Ref = reference sequence of simulated gap
         #----------------------------------------------------
-        #Run NUCmer to obtain alignment of extension portions (-ext) against the contigs' sequences
+        #Run NUCmer to obtain alignment of the reference sequence against the contigs' sequences
         qry_id = qry_file.split('.')[-9]
         qry_k = qry_file.split('.')[-6]
         qry_a = qry_file.split('.')[-5]
@@ -155,7 +155,7 @@ try:
             error_10_perc = int(0.1 * ref_len)
             qry_len = int(len_q) - 2*args.ext
 
-            #lengths of both sequences are equal +-10% of ref length
+            #length of query sequence is equal +-10% of ref length
             if qry_len in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
                 #the gapfilled seq matches to the whole ref seq
                 if int(len_align_q) == ref_len:
@@ -276,7 +276,7 @@ try:
                             output_ref.write('\n' + '\t'.join(str(i) for i in stats))
 
 
-    if re.match('^.*.fasta$', args.reference):
+    elif re.match('^.*.contigs.fasta$', args.reference):
         #----------------------------------------------------
         # Ref = contigs' sequences
         #----------------------------------------------------
@@ -320,10 +320,10 @@ try:
 
         rows = list(reader)
         for row in rows[3:]:
-            if row["TAG_1"] in str(qry_id):
+            if row["TAG_1"].split("_")[0] in str(qry_id):
 
                 len_q = row["LEN_Q"]
-                ref = row["TAG_1"]
+                ref = row["TAG_1"].split("_")[0]
                 len_r = row["LEN_R"]
                 start_r = row["S1"]
                 end_r = row["E1"]

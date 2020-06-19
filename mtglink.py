@@ -23,10 +23,10 @@ parser = argparse.ArgumentParser(prog="mtglink.py", usage="%(prog)s -in <GFA_fil
 parserMain = parser.add_argument_group("[Main options]")
 parserMtg = parser.add_argument_group("[MindTheGap option]")
 
-parserMain.add_argument('-in', dest="input", action="store", help="Input GFA file (format: xxx.gfa)", required=True)
+parserMain.add_argument('-gfa', dest="input_gfa", action="store", help="Input GFA file (format: xxx.gfa)", required=True)
 parserMain.add_argument('-c', dest="chunk", action="store", type=int, help="Chunk size (bp)", required=True)
 parserMain.add_argument('-bam', dest="bam", action="store", help="BAM file: linked reads mapped on current genome assembly (format: xxx.bam)", required=True)
-parserMain.add_argument('-reads', dest="reads", action="store", help="File of indexed reads (format: xxx.fastq | xxx.fq)", required=True)
+parserMain.add_argument('-fastq', dest="reads", action="store", help="File of indexed reads (format: xxx.fastq | xxx.fq)", required=True)
 parserMain.add_argument('-index', dest="index", action="store", help="Prefix of barcodes index file (format: xxx.shelve)", required=True)
 parserMain.add_argument('-f', dest="freq", action="store", type=int, default=2, help="Minimal frequence of barcodes extracted in the chunk of size '-c' [default: 2]")
 parserMain.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default './mtglink_results']")
@@ -48,22 +48,19 @@ parserMtg.add_argument('-verbose', dest="verbosity", action="store", type=int, d
 
 args = parser.parse_args()
 
-if re.match('^.*.gfa$', args.input) is None:
+if re.match('^.*.gfa$', args.input_gfa) is None:
     parser.error("The suffix of the GFA file should be: '.gfa'")
 
 if re.match('^.*.bam$', args.bam) is None:
     parser.error("The suffix of the BAM file should be: '.bam'")
-
-if args.contigs and re.match('^.*.fasta$', args.contigs) is None:
-    parser.error("The suffix of the file containing the sequences of the contigs should be: '.fasta'")
-
+    
 if args.refDir is None and args.contigs is None:
     parser.error("Please provide either a directory containing the reference sequences or a file containing the sequences of the contigs")
 
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
-gfa_file = os.path.abspath(args.input)
+gfa_file = os.path.abspath(args.input_gfa)
 if not os.path.exists(gfa_file):
     parser.error("The path of the GFA file doesn't exist")
 gfa_name = gfa_file.split('/')[-1]
@@ -88,10 +85,9 @@ if args.refDir is not None:
         parser.error("The path of the directory containing the reference sequences doesn't exist")
 
 if args.contigs is not None:
-    scaffs_file = os.path.abspath(args.contigs)
-    if not os.path.exists(scaffs_file):
-        parser.error("The path of the file of contigs' sequences doesn't exist")
-    print("File of contigs' sequences: " + scaffs_file)
+    contigsDir = os.path.abspath(args.contigs)
+    if not os.path.exists(contigsDir):
+        parser.error("The path of the directory containing the file of contigs' sequences doesn't exist")
 
 #----------------------------------------------------
 # Directories for saving results
@@ -272,7 +268,7 @@ def gapfilling(current_gap):
                     records = SeqIO.parse(original, "fasta")
                     for record in records:
                         if "solution" in record.description:
-                            record.id = record.id + "_sol_" + record.description.split (" ")[-1]
+                            record.id = record.id + "_sol_" + record.description.split(" ")[-1]
                         else:
                             record.id = record.id + "_sol_1/1"
                         SeqIO.write(record, corrected, "fasta")
@@ -287,7 +283,8 @@ def gapfilling(current_gap):
                     if args.refDir is not None:
                         ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
                     else:
-                        ref_file = scaffs_file
+                        contig_name = str(gap_label).split("-")[0]
+                        ref_file = contigsDir +"/"+ str(contig_name) +"."+ str(gap.length) +".5000.contigs.fasta"
 
                     if not os.path.isfile(ref_file):
                         print("Something wrong with the specified reference file. Exception-", sys.exc_info())
