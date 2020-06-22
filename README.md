@@ -60,7 +60,7 @@ After evaluation of the best sequence assembly, MTG-Link stop searching for the 
 
 In order to speed up the process, MTG-Link uses a trivial **parallelization** scheme by giving each gap to a separate thread. 
 
-![MTG-Link_pipeline](Images/MTG-Link_pipeline.resized.jpg)
+![MTG-Link_pipeline](doc/images/pipeline.png)
 
 
 ### Usage
