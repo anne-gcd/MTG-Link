@@ -125,4 +125,6 @@ TODO: add examples
 Please not that GATB-Core is distributed under Affero-GPL license.
 
 
+## Contact
 
+**MTG-Link** is a [Genscale](https://team.inria.fr/genscale/) and [INRAE](https://www.inrae.fr/) tool developed by Anne Guichard (<anne.guichard@irisa.fr>)
