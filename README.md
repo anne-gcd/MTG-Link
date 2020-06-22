@@ -8,6 +8,8 @@ It takes as input a set of reads, a GFA file and a BAM file. It outputs the resu
 
 The **MTG-Link** tool uses other tools relying on [GATB-CORE](http://gatb-core.gforge.inria.fr/doc/api/) library.
 
+**MTG-Link** is a [Genscale](https://team.inria.fr/genscale/) and [INRAE](https://www.inrae.fr/) tool developed by Anne Guichard.
+
 
 ## Installation
 
@@ -57,9 +59,9 @@ Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the 
 After evaluation of the best sequence assembly, MTG-Link stop searching for the other parameters values, and returns the results in a **GFA** file, containing the gap-filled sequences of each gap. 
 
 In order to speed up the process, MTG-Link uses a trivial **parallelization** scheme by giving each gap to a separate thread. 
-<!--
-TODO: load image but more detailed than usual one, adding for ex the qualitative evaluation
--->
+
+![MTG-Link_pipeline](Images/MTG-Link_pipeline.resized.jpg)
+
 
 ### Usage
 
@@ -127,4 +129,9 @@ Please not that GATB-Core is distributed under Affero-GPL license.
 
 ## Contact
 
-**MTG-Link** is a [Genscale](https://team.inria.fr/genscale/) and [INRAE](https://www.inrae.fr/) tool developed by Anne Guichard (<anne.guichard@irisa.fr>)
+To contact a developer, request help, or for any feedback on MTG-Link, please use the issue form of github: https://github.com/anne-gcd/MTG-Link/issues
+
+You can see all issues concerning MTG-Link [here](https://github.com/anne-gcd/MTG-Link/issues).
+
+If you do not have any github account, you can also send an email to Anne Guichard (<anne.guichard@irisa.fr>).
+
