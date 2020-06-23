@@ -21,11 +21,11 @@ To run MTG-Link, you need to install a virtual environment containing *Samtools*
 
 You can install them via the conda package manager:  
 `conda install -c bioconda samtools biopython gfapy blast`  
-`conda install -c bioconda/label/cf201901 mummer`
+`conda install -c bioconda/label/cf201901 mummer`  
 `conda install -c conda-forge pathos`  
 `conda install -c conda-forge indexed_gzip`  
 
-Alternatively, you can install them via the requirements.txt file:
+Alternatively, you can install them via the requirements.txt file.  
 To install a list of packages into a specified conda environment, do the following:  
 `conda create --name <env> --file requirements.txt`
 

@@ -5,6 +5,6 @@ biopython
 blast=2.9.0=pl526h979a64d_3
 gfapy=1.0.0
 indexed_gzip=1.1.0=py38h614de5d_0
-mummer=3.23=pl526he1b5a44_11
-samtools=1.6=h244ad75_4
+mummer=3.23=pl526_8
 pathos=0.2.5=py_0
+samtools=1.6=h244ad75_4
