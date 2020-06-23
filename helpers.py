@@ -141,7 +141,7 @@ def extract_barcodes(bam, gap_label, region, out_barcodes, barcodes_occ):
 #----------------------------------------------------
 #Function to extract the reads associated with the barcodes
 def get_reads(reads, index, gap_label, barcodes, out_reads):
-    command = ["python", "/home/genouest/inrarennes/flegeai/workspace/python/reads_bx_sqlite3.py", "-f", reads, "--idx", index, "--b", barcodes, "--mode", "shelve"]
+    command = ["reads_bx_sqlite3.py", "--fastq", reads, "--idx", index, "--bdx", barcodes, "--mode", "shelve"]
     getreadsLog = str(gap_label) + "_getreads.log"
 
     with open(getreadsLog, "a") as log:

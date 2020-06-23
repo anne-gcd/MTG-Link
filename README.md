@@ -29,7 +29,7 @@ Alternatively, you can install them via the requirements.txt file.
 To install a list of packages into a specified conda environment, do the following:  
 `conda create --name <env> --file requirements.txt`
 
-You also need to install the LRez and MindTheGap tools and add their locations to the PATH:  
+You also need to install the LRez and MindTheGap tools (and add their locations to the PATH if not installed as a Bioconda package):  
 * LRez: <https://github.com/flegeai/LRez>
 * MindTheGap: <https://github.com/GATB/MindTheGap>
 
@@ -48,7 +48,7 @@ git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 
 ### Description
 
-For each gap, MTG-Link extracts the linked reads whose barcode is observed in the gap flanking sequences, using the tools **BamExtractor** and **GetReads** from the **Con10x** repository.  
+For each gap, MTG-Link extracts the linked reads whose barcode is observed in the gap flanking sequences, using the tool **BamExtractor** and the script **reads_bx_sqlite3.py** from the **LRez** repository.  
 It then assembles these reads into contigs using **MindTheGap**. MindTheGap is used in *'breakpoint'* mode, by removing first a small region on both sides (e.g. extension of the gap) of size `-ext` (which determines start/end of gapfilling). MindTheGap will try to find a path in the **de Bruijn graph** from the left k-mer (source) to the right k-mer (target).
 
 The gap-filling is performed in both forward and reverse orientation.
