@@ -8,7 +8,7 @@ MTG-Link is a novel **gap-filling** tool for draft genome assemblies, dedicated 
 It is a Python pipeline combining the local assembly tool **[MindTheGap](https://github.com/GATB/MindTheGap)** and an efficient read subsampling based on the barcode information.
 It takes as input a set of reads, a GFA file and a BAM file. It outputs the results in a GFA file. 
 
-**MTG-Link** is a [Genscale](https://team.inria.fr/genscale/) and [INRAE](https://www.inrae.fr/) tool developed by Anne Guichard.
+**MTG-Link** is a [Inria Genscale](https://team.inria.fr/genscale/) and [INRAE](https://www.inrae.fr/) tool developed by Anne Guichard.
 
 
 ## Installation
@@ -82,7 +82,7 @@ The MTG-Link command line interface is composed of multiple parameters. You can 
 ```
 ./mtglink.py --help
 
-usage: mtglink.py -gfa <GFA_file> -c <chunk_size> -bam <BAM_file> -fastq <reads_file> -index <index_file> -f <freq_barcodes> [options]
+usage: mtglink.py -gfa <input.gfa> -c <chunk_size> -bam <mapped.bam> -fastq <reads.fastq> -index <barcoded.shelve> (-refDir <dir_ref_seq> | -contigs <dir_contigs_seq>) [options]
                                 
 Gapfilling with linked read data, using MindTheGap in 'breakpoint' mode
 
@@ -90,7 +90,7 @@ optional arguments:
   -h, --help            show this help message and exit
 
 [Main options]:
-  -gfa INPUT             Input GFA file (format: xxx.gfa)
+  -gfa INPUT            Input GFA file (format: xxx.gfa)
   -c CHUNK              Chunk size (bp)
   -bam BAM              BAM file: linked reads mapped on current genome
                         assembly (format: xxx.bam)
@@ -100,11 +100,12 @@ optional arguments:
                         of size '-c' [default: 2]
   -out OUTDIR           Output directory [default './mtg10x_results']
   -refDir REFDIR        Directory containing the reference sequences if any
-  -contigs CONTIGS      File containing the sequences of the contigs (format:
-                        xxx.fasta | xxx.fa)
+  -contigs CONTIGS      Directory containing the sequences of the contigs 
   -line LINE            Line of GFA file input from which to start analysis
                         (if not provided, start analysis from first line of
                         GFA file input) [optional]
+  --rbxu                If the reads of the union are already extracted, 
+                        provide this argument '--rbxu' [optional]
 
 [MindTheGap option]:
   -bkpt BREAKPOINT      Breakpoint file (with possibly offset of size k
@@ -121,11 +122,10 @@ optional arguments:
                         1000]
   -max-length MAX_LENGTH
                         Maximum length of gapfilling (bp) [default: 10000]
-  -nb-cores NB_CORES    Number of cores [default: 4]
+  -nb-cores NB_CORES    Number of cores [default: 1]
   -max-memory MAX_MEMORY
-                        Max memory for graph building (in MBytes) [default:
-                        8000]
-  -verbose VERBOSITY    Verbosity level [default: 1]
+                        Max memory for graph building (in MBytes) [default: 0]
+  -verbose VERBOSITY    Verbosity level [default: 0]
 ```
 
 <!--

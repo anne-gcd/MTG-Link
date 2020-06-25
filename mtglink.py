@@ -52,9 +52,9 @@ parserMain.add_argument('-index', dest="index", action="store", help="Prefix of 
 parserMain.add_argument('-f', dest="freq", action="store", type=int, default=2, help="Minimal frequence of barcodes extracted in the chunk of size '-c' [default: 2]")
 parserMain.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default './mtglink_results']")
 parserMain.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any")
-parserMain.add_argument('-contigs', dest="contigs", action="store", help="File containing the sequences of the contigs (format: xxx.fasta | xxx.fa)")
+parserMain.add_argument('-contigs', dest="contigs", action="store", help="Directory containing the sequences of the contigs")
 parserMain.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
-parserMain.add_argument('--rbxu', action="store_true", help="If the reads of the union are already extracted, provide this argument '--rbxu'")
+parserMain.add_argument('--rbxu', action="store_true", help="If the reads of the union are already extracted, provide this argument '--rbxu' [optional]")
 
 parserMtg.add_argument('-bkpt', dest="breakpoint", action="store", help="Breakpoint file (with possibly offset of size k removed) (format: xxx.fasta | xxx.fa) [optional]")
 parserMtg.add_argument('-k', dest="kmer", action="store", default=[51, 41, 31, 21],  nargs='*', type=int, help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
@@ -64,7 +64,7 @@ parserMtg.add_argument('-ext', dest="extension", action="store", type=int, help=
 parserMtg.add_argument('-max-nodes', dest="max_nodes", action="store", type=int, default=1000, help="Maximum number of nodes in contig graph [default: 1000]")
 parserMtg.add_argument('-max-length', dest="max_length", action="store", type=int, default=10000, help="Maximum length of gapfilling (bp) [default: 10000]")
 parserMtg.add_argument('-nb-cores', dest="nb_cores", action="store", type=int, default=1, help="Number of cores [default: 1]")
-parserMtg.add_argument('-max-memory', dest="max_memory", action="store", type=int, help="Max memory for graph building (in MBytes)")
+parserMtg.add_argument('-max-memory', dest="max_memory", action="store", type=int, help="Max memory for graph building (in MBytes) [default: 0]")
 parserMtg.add_argument('-verbose', dest="verbosity", action="store", type=int, default=0, help="Verbosity level [default: 0]")
 
 args = parser.parse_args()
