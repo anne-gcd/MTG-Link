@@ -17,24 +17,32 @@ The **MTG-Link** tool uses other tools relying on [GATB-CORE](http://gatb-core.g
 
 ### External dependencies
 
-To run MTG-Link, you need to install a virtual environment containing *Samtools*, *Biopython*, *Gfapy*, *Blast*, *Mummer*, *Pathos* and *indexed_gzip* librairies.  
+* Biopython
+* Pathos
+* Gfapy
+* Samtools
+* indexed_gzip
+* Mummer
+* Blast
+* LRez
+* MindTheGap
 
 You can install them via the conda package manager:  
 `conda install -c bioconda samtools biopython gfapy blast`  
 `conda install -c bioconda/label/cf201901 mummer`  
 `conda install -c conda-forge pathos`  
 `conda install -c conda-forge indexed_gzip`  
+`conda install -c bioconda lrez`  
+`conda install -c bioconda mindthegap`  
 
 Alternatively, you can install them via the requirements.txt file.  
 To install a list of packages into a specified conda environment, do the following:  
 `conda create --name <env> --file requirements.txt`
 
-You also need to install the LRez and MindTheGap tools (and add their locations to the PATH if not installed as a Bioconda package):  
+For more information on the LRez and MindTheGap tools:
 * LRez: <https://github.com/flegeai/LRez>
 * MindTheGap: <https://github.com/GATB/MindTheGap>
 
-The following third parties should be already installed:  
-* cmake 3.1+ *[mandatory]*
 
 ### Getting the latest source code with git
 
