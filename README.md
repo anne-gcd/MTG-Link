@@ -72,6 +72,46 @@ In order to speed up the process, MTG-Link uses a trivial **parallelization** sc
 ![MTG-Link_pipeline](doc/images/pipeline.png)
 
 
+### Preparing input files
+
+#### GFA file
+
+The **GFA** (Graphical Fragment Assembly) file is a *tab-delimited* file containing the gap coordinates. The expected format is the following:  
+```
+<header>   <- H {VN:Z:2.0}
+<segment>  <- S <sid> <slen_in_bp> * UR:Z:<path_to_fasta_sequence>
+<gap>      <- G (* | <gid>) <sid1(+|-)> <sid2(+|-)> <dist> (* | <var>)
+```
+The **G-lines** describe a gap edge, that gives the estimated gap distance between the two segment sequences and the variance of that estimate.  
+The gap is between the first segment at left ` <sid1(+|-)>` and the second segment at right `<sid2(+|-)>` where the segments are oriented according to their sign indicators `(+|-)`.  
+The `<dist>` field gives the expected distance between the first and second segment in their respective orientations, or 0 is this expected distance is unknown.  
+
+How to obtain a GFA file:
+* If you have a file containing the paths between scaffolds, you can use the **paths2gfa.py** script (in the `utils/` directory).  
+  format of a path: `<int:nb_scaffolds>****<sid1(f|r)>+<sid2(f|r)>`
+* If you have a FASTA file with sequences containing 'Ns' regions (where 'Ns' regions will be treated as gaps), you can use the **fasta2gfa.py** script (in the `utils/` directory).
+
+
+#### BAM file
+
+The **BAM** file is a *Samtools* indexed bam file, obtained after mapping the linked reads onto the assembly. For example, the *longranger* pipeline outputs an indexed BAM file containing position-sorted, aligned reads. Each read in this BAM file has Chromium barcode and phasing information attached. 
+
+
+#### Fastq file
+
+The **fastq** file is a barcoded Fastq file from linked reads obtained with *longranger basic*.
+
+
+#### Index file
+
+The **index** file contains the index of barcodes.  
+To get the index file, you need to use the **idx_bx_sqlite3.py** script in `shelve` mode, from the [LRez](https://github.com/flegeai/LRez) repository:
+```
+idx_bx_sqlite3.py --basic <reads.fastq.gz> --idx <barcoded.shelve> --gz --mode shelve
+```
+With `<barcoded.shelve>` being the output indexed file.
+
+
 ### Usage
 
 MTG-Link takes as input a set of reads, a GFA file with gap coordinates and a BAM file. It outputs the results in a GFA file. 
