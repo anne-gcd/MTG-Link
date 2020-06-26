@@ -181,7 +181,7 @@ def mtg_fill(gap_label, input_file, bkpt, k, a, max_nodes, max_length, nb_cores,
 #----------------------------------------------------
 # stats_align function
 #----------------------------------------------------
-#Function to do statistics on the alignment of a reference sequence and query sequences
+#Function to do statistics on the alignment between a reference sequence and query sequences
 def stats_align(gap_label, qry_file, ref_file, ext, prefix, out_dir):
     scriptPath = sys.path[0]
     stats_align_command = os.path.join(scriptPath, "stats_alignment.py")

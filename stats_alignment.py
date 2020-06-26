@@ -51,12 +51,12 @@ parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=(''' \
                                 Statistics about the inserted sequence obtained from MindTheGap (-qry)
-                                Note: there are kmer flanking regions on the edges of the inserted sequence
+                                Note: there are kmer flanking regions on the edges of the inserted sequence (which are included in '-ext' bp flanking regions)
                                 '''))
 
 parser.add_argument("-qry", "--query", action="store", help="file containing the inserted sequences obtained from MindTheGap (format: 'xxx.insertions.fasta')", required=True)
-parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the simulated gap (format: 'xxx.ingap.fasta') or the sequences of the contigs (format: 'xxx.fasta')", required=True)
-parser.add_argument("-ext", "--ext", action="store", type=int, help="size of the gap, on both sides; determine start/end of gapfilling")
+parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the gap (format: 'xxx.fasta')", required=True)
+parser.add_argument("-ext", "--ext", action="store", type=int, help="size of the gap, on both sides; determine start/end of gapfilling", required=True)
 parser.add_argument("-p", "--prefix", action="store", help="prefix of output file to save the statistical results", required=True)
 parser.add_argument("-out", "--outDir", action="store", default="./mtglink_results/alignments_stats", help="output directory for saving results")
 
@@ -105,7 +105,7 @@ try:
         #----------------------------------------------------
         # Ref = reference sequence of simulated gap
         #----------------------------------------------------
-        #Run NUCmer to obtain alignment of the reference sequence against the contigs' sequences
+        #Run NUCmer to obtain alignment of the reference sequence against the query's sequences
         qry_id = qry_file.split('.')[-9]
         qry_k = qry_file.split('.')[-6]
         qry_a = qry_file.split('.')[-5]
@@ -122,7 +122,7 @@ try:
         with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
             subprocess.run(nucmer_command, stderr=log)
             subprocess.run(coords_command, stdout=coords, stderr=log)
-        
+
         #Sort the 'xxx.coords.unsorted' file for further analysis
         coords_sorted_file = prefix + ".coords"
         sort_command = ["sort", "-n", coords_file]
@@ -301,7 +301,7 @@ try:
         #----------------------------------------------------
         # Ref = contigs' sequences
         #----------------------------------------------------
-        #Run NUCmer to obtain alignment of extension portions (-ext) against the contigs' sequences
+        #Run NUCmer to obtain alignment of extension portions (-ext) (of the flanking contigs) against the query's sequences
         qry_id = qry_file.split('.')[-9]
         qry_k = qry_file.split('.')[-6]
         qry_a = qry_file.split('.')[-5]

@@ -52,7 +52,6 @@ parserMain.add_argument('-index', dest="index", action="store", help="Prefix of 
 parserMain.add_argument('-f', dest="freq", action="store", type=int, default=2, help="Minimal frequence of barcodes extracted in the chunk of size '-c' [default: 2]")
 parserMain.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default './mtglink_results']")
 parserMain.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any")
-parserMain.add_argument('-contigs', dest="contigs", action="store", help="Directory containing the sequences of the contigs")
 parserMain.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
 parserMain.add_argument('--rbxu', action="store_true", help="If the reads of the union are already extracted, provide this argument '--rbxu' [optional]")
 
@@ -63,7 +62,7 @@ parserMtg.add_argument('-ext', dest="extension", action="store", type=int, help=
 parserMtg.add_argument('-max-nodes', dest="max_nodes", action="store", type=int, default=1000, help="Maximum number of nodes in contig graph [default: 1000]")
 parserMtg.add_argument('-max-length', dest="max_length", action="store", type=int, default=10000, help="Maximum length of gapfilling (bp) [default: 10000]")
 parserMtg.add_argument('-nb-cores', dest="nb_cores", action="store", type=int, default=1, help="Number of cores [default: 1]")
-parserMtg.add_argument('-max-memory', dest="max_memory", action="store", type=int, help="Max memory for graph building (in MBytes) [default: 0]")
+parserMtg.add_argument('-max-memory', dest="max_memory", action="store", type=int, default=0, help="Max memory for graph building (in MBytes) [default: 0]")
 parserMtg.add_argument('-verbose', dest="verbosity", action="store", type=int, default=0, help="Verbosity level [default: 0]")
 
 args = parser.parse_args()
@@ -73,9 +72,6 @@ if re.match('^.*.gfa$', args.input_gfa) is None:
 
 if re.match('^.*.bam$', args.bam) is None:
     parser.error("The suffix of the BAM file should be: '.bam'")
-    
-if args.refDir is None and args.contigs is None:
-    parser.error("Please provide either a directory containing the reference sequences or a file containing the sequences of the contigs")
 
 #----------------------------------------------------
 # Input files
@@ -103,11 +99,6 @@ if args.refDir is not None:
     refDir = os.path.abspath(args.refDir)
     if not os.path.exists(refDir):
         parser.error("The path of the directory containing the reference sequences doesn't exist")
-
-if args.contigs is not None:
-    contigsDir = os.path.abspath(args.contigs)
-    if not os.path.exists(contigsDir):
-        parser.error("The path of the directory containing the file of contigs' sequences doesn't exist")
 
 #----------------------------------------------------
 # Directories for saving results
@@ -272,10 +263,7 @@ def gapfilling(current_gap):
             if max_length == 10000 and gap.length >= 10000:
                 max_length = gap.length + 1000
             nb_cores = args.nb_cores
-            if args.max_memory is not None:
-                max_memory = args.max_memory
-            else:
-                max_memory = 0
+            max_memory = args.max_memory
             verbose = args.verbosity
             mtg_fill(gap_label, input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
@@ -296,155 +284,165 @@ def gapfilling(current_gap):
                 #----------------------------------------------------
                 # Stats of the alignments query_seq vs reference_seq
                 #----------------------------------------------------
-                #Get the reference sequence file
-                if args.refDir is not None or args.contigs is not None:
-                    print("\nStatistical analysis...")
+                print("\nStatistical analysis...")
 
-                    if args.refDir is not None:
-                        ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
-                    else:
-                        contig_name = str(gap_label).split("-")[0]
-                        ref_file = contigsDir +"/"+ str(contig_name) +"."+ str(gap.length) +".5000.contigs.fasta"
+                #Qualitative evaluation with the reference sequence
+                if args.refDir is not None:
+                    ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
+            
+                #Qualitative evalution with the flanking contigs information
+                else:
+                    left_seq_file = os.path.abspath(left_scaffold.seq_path)
+                    right_seq_file = os.path.abspath(right_scaffold.seq_path)
 
-                    if not os.path.isfile(ref_file):
+                    #Merge both left and right flanking contigs sequences into a unique file (ref_file)
+                    ref_file = statsDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
+                    with open(left_seq_file, "r") as left_fasta, open(right_seq_file, "r") as right_fasta, open(ref_file, "w") as ref_fasta:
+                        records_L = SeqIO.parse(left_fasta, "fasta")
+                        records_R = SeqIO.parse(right_fasta, "fasta")
+                        for record in records_L:
+                            SeqIO.write(record, ref_fasta, "fasta")
+                        for record in records_R:
+                            SeqIO.write(record, ref_fasta, "fasta")                    
+                
+                if not os.path.isfile(ref_file):
                         print("Something wrong with the specified reference file. Exception-", sys.exc_info())
+                #Do statistics on the alignments of query_seq (found gapfill seq) vs reference
+                else:
+                    prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
+                    stats_align(gap_label, input_file, ref_file, str(ext), prefix, statsDir)
+            
+                #----------------------------------------------------
+                # Estimate quality of gapfilled sequence
+                #----------------------------------------------------
+                #Reader for alignment stats' files
+                ref_qry_file = statsDir + "/" + prefix + ".ref_qry.alignment.stats"
+                qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
-                    #Do statistics on the alignments of query_seq (found gapfill seq) vs reference_seq
-                    else:
-                        prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
-                        stats_align(gap_label, input_file, ref_file, str(ext), prefix, statsDir)
+                if not os.path.exists(ref_qry_file):
+                    parser.error("The '{}.ref_qry.alignment.stats' file doesn't exits".format(prefix))
+                elif not os.path.exists(qry_qry_file):
+                    parser.error("The '{}.qry_qry.alignment.stats' file doesn't exits".format(prefix))
 
-                    #----------------------------------------------------
-                    # Estimate quality of gapfilled sequence
-                    #----------------------------------------------------
-                    #Reader for alignment stats' files
-                    ref_qry_file = statsDir + "/" + prefix + ".ref_qry.alignment.stats"
-                    qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
+                else:
+                    ref_qry_output = open(ref_qry_file)
+                    qry_qry_output = open(qry_qry_file)
 
-                    if not os.path.exists(ref_qry_file):
-                        parser.error("The '{}.ref_qry.alignment.stats' file doesn't exits".format(prefix))
-                    elif not os.path.exists(qry_qry_file):
-                        parser.error("The '{}.qry_qry.alignment.stats' file doesn't exits".format(prefix))
+                    reader_ref_stats = csv.DictReader(ref_qry_output, \
+                                                    fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                                                                "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                                                    delimiter='\t')
 
-                    else:
-                        ref_qry_output = open(ref_qry_file)
-                        qry_qry_output = open(qry_qry_file)
-
-                        reader_ref_stats = csv.DictReader(ref_qry_output, \
-                                                        fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                                                                    "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                    reader_revcomp_stats = csv.DictReader(qry_qry_output, \
+                                                        fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
+                                                                    "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
                                                         delimiter='\t')
+                    
+                    #Obtain a quality score for each gapfilled seq
+                    solutions = []
+                    output_for_gfa = []
+                    insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
+                    with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
+                        for record in SeqIO.parse(query, "fasta"):
 
-                        reader_revcomp_stats = csv.DictReader(qry_qry_output, \
-                                                            fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
-                                                                        "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
-                                                            delimiter='\t')
-                        
-                        #Obtain a quality score for each gapfilled seq
-                        solutions = []
-                        output_for_gfa = []
-                        insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
-                        with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
-                            for record in SeqIO.parse(query, "fasta"):
+                            seq = record.seq
+                            strand = str(record.id).split('_')[0][-1]
 
-                                seq = record.seq
-                                strand = str(record.id).split('_')[0][-1]
+                            #----------------------------------------------------
+                            #Ref = reference sequence of simulated gap
+                            #----------------------------------------------------
+                            if args.refDir is not None:
+                                #quality score for stats about the ref
+                                quality_ref = []
+                                for row in reader_ref_stats:
+                                    if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")):
+                                        quality_ref.append(row["Quality"])
+                                
+                                if quality_ref == []:
+                                    quality_ref.append('D')
 
-                                #----------------------------------------------------
-                                #Ref = reference sequence of simulated gap
-                                #----------------------------------------------------
-                                if args.refDir is not None:
-                                    #quality score for stats about the ref
-                                    quality_ref = []
-                                    for row in reader_ref_stats:
-                                        if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")):
-                                            quality_ref.append(row["Quality"])
-                                    
-                                    if quality_ref == []:
-                                        quality_ref.append('D')
+                                ref_qry_output.seek(0)
 
-                                    ref_qry_output.seek(0)
+                                #quality score for stats about the reverse complement strand
+                                quality_revcomp = []
+                                for row in reader_revcomp_stats:
+                                    if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
+                                        or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
+                                        quality_revcomp.append(row["Quality"])
+                                if quality_revcomp == []:
+                                    quality_revcomp.append('D')
+                                qry_qry_output.seek(0)
 
-                                    #quality score for stats about the reverse complement strand
-                                    quality_revcomp = []
-                                    for row in reader_revcomp_stats:
-                                        if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
-                                            or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
-                                            quality_revcomp.append(row["Quality"])
-                                    if quality_revcomp == []:
-                                        quality_revcomp.append('D')
-                                    qry_qry_output.seek(0)
+                                #global quality score
+                                quality_gapfilled_seq = min(quality_ref) + min(quality_revcomp)
+                                
+                                record.description = "Quality " + str(quality_gapfilled_seq)
+                                SeqIO.write(record, qualified, "fasta")
 
-                                    #global quality score
-                                    quality_gapfilled_seq = min(quality_ref) + min(quality_revcomp)
-                                    
-                                    record.description = "Quality " + str(quality_gapfilled_seq)
-                                    SeqIO.write(record, qualified, "fasta")
+                                #Update GFA with only the good solutions (the ones having a good quality score)
+                                if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
+                                    check = "True_" + str(strand)
+                                    solutions.append(check)
+                                    gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
+                                    output_for_gfa.append(gfa_output)
+                                else:
+                                    check = "False_" + str(strand)
+                                    solutions.append(check)
+    
+                            #----------------------------------------------------
+                            #Ref = contigs' sequences
+                            #----------------------------------------------------
+                            elif args.contigs is not None:
+                                #quality score for stats about the extension
+                                quality_ext_left = []
+                                quality_ext_right = []
+                                for row in reader_ref_stats:
+                                    if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
+                                        quality_ext_left.append(row["Quality"])
+                                    elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
+                                        quality_ext_right.append(row["Quality"])
+                                if quality_ext_left == []:
+                                    quality_ext_left.append('D')
+                                if quality_ext_right == []:
+                                    quality_ext_right.append('D')
 
-                                    #Update GFA with only the good solutions (the ones having a good quality score)
-                                    if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
-                                        check = "True_" + str(strand)
-                                        solutions.append(check)
-                                        gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
-                                        output_for_gfa.append(gfa_output)
-                                    else:
-                                        check = "False_" + str(strand)
-                                        solutions.append(check)
-     
-                                #----------------------------------------------------
-                                #Ref = contigs' sequences
-                                #----------------------------------------------------
-                                elif args.contigs is not None:
-                                    #quality score for stats about the extension
-                                    quality_ext_left = []
-                                    quality_ext_right = []
-                                    for row in reader_ref_stats:
-                                        if (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == left_scaffold.name):
-                                            quality_ext_left.append(row["Quality"])
-                                        elif (row["Solution"] in record.id) and (("bkpt1" in record.id and row["Strand"] == "fwd") or ("bkpt2" in record.id and row["Strand"] == "rev")) and (row["Ref"] == right_scaffold.name):
-                                            quality_ext_right.append(row["Quality"])
-                                    if quality_ext_left == []:
-                                        quality_ext_left.append('D')
-                                    if quality_ext_right == []:
-                                        quality_ext_right.append('D')
+                                ref_qry_output.seek(0)
 
-                                    ref_qry_output.seek(0)
+                                #quality score for stats about the reverse complement strand
+                                quality_revcomp = []
+                                for row in reader_revcomp_stats:
+                                    if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
+                                        or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
+                                        quality_revcomp.append(row["Quality"])
+                                if quality_revcomp == []:
+                                    quality_revcomp.append('D')
+                                qry_qry_output.seek(0)
 
-                                    #quality score for stats about the reverse complement strand
-                                    quality_revcomp = []
-                                    for row in reader_revcomp_stats:
-                                        if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
-                                            or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
-                                            quality_revcomp.append(row["Quality"])
-                                    if quality_revcomp == []:
-                                        quality_revcomp.append('D')
-                                    qry_qry_output.seek(0)
+                                #global quality score
+                                quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
+                                
+                                record.description = "Quality " + str(quality_gapfilled_seq)
+                                SeqIO.write(record, qualified, "fasta")
 
-                                    #global quality score
-                                    quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
-                                    
-                                    record.description = "Quality " + str(quality_gapfilled_seq)
-                                    SeqIO.write(record, qualified, "fasta")
+                                #Update GFA with only the good solutions (the ones having a good quality score)
+                                if (len(seq) > 2*ext) and (re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description)):
+                                    check = "True_" + str(strand)
+                                    solutions.append(check)
+                                    gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
+                                    output_for_gfa.append(gfa_output)
 
-                                    #Update GFA with only the good solutions (the ones having a good quality score)
-                                    if (len(seq) > 2*ext) and (re.match('^.*Quality A[AB]{2}$', record.description) or re.match('^.*Quality BA[AB]$', record.description)):
-                                        check = "True_" + str(strand)
-                                        solutions.append(check)
-                                        gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
-                                        output_for_gfa.append(gfa_output)
+                                else:
+                                    check = "False_" + str(strand)
+                                    solutions.append(check)
 
-                                    else:
-                                        check = "False_" + str(strand)
-                                        solutions.append(check)
+                        qualified.seek(0)
 
-                            qualified.seek(0)
+                    #remove the 'input_file' once done with it
+                    subprocess.run(["rm", input_file])
 
-                        #remove the 'input_file' once done with it
-                        subprocess.run(["rm", input_file])
-
-                        #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
-                        subprocess.run(["rm", insertion_file])
-                        subprocess.run(['mv', insertion_quality_file, insertion_file])
+                    #remplace the 'insertion_file' by the 'insertion_quality_file' (which is then renamed 'insertion_file')
+                    subprocess.run(["rm", insertion_file])
+                    subprocess.run(['mv', insertion_quality_file, insertion_file])
 
 
                 #If at least one good solution for both fwd and rev strands amongst all solution found, stop searching
