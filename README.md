@@ -157,8 +157,6 @@ optional arguments:
                         provide this argument '--rbxu' [optional]
 
 [MindTheGap option]:
-  -bkpt BREAKPOINT      Breakpoint file (with possibly offset of size k
-                        removed) (format: xxx.fasta | xxx.fa) [optional]
   -k [KMER [KMER ...]]  k-mer size(s) used for gap-filling [default: [51, 41,
                         31, 21]]
   --force               To force search on all '-k' values provided

@@ -56,7 +56,6 @@ parserMain.add_argument('-contigs', dest="contigs", action="store", help="Direct
 parserMain.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
 parserMain.add_argument('--rbxu', action="store_true", help="If the reads of the union are already extracted, provide this argument '--rbxu' [optional]")
 
-parserMtg.add_argument('-bkpt', dest="breakpoint", action="store", help="Breakpoint file (with possibly offset of size k removed) (format: xxx.fasta | xxx.fa) [optional]")
 parserMtg.add_argument('-k', dest="kmer", action="store", default=[51, 41, 31, 21],  nargs='*', type=int, help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
 parserMtg.add_argument("--force", action="store_true", help="To force search on all '-k' values provided")
 parserMtg.add_argument('-a', dest="abundance_threshold", action="store", default=[3, 2], nargs='*', type=int, help="Minimal abundance threshold for solid k-mers [default: [3, 2]]")
