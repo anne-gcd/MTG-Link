@@ -63,9 +63,18 @@ MTG-Link automatically tests different parameters values for gap-filling, follow
 
 More specifically, different *de Bruijn graphs* will be created for **different k-mer sizes** `-k`, starting with the highest -k value, and MindTheGap will try to find a path, testing **different values of abundance thresholds** for solid k-mers `-a`, starting as well with the highest -a value. 
 
-Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the **qualitative evaluation** of the gap-filled sequence(s) obtained, checking that the forward and reverse gap-filled sequences obtained are complementary, and that the gap-filled sequence aligns correctly to the entire reference sequence (if a reference sequence is provided) or to the flanking region of size `-ext` of the flanking contigs.
+Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the **qualitative evaluation** of the gap-filled sequence(s) obtained to distinguish positive gap-filled sequences from negative ones. To do so, it will assign a quality score to each gap-filled sequence:
+* If a reference sequence is provided (`-refDir`):  2-letters score X<sub>1</sub>X<sub>2</sub> with X = [A, B, C, D]
+    * X<sub>1</sub>: alignment to the entire reference sequence
+    * X<sub>2</sub>: complementarity of the forward and reverse gap-filled sequences
+* If the flanking contigs sequences are provided (`-contigs`): 3-letters score X<sub>1</sub>X<sub>2</sub>X<sub>3</sub> with X = [A, B, C, D]
+    * X<sub>1</sub>: alignment to the left flanking sequence (`-ext`)
+    * X<sub>2</sub>: alignment to the right flanking sequence (`ext`)
+    * X<sub>3</sub>: complementarity of the forward and reverse gap-filled sequences
 
-After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file, containing the gap-filled sequences of each gap. 
+MTG-Link selects the gap-filled sequences with a score [AB]{2} (`-refDir`) or with a score A[AB]{2} or BA[AB] (`-contigs`).
+
+After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. 
 
 In order to speed up the process, MTG-Link uses a trivial **parallelization** scheme by giving each gap to a separate thread. 
 
