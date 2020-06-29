@@ -296,14 +296,14 @@ def gapfilling(current_gap):
                     right_seq_file = os.path.abspath(right_scaffold.seq_path)
 
                     #Merge both left and right flanking contigs sequences into a unique file (ref_file)
-                    ref_file = statsDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
-                    with open(left_seq_file, "r") as left_fasta, open(right_seq_file, "r") as right_fasta, open(ref_file, "w") as ref_fasta:
+                    ref_file = outDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
+                    with open(left_seq_file, "r") as left_fasta, open(right_seq_file, "r") as right_fasta, open(ref_file, "a") as ref_fasta:
                         records_L = SeqIO.parse(left_fasta, "fasta")
                         records_R = SeqIO.parse(right_fasta, "fasta")
                         for record in records_L:
                             SeqIO.write(record, ref_fasta, "fasta")
                         for record in records_R:
-                            SeqIO.write(record, ref_fasta, "fasta")                    
+                            SeqIO.write(record, ref_fasta, "fasta")
                 
                 if not os.path.isfile(ref_file):
                         print("Something wrong with the specified reference file. Exception-", sys.exc_info())
