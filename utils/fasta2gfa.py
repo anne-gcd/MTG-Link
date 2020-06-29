@@ -34,19 +34,13 @@ from Bio import SeqIO
 #----------------------------------------------------
 parser = argparse.ArgumentParser(prog="fasta2gfa.py", usage="%(prog)s -in <fasta_file> -out <output_directory> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=(''' \
-                                Transform a FASTA file with sequences containing 'Ns' regions to a GFA file ('Ns' regions are treated as gaps).
-                                We can filter the 'Ns' regions by their size (e.g. gap sizes) and by the contigs' sizes on both sides (long enough for ex to get enough barcodes) by providing values for the following arguments:
-                                    - '-min': minimum size gap
-                                    - '-max': maximum size gao
-                                    - '-contigs': minimum size of the contigs on both sides of the Ns regions
-                                '''))
+                                description=("Transform a FASTA file with sequences containing 'Ns' regions to a GFA file ('Ns' regions are treated as gaps). We can filter the 'Ns' regions by their size (e.g. gap sizes) and by the contigs' sizes on both sides (long enough for ex to get enough barcodes)"))
 
-parser.add_argument("-in", "--input", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta')", required=True)
-parser.add_argument("-min", "--min", action="store", type=int, help="minimum size of the Ns region to treat/process as a gap")
-parser.add_argument("-max", "--max", action="store", type=int, help="maximum size of the Ns region to treat/process as a gap")
-parser.add_argument("-contigs", "--contigs_size", action="store", type=int, help="minimum size of the contigs on both sides of the Ns region to treat/process the Ns region as a gap")
-parser.add_argument("-out", "--outDir", action="store", help="output directory for saving the GFA file", required=True)
+parser.add_argument("-in", dest="input", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta')", required=True)
+parser.add_argument("-min", dest="min", action="store", type=int, help="Minimum size of the 'Ns' region to treat/process as a gap")
+parser.add_argument("-max", dest="max", action="store", type=int, help="Maximum size of the 'Ns' region to treat/process as a gap")
+parser.add_argument("-contigs", dest="contigs_size", action="store", type=int, help="Minimum size of the flanking contigs of the 'Ns' region to treat/process as a gap")
+parser.add_argument("-out", dest="outDir", action="store", help="Output directory for saving the GFA file", required=True)
 
 args = parser.parse_args()
 
