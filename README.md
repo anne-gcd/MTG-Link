@@ -131,7 +131,7 @@ The MTG-Link command line interface is composed of multiple parameters. You can 
 ```
 ./mtglink.py --help
 
-usage: mtglink.py -gfa <input.gfa> -c <chunk_size> -bam <mapped.bam> -fastq <reads.fastq> -index <barcoded.shelve> (-refDir <dir_ref_seq> | -contigs <dir_contigs_seq>) [options]
+usage: mtglink.py -gfa <input.gfa> -c <chunk_size> -bam <mapped.bam> -fastq <reads.fastq> -index <barcoded.shelve> [options]
                                 
 Gapfilling with linked read data, using MindTheGap in 'breakpoint' mode
 
@@ -149,7 +149,6 @@ optional arguments:
                         of size '-c' [default: 2]
   -out OUTDIR           Output directory [default './mtg10x_results']
   -refDir REFDIR        Directory containing the reference sequences if any
-  -contigs CONTIGS      Directory containing the sequences of the contigs 
   -line LINE            Line of GFA file input from which to start analysis
                         (if not provided, start analysis from first line of
                         GFA file input) [optional]
