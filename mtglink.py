@@ -390,9 +390,9 @@ def gapfilling(current_gap):
                                     solutions.append(check)
     
                             #----------------------------------------------------
-                            #Ref = contigs' sequences
+                            #Ref = flanking contigs' sequences
                             #----------------------------------------------------
-                            elif args.contigs is not None:
+                            else:
                                 #quality score for stats about the extension
                                 quality_ext_left = []
                                 quality_ext_right = []
