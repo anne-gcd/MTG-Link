@@ -74,7 +74,7 @@ Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the 
 
 MTG-Link selects the gap-filled sequences with a score [AB]{2} (`-refDir`) or with a score A[AB]{2} or BA[AB] (`-contigs`).
 
-After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. 
+After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
 In order to speed up the process, MTG-Link uses a trivial **parallelization** scheme by giving each gap to a separate thread. 
 
@@ -123,9 +123,10 @@ With `<barcoded.shelve>` being the output indexed file.
 
 ### Usage
 
-MTG-Link takes as input a set of reads, a GFA file with gap coordinates and a BAM file. It outputs the results in a GFA file. 
+MTG-Link takes as input a GFA file with gap coordinates, a set of linked reads, a BAM file and an index file containing the index of barcodes.  
+It outputs the results in a GFA file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
-MTG-Link can be used either with a reference sequence (`-refDir`) or with no reference sequence e.g. only the flanking contigs sequences (`-contigs`).
+The qualitative evaluation of MTG-Link can be performed either with the corresponding reference sequences of the gaps (`-refDir`) or with the flanking contigs sequences.
 
 The MTG-Link command line interface is composed of multiple parameters. You can get a summary of all available parameters by running:
 ```
