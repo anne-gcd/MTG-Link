@@ -85,7 +85,7 @@ In order to speed up the process, MTG-Link uses a trivial **parallelization** sc
 
 #### GFA file
 
-The **GFA** (Graphical Fragment Assembly) file is a *tab-delimited* file containing the gap coordinates. The expected format is the following:  
+The **GFA** (Graphical Fragment Assembly) file is a *tab-delimited* file containing the gap coordinates. The expected format is a [GFA 2.0](http://gfa-spec.github.io/GFA-spec/GFA2.html) format:  
 ```
 <header>   <- H {VN:Z:2.0}
 <segment>  <- S <sid> <slen_in_bp> * UR:Z:<path_to_fasta_sequence>
@@ -95,10 +95,20 @@ The **G-lines** describe a gap edge, that gives the estimated gap distance betwe
 The gap is between the first segment at left ` <sid1(+|-)>` and the second segment at right `<sid2(+|-)>` where the segments are oriented according to their sign indicators `(+|-)`.  
 The `<dist>` field gives the expected distance between the first and second segment in their respective orientations, or 0 is this expected distance is unknown.  
 
+Example:
+```
+H	VN:Z:2.0
+S	118-L	796297	*	UR:Z:118.1000.5000.left.fasta
+S	118-R	796297	*	UR:Z:118.1000.5000.right.fasta
+G	*	118-L+	118-R+	1000	*
+```
 How to obtain a GFA file:
 * If you have a file containing the paths between scaffolds, you can use the **paths2gfa.py** script (in the `utils/` directory).  
   format of a path: `<int:nb_scaffolds>****<sid1(f|r)>+<sid2(f|r)>`
 * If you have a FASTA file with sequences containing 'Ns' regions (where 'Ns' regions will be treated as gaps), you can use the **fasta2gfa.py** script (in the `utils/` directory).
+
+
+
 
 
 #### BAM file
