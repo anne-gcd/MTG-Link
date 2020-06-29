@@ -14,9 +14,7 @@ from Bio import SeqIO
 #----------------------------------------------------
 parser = argparse.ArgumentParser(prog="paths2gfa.py", usage="%(prog)s -in <fasta_file> -paths <paths_file> -out <output_directory>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=(''' \
-                                Transform a file containing the paths between scaffolds to a GFA file
-                                '''))
+                                description=("Transform a file containing the paths between scaffolds to a GFA file"))
 
 parser.add_argument("-in", dest="input", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta')", required=True)
 parser.add_argument("-paths", dest="paths", action="store", help="File containing the paths between scaffolds (obtained from the matrix) (format: 'xxx.paths.txt')", required=True)
