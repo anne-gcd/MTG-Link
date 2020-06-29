@@ -35,12 +35,10 @@ from Bio import SeqIO
 #----------------------------------------------------
 parser = argparse.ArgumentParser(prog="gfa2fasta.py", usage="%(prog)s -in <gfa_file> -out <output_directory>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=(''' \
-                                Transform a GFA file (GFA 1.0) to a FASTA file (gaps are returned as 'Ns' regions).
-                                '''))
+                                description=("Transform a GFA file (GFA 1.0) to a FASTA file (gaps are returned as 'Ns' regions)"))
 
-parser.add_argument("-in", "--input", action="store", help="GFA 1.0 file (format: 'xxx.gfa')", required=True)
-parser.add_argument("-out", "--outDir", action="store", help="output directory for saving the FASTA file", required=True)
+parser.add_argument("-in", dest="input", action="store", help="GFA 1.0 file (format: 'xxx.gfa')", required=True)
+parser.add_argument("-out", dest="outDir", action="store", help="Output directory for saving the FASTA file", required=True)
 
 args = parser.parse_args()
 
