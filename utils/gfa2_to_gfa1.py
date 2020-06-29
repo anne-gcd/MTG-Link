@@ -33,12 +33,10 @@ import gfapy
 #----------------------------------------------------
 parser = argparse.ArgumentParser(prog="gfa.2_to_gfa.1.py", usage="%(prog)s -in <input_gfa_2.0)> -out <output_directory>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=(''' \
-                                Convert a GFA 2.0 file into a GFA 1.0 file
-                                '''))
+                                description=("Convert a GFA 2.0 file into a GFA 1.0 file"))
 
-parser.add_argument("-in", "--input", action="store", help="GFA 2.0 file (format: 'xxx.gfa')", required=True)
-parser.add_argument("-out", "--outDir", action="store", help="output directory for saving the GFA 1.0 file", required=True)
+parser.add_argument("-in", dest="input", action="store", help="GFA 2.0 file (format: 'xxx.gfa')", required=True)
+parser.add_argument("-out", dest="outDir", action="store", help="Output directory for saving the GFA 1.0 file", required=True)
 
 args = parser.parse_args()
 
