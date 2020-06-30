@@ -38,7 +38,7 @@ from helpers import Gap, Scaffold, extract_barcodes, get_reads, mtg_fill, stats_
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="mtglink.py", usage="%(prog)s -in <GFA_file> -c <chunk_size> -bam <BAM_file> -reads <reads_file> -index <index_file> -f <freq_barcodes> [options]", \
+parser = argparse.ArgumentParser(prog="mtglink.py", usage="%(prog)s -gfa <input.gfa> -c <chunk_size> -bam <mapped.bam> -fastq <reads.fastq> -index <barcoded.shelve> [options]", \
                                 description=("Gapfilling with linked read data, using MindTheGap in 'breakpoint' mode"))
 
 parserMain = parser.add_argument_group("[Main options]")
