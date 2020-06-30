@@ -67,12 +67,12 @@ Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the 
 * If a reference sequence is provided (`-refDir`):  2-letters score X<sub>1</sub>X<sub>2</sub> with X = [A, B, C, D]
     * X<sub>1</sub>: alignment to the entire reference sequence
     * X<sub>2</sub>: complementarity of the forward and reverse gap-filled sequences
-* If the flanking contigs sequences are provided (`-contigs`): 3-letters score X<sub>1</sub>X<sub>2</sub>X<sub>3</sub> with X = [A, B, C, D]
+* Using the flanking contigs information: 3-letters score X<sub>1</sub>X<sub>2</sub>X<sub>3</sub> with X = [A, B, C, D]
     * X<sub>1</sub>: alignment to the left flanking sequence (`-ext`)
     * X<sub>2</sub>: alignment to the right flanking sequence (`ext`)
     * X<sub>3</sub>: complementarity of the forward and reverse gap-filled sequences
 
-MTG-Link selects the gap-filled sequences with a score [AB]{2} (`-refDir`) or with a score A[AB]{2} or BA[AB] (`-contigs`).
+MTG-Link selects the gap-filled sequences with a score [AB]{2} (reference sequence provided) or with a score A[AB]{2} or BA[AB] (using the flanking contigs information).
 
 After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
