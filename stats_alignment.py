@@ -596,11 +596,17 @@ try:
             output_qry.write('\n' + '\t'.join(str(i) for i in stats_qry))
 
 
-    #Remove the raw file obtained from statistics ('.delta', '.coords', '.unsorted' files)
+    #Remove the raw file obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
+    subprocess.run(["rm", nucmerLog])
+    subprocess.run(["rm", nucmerLog_qry])
     subprocess.run(["rm", delta_file])
     subprocess.run(["rm", delta_file_qry])
     subprocess.run(["rm", coords_file])
+    subprocess.run(["rm", coords_sorted_file])
     subprocess.run(["rm", coords_file_qry])
+    subprocess.run(["rm", coords_qry_sorted_file])
+    subprocess.run(["rm", ref_qry_output])
+    subprocess.run(["rm", qry_qry_output])
 
 
 except Exception as e:
