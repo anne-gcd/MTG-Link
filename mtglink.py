@@ -478,10 +478,6 @@ def gapfilling(current_gap):
     os.chdir(outDir)
     subprocess.run(["rm", tmp_gap_file])
 
-    with open(multiLog, "a") as log:
-        log.write("\nOutput for GFA:\n")
-        log.write(str(output_for_gfa))
-
 
     return union_summary, output_for_gfa
 
