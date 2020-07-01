@@ -142,8 +142,8 @@ def gapfilling(current_gap):
     gap.info()
     gap_label = gap.label()
 
-    left_scaffold = Scaffold(current_gap, gap.left)
-    right_scaffold = Scaffold(current_gap, gap.right)
+    left_scaffold = Scaffold(current_gap, gap.left, gfa_file)
+    right_scaffold = Scaffold(current_gap, gap.right, gfa_file)
 
     #If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length
     if args.chunk > left_scaffold.len or args.chunk > right_scaffold.len:

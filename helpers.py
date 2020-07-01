@@ -57,7 +57,7 @@ class Gap:
 # Scaffold class
 #----------------------------------------------------
 class Scaffold(Gap):
-    def __init__(self, gap, scaffold):
+    def __init__(self, gap, scaffold, gfa_file):
         super().__init__(gap)
         self.gap = gap
         self.scaffold = scaffold
@@ -65,8 +65,12 @@ class Scaffold(Gap):
         self.orient = scaffold.orient
         self.len = scaffold.line.slen
         self.seq_path = scaffold.line.UR
+        self.gfa_file = gfa_file
     
     def sequence(self):
+        if not str(self.seq_path).startswith('/'):
+            self.seq_path = str(self.gfa_file).split('test.gfa')[0] + str(self.seq_path)
+
         for record in SeqIO.parse(self.seq_path, "fasta"):
             if re.match(self.name, record.id):
                 if self.orient == "+":
