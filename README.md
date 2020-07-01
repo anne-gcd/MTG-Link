@@ -72,27 +72,11 @@ You can test your installation of MTG-Link with this command line:
 # 6 files are generated in ./test_MTGLink/mtg_results (by the dependency MindTheGap):
 #   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file)
 #   2 files 'xxx.bxu.h5' (de Bruijn graphs)
-#   2 files 'xxx.bxu.info.txt' (log file)
+#   2 files 'xxx.bxu.info.txt' (log files)
 #   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
 ```
-The output GFA file (`mtglink_test.gfa`) should be like this:
-```
-H	VN:Z:2.0
-S	140-L	236326	*	UR:Z:140.1000.5000.left.fasta
-S	140-R	236325	*	UR:Z:140.1000.5000.right.fasta
-S	140-L+:140-R+_gf2/4.k51fwd	1999	*	UR:Z:/home/genouest/inra_umr1349/aguichard/test6/test.gfa.gapfill_seq.fasta
-S	140-L+:140-R+_gf3/3.k51rev	2001	*	UR:Z:/home/genouest/inra_umr1349/aguichard/test6/test.gfa.gapfill_seq.fasta
-E	*	140-L+	140-L+:140-R+_gf2/4.k51fwd+	235826	236326$	0	500	*
-E	*	140-L+:140-R+_gf2/4.k51fwd+	140-R+	1499	1999$	0	500	*
-E	*	140-L+	140-L+:140-R+_gf3/3.k51rev-	235826	236326$	1501	2001$	*
-E	*	140-L+:140-R+_gf3/3.k51rev-	140-R+	0	500	0	500	*
-```
-The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contains these 2 sequences:
-```
->140-L+:140-R+_gf2/4.k51fwd _ len 1999
->140-L+:140-R+_gf3/3.k51rev _ len 2001
-```
-
+The output GFA file (`mtglink_test.gfa`) should contains 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
+The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contains 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
 
 
 ## User Manual
