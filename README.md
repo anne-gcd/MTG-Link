@@ -50,6 +50,51 @@ git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 ```
 
 
+### Testing the installation
+
+You can test your installation of MTG-Link with this command line:
+```
+# If MTG-Link is in your /home directory 
+~/MTG-Link/mtglink.py -gfa ~/MTG-Link/test/test.gfa -c 5000 -bam ~/MTG-Link/test/test.bam -fastq ~/MTG-Link/test/reads.fastq -index ~/MTG-Link/test/barcoded.shelve -ext 500 -out ./test_MTGLink
+
+# 6 files are generated in ./test_MTGLink:
+#   test.gfa.140-L+_140-R+.g1000.c5000.rbxu.fastq (linked reads used for gap-filling)
+#   140-L+_140-R+_getreads.log (list of barcodes used to extract these linked reads)
+#   140-L+_140-R+.g1000.contigs.fasta (flanking contigs sequences)
+#   test.gfa.union.sum (stats about the union: 1146 barcodes ; 157528 reads)
+#   mtglink_test.gfa (output GFA)
+#   test.gfa.gapfill_seq.fasta (set of gap-filled sequences)
+
+# 2 files are generated in ./test_MTGLink/alignments_stats:
+#   140-L+_140-R+.k51.a2.ref_qry.alignment.stats (alignment gap-filled sequences vs flanking contigs sequences)
+#   140-L+_140-R+.k51.a2.qry_qry.alignment.stats (alignment forward vs reverse gap-filled sequences)
+
+# 6 files are generated in ./test_MTGLink/mtg_results (by the dependency MindTheGap):
+#   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file used for gap-filling)
+#   2 files 'xxx.bxu.h5' (de Bruijn graphs)
+#   2 files 'xxx.bxu.info.txt' (log file)
+#   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (set of inserted sequences found by MindTheGap, with their qualitative scores: 4 forward (bkpt1) and 3 reverse (bkpt2))
+```
+The output GFA file (`mtglink_test.gfa`) should be like this:
+```
+H	VN:Z:2.0
+S	140-L	236326	*	UR:Z:140.1000.5000.left.fasta
+S	140-R	236325	*	UR:Z:140.1000.5000.right.fasta
+S	140-L+:140-R+_gf2/4.k51fwd	1999	*	UR:Z:/home/genouest/inra_umr1349/aguichard/test6/test.gfa.gapfill_seq.fasta
+S	140-L+:140-R+_gf3/3.k51rev	2001	*	UR:Z:/home/genouest/inra_umr1349/aguichard/test6/test.gfa.gapfill_seq.fasta
+E	*	140-L+	140-L+:140-R+_gf2/4.k51fwd+	235826	236326$	0	500	*
+E	*	140-L+:140-R+_gf2/4.k51fwd+	140-R+	1499	1999$	0	500	*
+E	*	140-L+	140-L+:140-R+_gf3/3.k51rev-	235826	236326$	1501	2001$	*
+E	*	140-L+:140-R+_gf3/3.k51rev-	140-R+	0	500	0	500	*
+```
+The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contains these 2 sequences:
+```
+>140-L+:140-R+_gf2/4.k51fwd _ len 1999
+>140-L+:140-R+_gf3/3.k51rev _ len 2001
+```
+
+
+
 ## User Manual
 
 ### Description
@@ -106,9 +151,6 @@ How to obtain a GFA file:
 * If you have a file containing the paths between scaffolds, you can use the **paths2gfa.py** script (in the `utils/` directory).  
   format of a path: `<int:nb_scaffolds>****<sid1(f|r)>+<sid2(f|r)>`
 * If you have a FASTA file with sequences containing 'Ns' regions (where 'Ns' regions will be treated as gaps), you can use the **fasta2gfa.py** script (in the `utils/` directory).
-
-
-
 
 
 #### BAM file
@@ -186,7 +228,8 @@ optional arguments:
 ```
 
 <!--
-TODO: add examples
+TODO: add examples with -ext 500 -max-nodes 10000 -max-length 100000 -nb-cores 8
+or just add comments to say if it doesn't work, try with these parameters
 -->
 
 
