@@ -206,12 +206,6 @@ def gapfilling(current_gap):
     rbxu = sum(1 for line in open(union_reads_file, "r"))/4
     union_summary = [str(gap.id), str(gap.left), str(gap.right), gap.length, args.chunk, bxu, rbxu]
 
-    multiLog = str(gap_label) + "_multi.log"
-
-    with open(multiLog, "a") as log:
-        log.write("Union summary:\n")
-        log.write(str(union_summary))
-
     #Remove the barcodes files
     subprocess.run(["rm", left_barcodes_file])
     subprocess.run(["rm", right_barcodes_file])
