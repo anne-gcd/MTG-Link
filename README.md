@@ -58,22 +58,22 @@ You can test your installation of MTG-Link with this command line:
 ~/MTG-Link/mtglink.py -gfa ~/MTG-Link/test/test.gfa -c 5000 -bam ~/MTG-Link/test/test.bam -fastq ~/MTG-Link/test/reads.fastq -index ~/MTG-Link/test/barcoded.shelve -ext 500 -out ./test_MTGLink
 
 # 6 files are generated in ./test_MTGLink:
+#   140-L+_140-R+_getreads.log (barcodes of the union)
 #   test.gfa.140-L+_140-R+.g1000.c5000.rbxu.fastq (linked reads used for gap-filling)
-#   140-L+_140-R+_getreads.log (list of barcodes used to extract these linked reads)
 #   140-L+_140-R+.g1000.contigs.fasta (flanking contigs sequences)
 #   test.gfa.union.sum (stats about the union: 1146 barcodes ; 157528 reads)
 #   mtglink_test.gfa (output GFA)
 #   test.gfa.gapfill_seq.fasta (set of gap-filled sequences)
 
 # 2 files are generated in ./test_MTGLink/alignments_stats:
-#   140-L+_140-R+.k51.a2.ref_qry.alignment.stats (alignment gap-filled sequences vs flanking contigs sequences)
-#   140-L+_140-R+.k51.a2.qry_qry.alignment.stats (alignment forward vs reverse gap-filled sequences)
+#   140-L+_140-R+.k51.a2.ref_qry.alignment.stats 
+#   140-L+_140-R+.k51.a2.qry_qry.alignment.stats 
 
 # 6 files are generated in ./test_MTGLink/mtg_results (by the dependency MindTheGap):
-#   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file used for gap-filling)
+#   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file)
 #   2 files 'xxx.bxu.h5' (de Bruijn graphs)
 #   2 files 'xxx.bxu.info.txt' (log file)
-#   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (set of inserted sequences found by MindTheGap, with their qualitative scores: 4 forward (bkpt1) and 3 reverse (bkpt2))
+#   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
 ```
 The output GFA file (`mtglink_test.gfa`) should be like this:
 ```
