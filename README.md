@@ -52,31 +52,14 @@ git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 
 ### Testing the installation
 
-You can test your installation of MTG-Link with this command line:
+You can test your installation of MTG-Link using the small dataset in the `test/`dir with this command line:
 ```
-# If MTG-Link is in your /home directory 
-~/MTG-Link/mtglink.py -gfa ~/MTG-Link/test/test.gfa -c 5000 -bam ~/MTG-Link/test/test.bam -fastq ~/MTG-Link/test/reads.fastq -index ~/MTG-Link/test/barcoded.shelve -ext 500 -out ./test_MTGLink
-
-# 6 files are generated in ./test_MTGLink:
-#   140-L+_140-R+_getreads.log (barcodes of the union)
-#   test.gfa.140-L+_140-R+.g1000.c5000.rbxu.fastq (linked reads used for gap-filling)
-#   140-L+_140-R+.g1000.contigs.fasta (flanking contigs sequences)
-#   test.gfa.union.sum (stats about the union: 1146 barcodes ; 157528 reads)
-#   mtglink_test.gfa (output GFA)
-#   test.gfa.gapfill_seq.fasta (set of gap-filled sequences)
-
-# 2 files are generated in ./test_MTGLink/alignments_stats:
-#   140-L+_140-R+.k51.a2.ref_qry.alignment.stats 
-#   140-L+_140-R+.k51.a2.qry_qry.alignment.stats 
-
-# 6 files are generated in ./test_MTGLink/mtg_results (by the dependency MindTheGap):
-#   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file)
-#   2 files 'xxx.bxu.h5' (de Bruijn graphs)
-#   2 files 'xxx.bxu.info.txt' (log files)
-#   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
+# If mtglink.py is in your PATH 
+cd test/
+mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -ext 500 -out results_MTGLink
 ```
-The output GFA file (`mtglink_test.gfa`) should contains 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
-The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contains 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
+The installation is successful if you find a file named `mtglink_test.gfa` in the output directory (`results_MTGLink/`), and it should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
+The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
 
 
 ## User Manual
@@ -215,6 +198,35 @@ optional arguments:
 TODO: add examples with -ext 500 -max-nodes 10000 -max-length 100000 -nb-cores 8
 or just add comments to say if it doesn't work, try with these parameters
 -->
+
+### Output files
+
+Using MTG-Link on the small dataset of the `test/` dir, you will get:
+```
+# If mtglink.py is in your PATH 
+cd test/
+mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -ext 500 -out results_MTGLink
+
+# 6 files are generated in results_MTGLink/:
+#   140-L+_140-R+_getreads.log (barcodes of the union)
+#   test.gfa.140-L+_140-R+.g1000.c5000.rbxu.fastq (linked reads used for gap-filling)
+#   140-L+_140-R+.g1000.contigs.fasta (flanking contigs sequences)
+#   test.gfa.union.sum (stats about the union: 1146 barcodes ; 157528 reads)
+#   mtglink_test.gfa (output GFA)
+#   test.gfa.gapfill_seq.fasta (set of gap-filled sequences)
+
+# 2 files are generated in results_MTGLink/alignments_stats:
+#   140-L+_140-R+.k51.a2.ref_qry.alignment.stats 
+#   140-L+_140-R+.k51.a2.qry_qry.alignment.stats 
+
+# 6 files are generated in results_MTGLink/mtg_results (by the dependency MindTheGap):
+#   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file)
+#   2 files 'xxx.bxu.h5' (de Bruijn graphs)
+#   2 files 'xxx.bxu.info.txt' (log files)
+#   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
+```
+The output GFA file (`mtglink_test.gfa`) should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
+The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
 
 
 <!--
