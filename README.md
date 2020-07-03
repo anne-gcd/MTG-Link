@@ -50,6 +50,14 @@ git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 ```
 
 
+### Using conda
+
+MTG-link is also distributed as a [Bioconda package](https://anaconda.org/bioconda/mtglink):
+```
+conda install -c bioconda mtglink
+```
+
+
 ### Testing the installation
 
 You can test your installation of MTG-Link with this command line:
