@@ -229,7 +229,6 @@ mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcode
 
 # 6 files are generated in results_MTGLink/mtg_results (by the dependency MindTheGap):
 #   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file)
-#   2 files 'xxx.bxu.h5' (de Bruijn graphs)
 #   2 files 'xxx.bxu.info.txt' (log files)
 #   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
 ```

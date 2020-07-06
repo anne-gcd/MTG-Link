@@ -549,7 +549,7 @@ try:
 
     #Remove the raw files obtained from MindTheGap
     os.chdir(mtgDir)
-    # subprocess.run("rm -f *.h5", shell=True)
+    subprocess.run("rm -f *.h5", shell=True)
     subprocess.run("rm -f *.vcf", shell=True)
 
 
