@@ -66,7 +66,7 @@ You can test your installation of MTG-Link using the small dataset in the `test/
 cd test/
 mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -ext 500 -out results_MTGLink
 ```
-The installation is successful if you find a file named `mtglink_test.gfa` in the output directory (`results_MTGLink/`), and it should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
+The installation is successful if you find a file named `test_mtglink.gfa` in the output directory (`results_MTGLink/`), and it should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
 The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
 
 
@@ -220,7 +220,7 @@ mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcode
 #   test.gfa.140-L+_140-R+.g1000.c5000.rbxu.fastq (linked reads used for gap-filling)
 #   140-L+_140-R+.g1000.contigs.fasta (flanking contigs sequences)
 #   test.gfa.union.sum (stats about the union: 1146 barcodes ; 157528 reads)
-#   mtglink_test.gfa (output GFA)
+#   test_mtglink.gfa (output GFA)
 #   test.gfa.gapfill_seq.fasta (set of gap-filled sequences)
 
 # 2 files are generated in results_MTGLink/alignments_stats:
@@ -233,7 +233,7 @@ mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcode
 #   2 files 'xxx.bxu.info.txt' (log files)
 #   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
 ```
-The output GFA file (`mtglink_test.gfa`) should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
+The output GFA file (`test_mtglink.gfa`) should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
 The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
 
 

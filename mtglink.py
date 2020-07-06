@@ -487,7 +487,7 @@ def gapfilling(current_gap):
 #----------------------------------------------------
 try:
     gfa = gfapy.Gfa.from_file(gfa_file)
-    out_gfa_file = "mtglink_" + gfa_name
+    out_gfa_file = str(gfa_name).split('.gfa')[0] + "_mtglink.gfa"
 
     #----------------------------------------------------
     # GFA output: case no gap
