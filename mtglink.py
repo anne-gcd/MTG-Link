@@ -466,7 +466,7 @@ def gapfilling(current_gap):
             #Save the current G line into the variable 'output_for_gfa' only if this variable is empty 
             #(e.g. in the case where solution == False because we found only a good solution for one strand (and not for both strands), we update the output GFA file with this good solution, not with a gap line)
             if len(output_for_gfa) == 0:
-                output_for_gfa.append(str(current_gap))
+                output_for_gfa.append([str(current_gap)])
 
 
     
