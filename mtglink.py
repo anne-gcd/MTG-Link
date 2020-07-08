@@ -274,9 +274,9 @@ def gapfilling(current_gap):
                 if args.refDir is not None:
                     for file_ in os.listdir(refDir):
                         if str(gap_label) in file_:
-                            ref_file = file_
-                        else:
-                            print("Warning: No reference file was found for this gap. The qualitative evaluation will be performed with the flanking contigs information.")
+                            ref_file = refDir +"/"+ str(file_)
+                    if not os.path.isfile(ref_file):
+                        print("Warning: No reference file was found for this gap. The qualitative evaluation will be performed with the flanking contigs information.")
             
                 #Qualitative evalution with the flanking contigs information
                 elif (args.refDir is None) or (ref_file is None):
