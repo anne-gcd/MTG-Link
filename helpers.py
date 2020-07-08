@@ -111,7 +111,7 @@ class Scaffold(Gap):
 # extract_barcodes function
 #----------------------------------------------------
 #Function to extract the barcodes of reads mapping on chunks, with BamExtractor 
-def extract_barcodes(bam, gap_label, region, out_barcodes, barcodes_occ):
+def extract_barcodes(bam, gap_label, region, barcodes_occ):
     command = ["BamExtractor", bam, region]
     bamextractorLog = str(gap_label) + "_bamextractor.log"
 
@@ -129,15 +129,12 @@ def extract_barcodes(bam, gap_label, region, out_barcodes, barcodes_occ):
             else:
                 barcodes_occ[barcode_seq] = 1
 
-            #write the barcodes' sequences to the output file
-            out_barcodes.write(barcode_seq + "\n")
-
     #remove the raw files obtained from BamExtractor
     subprocess.run(["rm", tmp_barcodes_file])
     if os.path.getsize(bamextractorLog) <= 0:
         subprocess.run(["rm", bamextractorLog])
 
-    return out_barcodes, barcodes_occ
+    return barcodes_occ
 
 
 #----------------------------------------------------

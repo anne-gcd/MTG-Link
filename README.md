@@ -64,7 +64,7 @@ You can test your installation of MTG-Link using the small dataset in the `test/
 ```
 # If mtglink.py is in your PATH 
 cd test/
-mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -ext 500 -out results_MTGLink
+mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -out results_MTGLink
 ```
 The installation is successful if you find a file named `test_mtglink.gfa` in the output directory (`results_MTGLink/`), and it should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
 The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
@@ -180,8 +180,8 @@ optional arguments:
   -line LINE            Line of GFA file input from which to start analysis
                         (if not provided, start analysis from first line of
                         GFA file input) [optional]
-  --rbxu                If the reads of the union are already extracted, 
-                        provide this argument '--rbxu' [optional]
+  -rbxu RBXU            File containing the reads of the union (if already 
+                        extracted) [optional]
 
 [MindTheGap option]:
   -k [KMER [KMER ...]]  k-mer size(s) used for gap-filling [default: [51, 41,
@@ -191,7 +191,7 @@ optional arguments:
                         Minimal abundance threshold for solid k-mers [default:
                         [3, 2]]
   -ext EXTENSION        Extension size of the gap on both sides (bp);
-                        determine start/end of gapfilling [default: '-k']
+                        determine start/end of gapfilling [default: '500']
   -max-nodes MAX_NODES  Maximum number of nodes in contig graph [default:
                         1000]
   -max-length MAX_LENGTH

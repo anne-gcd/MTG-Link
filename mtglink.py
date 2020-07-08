@@ -53,12 +53,12 @@ parserMain.add_argument('-f', dest="freq", action="store", type=int, default=2, 
 parserMain.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default './mtglink_results']")
 parserMain.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any")
 parserMain.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
-parserMain.add_argument('--rbxu', action="store_true", help="If the reads of the union are already extracted, provide this argument '--rbxu' [optional]")
+parserMain.add_argument('-rbxu', dest="rbxu", action="store", help="File containing the reads of the union (if already extracted) [optional]")
 
 parserMtg.add_argument('-k', dest="kmer", action="store", default=[51, 41, 31, 21],  nargs='*', type=int, help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
 parserMtg.add_argument("--force", action="store_true", help="To force search on all '-k' values provided")
 parserMtg.add_argument('-a', dest="abundance_threshold", action="store", default=[3, 2], nargs='*', type=int, help="Minimal abundance threshold for solid k-mers [default: [3, 2]]")
-parserMtg.add_argument('-ext', dest="extension", action="store", type=int, help="Extension size of the gap on both sides (bp); determine start/end of gapfilling [default: '-k']")
+parserMtg.add_argument('-ext', dest="extension", action="store", type=int, default=500, help="Extension size of the gap on both sides (bp); determine start/end of gapfilling [default: '500']")
 parserMtg.add_argument('-max-nodes', dest="max_nodes", action="store", type=int, default=1000, help="Maximum number of nodes in contig graph [default: 1000]")
 parserMtg.add_argument('-max-length', dest="max_length", action="store", type=int, default=10000, help="Maximum length of gapfilling (bp) [default: 10000]")
 parserMtg.add_argument('-nb-cores', dest="nb_cores", action="store", type=int, default=1, help="Number of cores [default: 1]")
@@ -74,7 +74,7 @@ if re.match('^.*.bam$', args.bam) is None:
     parser.error("The suffix of the BAM file should be: '.bam'")
 
 #----------------------------------------------------
-# Input files
+# Input files and arguments
 #----------------------------------------------------
 gfa_file = os.path.abspath(args.input_gfa)
 if not os.path.exists(gfa_file):
@@ -100,6 +100,10 @@ if args.refDir is not None:
     if not os.path.exists(refDir):
         parser.error("The path of the directory containing the reference sequences doesn't exist")
 
+#variable 'ext' is the size of the extension of the gap, on both sides [by default 500]
+ext = args.extension
+
+
 #----------------------------------------------------
 # Directories for saving results
 #----------------------------------------------------
@@ -115,7 +119,7 @@ except:
     print("Restoring the path")
     os.chdir(cwd)
 outDir = os.getcwd()
-print("\nThe results are saved in " + outDir)
+print("\nThe results are saved in " + outDir + "\n")
 
 #mtgDir
 mtgDir = outDir + "/mtg_results"
@@ -146,14 +150,16 @@ def gapfilling(current_gap):
     right_scaffold = Scaffold(current_gap, gap.right, gfa_file)
 
     #If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length
-    if args.chunk > left_scaffold.len or args.chunk > right_scaffold.len:
-        args.chunk = min(left_scaffold.len, right_scaffold.len)
-
-    #Save current G line into a temporary file
-    tmp_gap_file = outDir +"/"+ str(gap_label) + "_tmp.gap"
-    with open(tmp_gap_file, "w") as tmp_gap:
-        tmp_gap.write(str(current_gap))
-        tmp_gap.seek(0)
+    if args.chunk > left_scaffold.len:
+        print("The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length")
+        chunk_L = left_scaffold.len
+    else:
+        chunk_L = args.chunk
+    if args.chunk > right_scaffold.len:
+        print("The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length")
+        chunk_R = right_scaffold.len
+    else:
+        chunk_R = args.chunk
 
     #----------------------------------------------------
     # BamExtractor
@@ -162,27 +168,17 @@ def gapfilling(current_gap):
     barcodes_occ = {}
     
     #Obtain the left barcodes and store the elements in a set
-    left_region = left_scaffold.chunk(args.chunk)
-    left_barcodes_file = "{}{}.c{}.left.barcodes".format(left_scaffold.name, left_scaffold.orient, args.chunk)
+    left_region = left_scaffold.chunk(chunk_L)
+    extract_barcodes(bam_file, gap_label, left_region, barcodes_occ)
 
-    with open(left_barcodes_file, "w+") as left_barcodes:
-        extract_barcodes(bam_file, gap_label, left_region, left_barcodes, barcodes_occ)
-        left_barcodes.seek(0)
-        #left = set(left_barcodes.read().splitlines())
 
     #Obtain the right barcodes and store the elements in a set
-    right_region = right_scaffold.chunk(args.chunk)
-    right_barcodes_file = "{}{}.c{}.right.barcodes".format(right_scaffold.name, right_scaffold.orient, args.chunk)
-
-    with open(right_barcodes_file, "w+") as right_barcodes:
-        extract_barcodes(bam_file, gap_label, right_region, right_barcodes, barcodes_occ)
-        right_barcodes.seek(0)
-        #right = set(right_barcodes.read().splitlines())
+    right_region = right_scaffold.chunk(chunk_R)
+    extract_barcodes(bam_file, gap_label, right_region, barcodes_occ)
 
     #Calculate the union 
     union_barcodes_file = "{}.{}.g{}.c{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk)
     with open(union_barcodes_file, "w") as union_barcodes:
-        #union = left | right
         #filter barcodes by freq
         for (barcode, occurences) in barcodes_occ.items():
             if occurences >= args.freq:
@@ -191,13 +187,14 @@ def gapfilling(current_gap):
     #----------------------------------------------------
     # GetReads
     #----------------------------------------------------
+    #If the reads of the union are already extracted, use the corresponding file
+    if args.rbxu is not None:
+        union_reads_file = os.path.abspath(args.rbxu)
     #Union: extract the reads associated with the barcodes
-    if not args.rbxu:
+    else:
         union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
         with open(union_reads_file, "w") as union_reads:
             get_reads(reads_file, index_file, gap_label, union_barcodes_file, union_reads)
-    else:
-        union_reads_file = os.path.abspath("{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk))
 
     #----------------------------------------------------
     # Summary of union (barcodes and reads)
@@ -207,16 +204,15 @@ def gapfilling(current_gap):
     union_summary = [str(gap.id), str(gap.left), str(gap.right), gap.length, args.chunk, bxu, rbxu]
 
     #Remove the barcodes files
-    subprocess.run(["rm", left_barcodes_file])
-    subprocess.run(["rm", right_barcodes_file])
     subprocess.run(["rm", union_barcodes_file])
 
     #----------------------------------------------------
     # MindTheGap pipeline
-    #----------------------------------------------------
-    #Directory for saving the results from MindTheGap
-    os.chdir(mtgDir)
-        
+    #----------------------------------------------------        
+    #Get flanking contigs sequences and save them into a file
+    seq_L = str(left_scaffold.sequence())
+    seq_R = str(right_scaffold.sequence())
+
     #Execute MindTheGap fill module on the union, in breakpoint mode
     for k in args.kmer:
 
@@ -226,22 +222,16 @@ def gapfilling(current_gap):
         #----------------------------------------------------
         # Breakpoint file, with offset of size k removed
         #----------------------------------------------------
-        #variable 'ext' is the size of the extension of the gap, on both sides [by default k]
-        if args.extension is None:
-            ext = k
-        else:
-            ext = args.extension
-
         bkpt_file = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gap_label), gap.length, args.chunk, k)
         with open(bkpt_file, "w") as bkpt:
             line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
-            line2 = str(left_scaffold.sequence()[(left_scaffold.len - ext - k):(left_scaffold.len - ext)])
+            line2 = seq_L[(left_scaffold.len - ext - k):(left_scaffold.len - ext)]
             line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
-            line4 = str(right_scaffold.sequence()[ext:(ext + k)])
+            line4 = seq_R[ext:(ext + k)]
             line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
-            line6 = str(rc(right_scaffold.sequence())[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
+            line6 = str(rc(seq_R)[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
             line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
-            line8 = str(rc(left_scaffold.sequence())[ext:(ext + k)])
+            line8 = str(rc(seq_L)[ext:(ext + k)])
             bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
 
         #----------------------------------------------------
@@ -282,30 +272,39 @@ def gapfilling(current_gap):
 
                 #Qualitative evaluation with the reference sequence
                 if args.refDir is not None:
-                    ref_file = refDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".ingap.fasta"
+                    for file_ in os.listdir(refDir):
+                        if str(gap_label) in file_:
+                            ref_file = file_
+                        else:
+                            print("Warning: No reference file was found for this gap. The qualitative evaluation will be performed with the flanking contigs information.")
             
                 #Qualitative evalution with the flanking contigs information
-                else:
-                    left_seq_file = os.path.abspath(left_scaffold.seq_path)
-                    right_seq_file = os.path.abspath(right_scaffold.seq_path)
-
+                elif (args.refDir is None) or (ref_file is None):
                     #Merge both left and right flanking contigs sequences into a unique file (ref_file)
                     ref_file = outDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
-                    with open(left_seq_file, "r") as left_fasta, open(right_seq_file, "r") as right_fasta, open(ref_file, "w") as ref_fasta:
-                        records_L = SeqIO.parse(left_fasta, "fasta")
-                        records_R = SeqIO.parse(right_fasta, "fasta")
-                        for record in records_L:
-                            SeqIO.write(record, ref_fasta, "fasta")
-                        for record in records_R:
-                            SeqIO.write(record, ref_fasta, "fasta")
-                
+                    with open(ref_file, "w") as ref_fasta:
+                        if left_scaffold.orient == "+":
+                            ref_fasta.write(">" + left_scaffold.name + "_region:" + str(left_scaffold.len-ext) + "-" + str(left_scaffold.len) + "\n")
+                            ref_fasta.write(str(seq_L[(left_scaffold.len - ext):left_scaffold.len]))
+                        elif left_scaffold.orient == "-":
+                            ref_fasta.write("\n>" + left_scaffold.name + "_region:0-" + str(ext) + "\n")
+                            ref_fasta.write(str(seq_L[0:ext]))
+                        if right_scaffold.orient == "+":
+                            ref_fasta.write("\n>" + right_scaffold.name + "_region:0-" + str(ext) + "\n")
+                            ref_fasta.write(str(seq_R[0:ext]))
+                        elif right_scaffold.orient == "-":
+                            ref_fasta.write("\n>" + right_scaffold.name + "_region:" + str(right_scaffold.len-ext) + "-" + str(right_scaffold.len) + "\n")
+                            ref_fasta.write(str(seq_R[(right_scaffold.len - ext):right_scaffold.len]))
+
                 if not os.path.isfile(ref_file):
                         print("Something wrong with the specified reference file. Exception-", sys.exc_info())
                 #Do statistics on the alignments of query_seq (found gapfill seq) vs reference
                 else:
                     prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
+                    print("START STATS")
                     stats_align(gap_label, input_file, ref_file, str(ext), prefix, statsDir)
-            
+                    print("END STATS")
+
                 #----------------------------------------------------
                 # Estimate quality of gapfilled sequence
                 #----------------------------------------------------
@@ -314,9 +313,9 @@ def gapfilling(current_gap):
                 qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
                 if not os.path.exists(ref_qry_file):
-                    parser.error("The '{}.ref_qry.alignment.stats' file doesn't exits".format(prefix))
+                    parser.error("The '{}' file doesn't exits".format(ref_qry_file))
                 elif not os.path.exists(qry_qry_file):
-                    parser.error("The '{}.qry_qry.alignment.stats' file doesn't exits".format(prefix))
+                    parser.error("The '{}' file doesn't exits".format(qry_qry_file))
 
                 else:
                     ref_qry_output = open(ref_qry_file)
@@ -341,6 +340,9 @@ def gapfilling(current_gap):
 
                             seq = record.seq
                             strand = str(record.id).split('_')[0][-1]
+
+                            print("Record ID")
+                            print(record.id)
 
                             #----------------------------------------------------
                             #Ref = reference sequence of simulated gap
@@ -400,6 +402,11 @@ def gapfilling(current_gap):
                                 if quality_ext_right == []:
                                     quality_ext_right.append('D')
 
+                                print("Quality ext left")
+                                print(quality_ext_left)
+                                print("Quality ext right")
+                                print(quality_ext_right)
+
                                 ref_qry_output.seek(0)
 
                                 #quality score for stats about the reverse complement strand
@@ -412,9 +419,15 @@ def gapfilling(current_gap):
                                     quality_revcomp.append('D')
                                 qry_qry_output.seek(0)
 
+                                print("Quality revcomp")
+                                print(quality_revcomp)
+
                                 #global quality score
                                 quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
                                 
+                                print("Quality gapfilled seq")
+                                print(quality_gapfilled_seq)
+
                                 record.description = "Quality " + str(quality_gapfilled_seq)
                                 SeqIO.write(record, qualified, "fasta")
 
@@ -469,14 +482,14 @@ def gapfilling(current_gap):
             #Save the current G line into the variable 'output_for_gfa' only if this variable is empty 
             #(e.g. in the case where solution == False because we found only a good solution for one strand (and not for both strands), we update the output GFA file with this good solution, not with a gap line)
             if len(output_for_gfa) == 0:
-                with open(tmp_gap_file, "r") as tmp_gap:
-                    for line in tmp_gap.readlines():
-                        output_for_gfa.append([line])
+                output_for_gfa.append(str(current_gap))
 
 
-    #Remove the tmp.gap file
+    
+
+    #TODO: remove the flanking_contig.fasta files
+
     os.chdir(outDir)
-    subprocess.run(["rm", tmp_gap_file])
 
 
     return union_summary, output_for_gfa

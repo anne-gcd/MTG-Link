@@ -101,7 +101,7 @@ try:
     # Statistics about the Alignment Ref vs Qry
     #-----------------------------------------------------------------------------
 
-    if re.match('^.*.ingap.fasta$', args.reference):
+    if not re.match('^.*.contigs.fasta$', args.reference):
         #----------------------------------------------------
         # Ref = reference sequence of simulated gap
         #----------------------------------------------------
@@ -374,16 +374,16 @@ try:
                 #ref = Left scaffold
                 if ref == left_scaffold:
                     #extension of qry match perfectly as expected to ref
-                    if (('+' in left and int(start_r) == (int(len_r) - args.ext + 1) and int(end_r) == int(len_r)) and ((strand == "fwd" and int(start_q) == 1 and int(end_q) == args.ext) or (strand == "rev" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext + 1)))) \
-                        or (('-' in left and int(start_r) == 1 and int(end_r) == args.ext) and ((strand == "fwd" and int(start_q) == args.ext and int(end_q) == 1) or (strand == "rev" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)))):
+                    if ('+' in left and ((strand == "fwd" and int(start_q) == 1 and int(end_q) == args.ext) or (strand == "rev" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext + 1)))) \
+                        or ('-' in left and ((strand == "fwd" and int(start_q) == args.ext and int(end_q) == 1) or (strand == "rev" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)))):
                         quality_rq = 'A'
                     #extension of qry almost match as expected to ref (+-10% of extension size) 
-                    elif (('+' in left and int(start_r) in range((int(len_r)-args.ext+1 - error_10_perc), (int(len_r)-args.ext+1 + error_10_perc+1)) and int(end_r) in range((int(len_r) - error_10_perc), (int(len_r)+1))) and ((strand == "fwd" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))))) \
-                        or (('-' in left and int(start_r) in range(1, (1 + error_10_perc+1)) and int(end_r) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) and ((strand == "fwd" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))))):
+                    elif ('+' in left and ((strand == "fwd" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))))) \
+                        or ('-' in left and ((strand == "fwd" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))))):
                         quality_rq = 'B'
                     #extension of qry almost match (+-ext) as expected to ref
-                    elif (('+' in left and int(start_r) >= (int(len_r) - args.ext + 1)) and ((strand == "fwd" and int(end_q) <= 2*args.ext) or (strand == "rev" and int(end_q) >= (int(len_q) - 2*args.ext)))) \
-                        or (('-' in left and int(end_r) <= args.ext) and ((strand == "fwd" and int(start_q) <= 2*args.ext) or (strand == "rev" and int(start_q) >= (int(len_q) - 2*args.ext)))):
+                    elif ('+' in left and ((strand == "fwd" and int(end_q) <= 2*args.ext) or (strand == "rev" and int(end_q) >= (int(len_q) - 2*args.ext)))) \
+                        or ('-' in left and ((strand == "fwd" and int(start_q) <= 2*args.ext) or (strand == "rev" and int(start_q) >= (int(len_q) - 2*args.ext)))):
                         quality_rq = 'C'
                     else:
                         quality_rq = 'D'
@@ -391,16 +391,16 @@ try:
                 #ref = Right scaffold
                 elif ref == right_scaffold:
                     #extension of qry match perfectly as expected to ref
-                    if (('+' in right and int(start_r) == 1 and int(end_r) == args.ext) and ((strand == "fwd" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)) or (strand == "rev" and int(start_q) == args.ext and int(end_q) == 1))) \
-                        or (('-' in right and int(start_r) == (int(len_r) - args.ext + 1) and int(end_r) == int(len_r)) and ((strand == "fwd" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext +1)) or (strand == "rev" and int(start_q) == 1 and int(end_q) == args.ext))):
+                    if ('+' in right and ((strand == "fwd" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)) or (strand == "rev" and int(start_q) == args.ext and int(end_q) == 1))) \
+                        or ('-' in right and ((strand == "fwd" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext +1)) or (strand == "rev" and int(start_q) == 1 and int(end_q) == args.ext))):
                         quality_rq = 'A'
                     #extension of qry almost match as expected to ref (+-10% of extension size) 
-                    elif (('+' in right and int(start_r) in range(1, (1 + error_10_perc+1)) and int(end_r) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) and ((strand == "fwd" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))) or (strand == "rev" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))))) \
-                        or (('-' in right and int(start_r) in range((int(len_r)-args.ext+1 - error_10_perc), (int(len_r)-args.ext+1 + error_10_perc+1)) and int(end_r) in range((int(len_r) - error_10_perc), (int(len_r)+1))) and ((strand == "fwd" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))))):
+                    elif ('+' in right and ((strand == "fwd" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))) or (strand == "rev" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))))) \
+                        or ('-' in right and ((strand == "fwd" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))))):
                         quality_rq = 'B'
                     #extension of qry almost match (+-ext) as expected to ref
-                    elif (('+' in right and int(end_r) <= args.ext) and ((strand == "fwd" and int(start_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(start_q) <= 2*args.ext))) \
-                        or (('-' in right and int(start_r) >= (int(len_r) - args.ext + 1)) and ((strand == "fwd" and int(end_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(end_q) <= 2*args.ext))):
+                    elif ('+' in right and ((strand == "fwd" and int(start_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(start_q) <= 2*args.ext))) \
+                        or ('-' in right and ((strand == "fwd" and int(end_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(end_q) <= 2*args.ext))):
                         quality_rq = 'C'
                     else:
                         quality_rq = 'D'
@@ -599,14 +599,14 @@ try:
     #Remove the raw file obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
     subprocess.run(["rm", nucmerLog])
     subprocess.run(["rm", nucmerLog_qry])
-    subprocess.run(["rm", delta_file])
-    subprocess.run(["rm", delta_file_qry])
-    subprocess.run(["rm", coords_file])
-    subprocess.run(["rm", coords_sorted_file])
-    subprocess.run(["rm", coords_file_qry])
-    subprocess.run(["rm", coords_qry_sorted_file])
-    subprocess.run(["rm", ref_qry_output])
-    subprocess.run(["rm", qry_qry_output])
+    #subprocess.run(["rm", delta_file])
+    #subprocess.run(["rm", delta_file_qry])
+    #subprocess.run(["rm", coords_file])
+    #subprocess.run(["rm", coords_sorted_file]) #TODO: only when refDir
+    #subprocess.run(["rm", coords_file_qry])
+    #subprocess.run(["rm", coords_qry_sorted_file])
+    #subprocess.run(["rm", ref_qry_output])
+    #subprocess.run(["rm", qry_qry_output])
 
 
 except Exception as e:
