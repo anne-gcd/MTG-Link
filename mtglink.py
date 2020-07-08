@@ -301,9 +301,7 @@ def gapfilling(current_gap):
                 #Do statistics on the alignments of query_seq (found gapfill seq) vs reference
                 else:
                     prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
-                    print("START STATS")
                     stats_align(gap_label, input_file, ref_file, str(ext), prefix, statsDir)
-                    print("END STATS")
 
                 #----------------------------------------------------
                 # Estimate quality of gapfilled sequence
@@ -340,9 +338,6 @@ def gapfilling(current_gap):
 
                             seq = record.seq
                             strand = str(record.id).split('_')[0][-1]
-
-                            print("Record ID")
-                            print(record.id)
 
                             #----------------------------------------------------
                             #Ref = reference sequence of simulated gap
@@ -402,11 +397,6 @@ def gapfilling(current_gap):
                                 if quality_ext_right == []:
                                     quality_ext_right.append('D')
 
-                                print("Quality ext left")
-                                print(quality_ext_left)
-                                print("Quality ext right")
-                                print(quality_ext_right)
-
                                 ref_qry_output.seek(0)
 
                                 #quality score for stats about the reverse complement strand
@@ -419,14 +409,8 @@ def gapfilling(current_gap):
                                     quality_revcomp.append('D')
                                 qry_qry_output.seek(0)
 
-                                print("Quality revcomp")
-                                print(quality_revcomp)
-
                                 #global quality score
                                 quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
-                                
-                                print("Quality gapfilled seq")
-                                print(quality_gapfilled_seq)
 
                                 record.description = "Quality " + str(quality_gapfilled_seq)
                                 SeqIO.write(record, qualified, "fasta")
