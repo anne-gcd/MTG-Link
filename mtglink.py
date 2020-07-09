@@ -224,14 +224,19 @@ def gapfilling(current_gap):
         #----------------------------------------------------
         bkpt_file = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gap_label), gap.length, args.chunk, k)
         with open(bkpt_file, "w") as bkpt:
+
+            #Left kmer and Reverse Right kmer (dependent on orientation left scaffold)
             line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
             line2 = seq_L[(left_scaffold.len - ext - k):(left_scaffold.len - ext)]
+            line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
+            line8 = str(rc(seq_L)[ext:(ext + k)])
+
+            #Right kmer and Reverse Left kmer (dependent on orientation right scaffold)
             line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
             line4 = seq_R[ext:(ext + k)]
             line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
             line6 = str(rc(seq_R)[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
-            line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
-            line8 = str(rc(seq_L)[ext:(ext + k)])
+
             bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
 
         #----------------------------------------------------
@@ -280,21 +285,28 @@ def gapfilling(current_gap):
             
                 #Qualitative evalution with the flanking contigs information
                 elif (args.refDir is None) or (ref_file is None):
+
                     #Merge both left and right flanking contigs sequences into a unique file (ref_file)
                     ref_file = outDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
                     with open(ref_file, "w") as ref_fasta:
+
+                        #Left scaffold oriented '+'
                         if left_scaffold.orient == "+":
                             ref_fasta.write(">" + left_scaffold.name + "_region:" + str(left_scaffold.len-ext) + "-" + str(left_scaffold.len) + "\n")
-                            ref_fasta.write(str(seq_L[(left_scaffold.len - ext):left_scaffold.len]))
+                            ref_fasta.write(seq_L[(left_scaffold.len - ext):left_scaffold.len])
+                        #Left scaffold oriented '-' ~ Right scaffold oriented '+'
                         elif left_scaffold.orient == "-":
                             ref_fasta.write("\n>" + left_scaffold.name + "_region:0-" + str(ext) + "\n")
-                            ref_fasta.write(str(seq_L[0:ext]))
+                            ref_fasta.write(str(rc(seq_L)[0:ext]))
+
+                        #Right scaffold oriented '+'
                         if right_scaffold.orient == "+":
                             ref_fasta.write("\n>" + right_scaffold.name + "_region:0-" + str(ext) + "\n")
-                            ref_fasta.write(str(seq_R[0:ext]))
+                            ref_fasta.write(seq_R[0:ext])
+                        #Right scaffold oriented '-' ~ Left scaffold oriented '+'
                         elif right_scaffold.orient == "-":
                             ref_fasta.write("\n>" + right_scaffold.name + "_region:" + str(right_scaffold.len-ext) + "-" + str(right_scaffold.len) + "\n")
-                            ref_fasta.write(str(seq_R[(right_scaffold.len - ext):right_scaffold.len]))
+                            ref_fasta.write(str(rc(seq_R)[(right_scaffold.len - ext):right_scaffold.len]))
 
                 if not os.path.isfile(ref_file):
                         print("Something wrong with the specified reference file. Exception-", sys.exc_info())
