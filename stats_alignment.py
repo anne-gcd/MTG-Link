@@ -608,15 +608,13 @@ try:
     #Remove the raw file obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
     subprocess.run(["rm", nucmerLog])
     subprocess.run(["rm", nucmerLog_qry])
-    #subprocess.run(["rm", delta_file])
-    #subprocess.run(["rm", delta_file_qry])
-    #subprocess.run(["rm", coords_file])
-    #if not re.match('^.*.contigs.fasta$', args.reference):
-    #    subprocess.run(["rm", coords_sorted_file])  #only when refDir
-    #subprocess.run(["rm", coords_file_qry])
-    #subprocess.run(["rm", coords_qry_sorted_file])
-    #subprocess.run(["rm", ref_qry_output])
-    #subprocess.run(["rm", qry_qry_output])
+    subprocess.run(["rm", delta_file])
+    subprocess.run(["rm", delta_file_qry])
+    subprocess.run(["rm", coords_file])
+    if not re.match('^.*.contigs.fasta$', args.reference):
+        subprocess.run(["rm", coords_sorted_file])  #only when refDir
+    subprocess.run(["rm", coords_file_qry])
+    subprocess.run(["rm", coords_qry_sorted_file])
 
 
 except Exception as e:

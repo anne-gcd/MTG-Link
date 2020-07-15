@@ -307,6 +307,7 @@ def gapfilling(current_gap):
 
                 if not os.path.isfile(ref_file):
                     print("Warning: Something wrong with the specified reference file. Exception-", sys.exc_info())
+
                 #Do statistics on the alignments of query_seq (found gapfill seq) vs reference
                 else:
                     prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
