@@ -48,9 +48,9 @@ class Gap:
 
     def info(self):
         if self.id == "*":
-            print("\nWORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
+            print("WORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
         else:
-            print("\nWORKING ON GAP: {}; length {}\n".format(self.id, self.length))
+            print("WORKING ON GAP: {}; length {}\n".format(self.id, self.length))
 
 
 #----------------------------------------------------
@@ -143,14 +143,10 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
 #Function to extract the reads associated with the barcodes
 def get_reads(reads, index, gap_label, barcodes, out_reads):
     command = ["reads_bx_sqlite3.py", "--fastq", reads, "--idx", index, "--bdx", barcodes, "--mode", "shelve"]
-    getreadsLog = str(gap_label) + "_getreads.log"
+    getreadsLog = str(gap_label) + ".barcodes.txt"
 
     with open(getreadsLog, "a") as log:
         subprocess.run(command, stdout=out_reads, stderr=log)
-
-    #remove the raw file obtained from GetReads
-    if os.path.getsize(getreadsLog) <= 0:
-        subprocess.run(["rm", getreadsLog])
 
     return out_reads
 
@@ -285,7 +281,6 @@ def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
 
     #Save the found seq to a file containing all gapfill seq
     gapfill_file = gfa_name + ".gapfill_seq.fasta"
-    print("Corresponding file containing all gapfill sequences: " + gapfill_file)
     with open(gapfill_file, "a") as seq_fasta:
         seq_fasta.write(">{} _ len {}".format(sol_name, length_seq))
         seq_fasta.write("\n" + seq + "\n")
@@ -315,3 +310,5 @@ def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
         out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(solution, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
 
         out_gfa.to_file(gfa_output_file)
+
+        return gapfill_file

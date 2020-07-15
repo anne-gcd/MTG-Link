@@ -68,28 +68,28 @@ parserMtg.add_argument('-verbose', dest="verbosity", action="store", type=int, d
 args = parser.parse_args()
 
 if re.match('^.*.gfa$', args.input_gfa) is None:
-    parser.error("The suffix of the GFA file should be: '.gfa'")
+    parser.error("Warning: The suffix of the GFA file should be: '.gfa'")
 
 if re.match('^.*.bam$', args.bam) is None:
-    parser.error("The suffix of the BAM file should be: '.bam'")
+    parser.error("Warning: The suffix of the BAM file should be: '.bam'")
 
 #----------------------------------------------------
 # Input files and arguments
 #----------------------------------------------------
 gfa_file = os.path.abspath(args.input_gfa)
 if not os.path.exists(gfa_file):
-    parser.error("The path of the GFA file doesn't exist")
+    parser.error("Warning: The path of the GFA file doesn't exist")
 gfa_name = gfa_file.split('/')[-1]
 print("\nInput GFA file: " + gfa_file)
 
 bam_file = os.path.abspath(args.bam)
 if not os.path.exists(bam_file): 
-    parser.error("The path of the BAM file doesn't exist")
+    parser.error("Warning: The path of the BAM file doesn't exist")
 print("BAM file: " + bam_file)
 
 reads_file = os.path.abspath(args.reads)
 if not os.path.exists(reads_file):
-    parser.error("The path of the file of indexed reads doesn't exist")
+    parser.error("Warning: The path of the file of indexed reads doesn't exist")
 print("File of indexed reads: " + reads_file)
 
 index_file = os.path.abspath(args.index)
@@ -98,7 +98,7 @@ print("Barcodes index file (prefix): " + index_file)
 if args.refDir is not None:
     refDir = os.path.abspath(args.refDir)
     if not os.path.exists(refDir):
-        parser.error("The path of the directory containing the reference sequences doesn't exist")
+        parser.error("Warning: The path of the directory containing the reference sequences doesn't exist")
 
 #variable 'ext' is the size of the extension of the gap, on both sides [by default 500]
 ext = args.extension
@@ -151,12 +151,12 @@ def gapfilling(current_gap):
 
     #If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length
     if args.chunk > left_scaffold.len:
-        print("The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length")
+        print("Warning: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length")
         chunk_L = left_scaffold.len
     else:
         chunk_L = args.chunk
     if args.chunk > right_scaffold.len:
-        print("The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length")
+        print("Warning: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length")
         chunk_R = right_scaffold.len
     else:
         chunk_R = args.chunk
@@ -170,7 +170,6 @@ def gapfilling(current_gap):
     #Obtain the left barcodes and store the elements in a set
     left_region = left_scaffold.chunk(chunk_L)
     extract_barcodes(bam_file, gap_label, left_region, barcodes_occ)
-
 
     #Obtain the right barcodes and store the elements in a set
     right_region = right_scaffold.chunk(chunk_R)
@@ -244,7 +243,7 @@ def gapfilling(current_gap):
         #----------------------------------------------------
         for a in args.abundance_threshold:
 
-            print("\nGapfilling of {}.{}.g{}.c{} for k={} and a={} (union)".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a))
+            print("\nGapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
             input_file = os.path.join(outDir, union_reads_file)
             output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a)
             max_nodes = args.max_nodes
@@ -273,8 +272,6 @@ def gapfilling(current_gap):
                 #----------------------------------------------------
                 # Stats of the alignments query_seq vs reference_seq
                 #----------------------------------------------------
-                print("\nStatistical analysis...")
-
                 #Qualitative evaluation with the reference sequence
                 if args.refDir is not None:
                     for file_ in os.listdir(refDir):
@@ -296,7 +293,7 @@ def gapfilling(current_gap):
                             ref_fasta.write(seq_L[(left_scaffold.len - ext):left_scaffold.len])
                         #Left scaffold oriented '-' ~ Right scaffold oriented '+'
                         elif left_scaffold.orient == "-":
-                            ref_fasta.write("\n>" + left_scaffold.name + "_region:0-" + str(ext) + "\n")
+                            ref_fasta.write(">" + left_scaffold.name + "_region:0-" + str(ext) + "\n")
                             ref_fasta.write(str(rc(seq_L)[0:ext]))
 
                         #Right scaffold oriented '+'
@@ -309,7 +306,7 @@ def gapfilling(current_gap):
                             ref_fasta.write(str(rc(seq_R)[(right_scaffold.len - ext):right_scaffold.len]))
 
                 if not os.path.isfile(ref_file):
-                        print("Something wrong with the specified reference file. Exception-", sys.exc_info())
+                    print("Warning: Something wrong with the specified reference file. Exception-", sys.exc_info())
                 #Do statistics on the alignments of query_seq (found gapfill seq) vs reference
                 else:
                     prefix = "{}.k{}.a{}".format(str(gap_label), k, a) 
@@ -323,9 +320,9 @@ def gapfilling(current_gap):
                 qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
                 if not os.path.exists(ref_qry_file):
-                    parser.error("The '{}' file doesn't exits".format(ref_qry_file))
+                    parser.error("Warning: The '{}' file doesn't exits".format(ref_qry_file))
                 elif not os.path.exists(qry_qry_file):
-                    parser.error("The '{}' file doesn't exits".format(qry_qry_file))
+                    parser.error("Warning: The '{}' file doesn't exits".format(qry_qry_file))
 
                 else:
                     ref_qry_output = open(ref_qry_file)
@@ -548,7 +545,7 @@ try:
             print("\nCreating the output GFA file...")
             if len(output_for_gfa[0]) > 1:          #solution found for the current gap
                 for output in output_for_gfa:
-                    update_gfa_with_solution(outDir, gfa_name, output, out_gfa_file)
+                    gapfill_file = update_gfa_with_solution(outDir, gfa_name, output, out_gfa_file)
             else:                                   #no solution found for the current gap
                 out_gfa = gfapy.Gfa.from_file(out_gfa_file)
                 out_gfa.add_line(output_for_gfa[0][0])
@@ -562,10 +559,6 @@ try:
     subprocess.run("rm -f *.vcf", shell=True)
 
 
-    #Give the output GFA file and the file containing the gapfill seq
-    print("GFA file: " + out_gfa_file)
-
-
 except Exception as e:
     print("\nException-")
     print(e)
@@ -575,11 +568,12 @@ except Exception as e:
     sys.exit(1)
 
 
-print("\nSummary of the union: " +gfa_name+".union.sum")
+print("\nThe results from MTG-Link are saved in " + outDir)
 print("The results from MindTheGap are saved in " + mtgDir)
 print("The statistics from MTG-Link are saved in " + statsDir)
-print("The GFA output file and the sequences file are saved in " + outDir)
-
+print("Summary of the union: " +gfa_name+".union.sum")
+print("GFA output file: " + out_gfa_file)
+print("Corresponding file containing all gapfill sequences: " + gapfill_file)
 
 
 #TODO: two modules, one when reference sequence provided (args.refDir), one when no reference sequence is provided (args.scaff)

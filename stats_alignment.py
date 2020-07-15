@@ -63,23 +63,21 @@ parser.add_argument("-out", "--outDir", action="store", default="./mtglink_resul
 args = parser.parse_args()
 
 if re.match('^.*.insertions.fasta$', args.query) is None:
-    parser.error("The suffix of the inserted sequences (query sequences) file should be: '.insertions.fasta'")
+    parser.error("Warning: Qualitative evaluation _ The suffix of the inserted sequences (query sequences) file should be: '.insertions.fasta'")
 
 if re.match('^.*.fasta$', args.reference) is None:
-    parser.error("The suffix of the reference sequence file should be: '.fasta'")
+    parser.error("Warning: Qualitative evaluation _ The suffix of the reference sequence file should be: '.fasta'")
 
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
 qry_file = os.path.abspath(args.query)
 if not os.path.exists(args.query):
-    parser.error("The path of the query file (inserted sequences file) doesn't exist")
-print("\nQuery file: " + qry_file)
+    parser.error("Warning: Qualitative evaluation _ The path of the query file (inserted sequences file) doesn't exist")
 
 ref_file = os.path.abspath(args.reference)
 if not os.path.exists(ref_file):
-    parser.error("The path of the reference file doesn't exist")
-print("Reference file: " + ref_file)
+    parser.error("Warning: Qualitative evaluation _ The path of the reference file doesn't exist")
 
 #----------------------------------------------------
 # Directory for saving results
@@ -94,7 +92,6 @@ except:
     print("Restoring the path")
     os.chdir(cwd)
 outDir = os.getcwd()
-print("\nThe results are saved in " + outDir)
 
 try:
     #-----------------------------------------------------------------------------
@@ -111,6 +108,12 @@ try:
         qry_a = qry_file.split('.')[-5]
         id_ = str(qry_id) + "." + str(qry_k) + "." + str(qry_a)
         prefix = id_ + ".ref_qry"
+
+        log_file = str(prefix) + ".log"
+        with open(log_file, "a") as log:
+            log.write("Query file: " + str(qry_file) + "\n")
+            log.write("Reference file" + str(ref_file) + "\n")
+            log.write("The results are saved in " + outDir)
 
         nucmerLog = "{}_nucmer_ref_qry.log".format(id_)
         delta_file = prefix + ".delta"
@@ -308,6 +311,12 @@ try:
         id_ = str(qry_id) + "." + str(qry_k) + "." + str(qry_a)
         prefix = id_ + ".ref_qry"
 
+        log_file = str(prefix) + ".log"
+        with open(log_file, "a") as log:
+            log.write("Query file: " + str(qry_file) + "\n")
+            log.write("Reference file" + str(ref_file) + "\n")
+            log.write("The results are saved in " + outDir)
+
         nucmerLog = "{}_nucmer_ref_qry.log".format(id_)
         delta_file = prefix + ".delta"
         coords_file = prefix + ".coords"
@@ -425,7 +434,7 @@ try:
     prefix_qry = id_ + ".qry_qry"
     nucmerLog_qry = "{}_nucmer_qry_qry.log".format(id_)
     delta_file_qry = prefix_qry + ".delta"
-    coords_file_qry = prefix_qry + ".coords.unsorted"          
+    coords_file_qry = prefix_qry + ".coords.unsorted"
 
     nucmer_command_qry = ["nucmer", "--maxmatch", "-r", "-p", prefix_qry, qry_file, qry_file]
     coords_command_qry = ["show-coords", "-rcdlT", delta_file_qry]
@@ -602,7 +611,8 @@ try:
     #subprocess.run(["rm", delta_file])
     #subprocess.run(["rm", delta_file_qry])
     #subprocess.run(["rm", coords_file])
-    #subprocess.run(["rm", coords_sorted_file]) #TODO: only when refDir
+    #if not re.match('^.*.contigs.fasta$', args.reference):
+    #    subprocess.run(["rm", coords_sorted_file])  #only when refDir
     #subprocess.run(["rm", coords_file_qry])
     #subprocess.run(["rm", coords_qry_sorted_file])
     #subprocess.run(["rm", ref_qry_output])
