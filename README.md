@@ -103,7 +103,7 @@ In order to speed up the process, MTG-Link uses a trivial **parallelization** sc
 
 ### Preparing input files
 
-#### GFA file
+#### 1. GFA file
 
 The **GFA** (Graphical Fragment Assembly) file is a *tab-delimited* file containing the gap coordinates. The expected format is a [GFA 2.0](http://gfa-spec.github.io/GFA-spec/GFA2.html) format:  
 ```
@@ -128,17 +128,17 @@ How to obtain a GFA file:
 * If you have a FASTA file with sequences containing 'Ns' regions (where 'Ns' regions will be treated as gaps), you can use the **fasta2gfa.py** script (in the `utils/` directory).
 
 
-#### BAM file
+#### 2. BAM file
 
 The **BAM** file is a *Samtools* indexed bam file, obtained after mapping the linked reads onto the assembly. For example, the *longranger* pipeline outputs an indexed BAM file containing position-sorted, aligned reads. Each read in this BAM file has Chromium barcode and phasing information attached. 
 
 
-#### Fastq file
+#### 3. Fastq file
 
 The **fastq** file is a barcoded Fastq file from linked reads obtained with *longranger basic*.
 
 
-#### Index file
+#### 4. Index file
 
 The **index** file contains the index of barcodes.  
 To get the index file, you need to use the **idx_bx_sqlite3.py** script in `shelve` mode, from the [LRez](https://github.com/flegeai/LRez) repository:
@@ -210,30 +210,25 @@ or just add comments to say if it doesn't work, try with these parameters
 ### Output files
 
 Using MTG-Link on the small dataset of the `test/` dir, you will get:
-```
-# If mtglink.py is in your PATH 
-cd test/
-mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -ext 500 -out results_MTGLink
 
-# 6 files are generated in results_MTGLink/:
-#   140-L+_140-R+_getreads.log (barcodes of the union)
-#   test.gfa.140-L+_140-R+.g1000.c5000.rbxu.fastq (linked reads used for gap-filling)
-#   140-L+_140-R+.g1000.contigs.fasta (flanking contigs sequences)
-#   test.gfa.union.sum (stats about the union: 1146 barcodes ; 157528 reads)
-#   test_mtglink.gfa (output GFA)
-#   test.gfa.gapfill_seq.fasta (set of gap-filled sequences)
+* a text file (`.barcodes.txt`), containing the barcodes observed in the gap flanking sequences. 
+* a reads file (`.rbxu.fastq`). It contains the linked reads whose barcode is observed in the gap flanking sequences.
+* a sequence file (`.contigs.fasta`) in FASTA format. It contains the gap flanking sequences. 
+* a log file (`.union.sum`), a tabular file with some information on the number of barcodes and reads extracted for each gap.
+* an assembly graph file (`_mtglink.gfa`) in GFA format. It contains the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. 
+* a sequence file (`.gapfill_seq.fasta`) in FASTA format. It contains the set of gap-filled sequences.
 
-# 2 files are generated in results_MTGLink/alignments_stats:
-#   140-L+_140-R+.k51.a2.ref_qry.alignment.stats 
-#   140-L+_140-R+.k51.a2.qry_qry.alignment.stats 
+There is also a `mtg_results/` directory, with:
 
-# 6 files are generated in results_MTGLink/mtg_results (by the dependency MindTheGap):
-#   test.gfa.140-L+_140-R+.g1000.c5000.k51.offset_rm.bkpt.fasta (breakpoint file)
-#   2 files 'xxx.bxu.info.txt' (log files)
-#   test.gfa.140-L+_140-R+.g1000.c5000.k51.a2.bxu.insertions.fasta (inserted sequences found by MindTheGap, with their qualitative scores)
-```
-The output GFA file (`test_mtglink.gfa`) should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
-The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
+* a breakpoint file (`.bkpt.fasta`) in FASTA format. It contains the breakpoint sequences used for gap-filling.
+* a log file (`.info.txt`), a tabular file with some information about the filling process for each breakpoint.
+* a sequence file (`.insertions.fasta`) in FASTA format. It contains the inserted sequences or contig gap-fills that were successfully assembled, with their qualitative scores. 
+
+And finally, there is also a `alignments_stats/` directory, with: 
+
+* a log file (`.log`), a text file with some information on the input files used for the alignment. 
+* an alignment file (`.ref_qry.alignment.stats`), a tabular file with some information on the alignment of the inserted sequences against a reference sequence.
+* an alignment file (`.qry_qry.alignment.stats`), a tabular file with some information on the alignment of the forward inserted sequences against the reverse inserted sequences (evaluation of the complementarity).
 
 
 <!--
