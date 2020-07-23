@@ -225,15 +225,15 @@ def gapfilling(current_gap):
         with open(bkpt_file, "w") as bkpt:
 
             #Left kmer and Reverse Right kmer (dependent on orientation left scaffold)
-            line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, left_scaffold.orient, k)
+            line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, k)
             line2 = seq_L[(left_scaffold.len - ext - k):(left_scaffold.len - ext)]
-            line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, gfapy.invert(left_scaffold.orient), k)
+            line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, k)
             line8 = str(rc(seq_L)[ext:(ext + k)])
 
             #Right kmer and Reverse Left kmer (dependent on orientation right scaffold)
-            line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, right_scaffold.orient, k)
+            line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, k)
             line4 = seq_R[ext:(ext + k)]
-            line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, gfapy.invert(right_scaffold.orient), k)
+            line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, k)
             line6 = str(rc(seq_R)[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
 
             bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
@@ -574,7 +574,53 @@ print("The results from MindTheGap are saved in " + mtgDir)
 print("The statistics from MTG-Link are saved in " + statsDir)
 print("Summary of the union: " +gfa_name+".union.sum")
 print("GFA output file: " + out_gfa_file)
-print("Corresponding file containing all gapfill sequences: " + gapfill_file)
+if gapfill_file is not None:
+    print("Corresponding file containing all gapfill sequences: " + gapfill_file + "\n")
 
+#----------------------------------------------------
+#Summary output
+#----------------------------------------------------
+gfa_output = gfapy.Gfa.from_file(outDir +"/"+ str(out_gfa_file))
+
+#Total initials gaps
+total_gaps = []
+for g_line in gfa.gaps:
+    gap_start = str(g_line.sid1) +"_"+ str(g_line.sid2) 
+    total_gaps.append(gap_start)
+nb_total_gaps = len(total_gaps)
+print("------------------------------------------------------------------------------------------------------------------------\n")
+print("Attempt to gap-fill {} gaps \n".format(nb_total_gaps))
+
+#Gap(s) not gap-filled
+no_gapfill = []
+for g_line in gfa_output.gaps:
+    gap_end = str(g_line.sid1) +"_"+ str(g_line.sid2) 
+    no_gapfill.append(gap_end)
+    print("The gap {} was not successfully gap-filled".format(gap_end))
+
+nb_gapfill = len(total_gaps) - len(no_gapfill)
+print("\nIn total, {} gaps were successfully gap-filled:\n".format(str(nb_gapfill)))
+
+
+#Gaps gap-filled
+out_fasta_file = outDir +"/"+ gapfill_file
+gap_names = []
+if (out_fasta_file) is not None:
+    with open(out_fasta_file, "r") as gapfilled:
+        for record in SeqIO.parse(gapfilled, "fasta"):
+            gap_name = str(record.id).split('_')[0]
+
+            #For a new gap
+            if gap_name not in gap_names:
+                gap_names.append(gap_name)
+                k = str(record.id).split('.k')[-1].split('_')[0]
+                print("\t* " + gap_name + "\tk" + k)
+
+            #For all gaps
+            orientation = str(record.id).split('_')[-1]
+            length = str(record.description).split('_ len_')[1].split('_qual_')[0]
+            quality = str(record.description).split('_qual_')[1]
+            print("\t\t* " + orientation + "\t" + length + " bp\t" + quality)
+           
 
 #TODO: two modules, one when reference sequence provided (args.refDir), one when no reference sequence is provided (args.scaff)

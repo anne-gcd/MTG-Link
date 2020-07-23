@@ -245,19 +245,20 @@ def get_output_for_gfa(record, ext, k, s1, s2, left_scaffold, right_scaffold):
     sol_name = record.id.split("_")[-1] + ".k" + str(k)
     orient_sign = "+"
     orient = "fwd"
+    quality = record.description.split('Quality ')[1]
 
     if "bkpt2" in str(record.id):
         orient_sign = "-"
         orient = "rev"
 
-    sol_name = str(s1) +":"+ str(s2) + "_gf" + sol_name + orient
+    sol_name = str(s1) +":"+ str(s2) + "_gf" + sol_name +"_"+ orient
     solution = sol_name + orient_sign
 
     pos_1 = get_position_for_edges(left_scaffold.orient, orient_sign, left_scaffold.len, length_seq, ext)
     pos_2 = get_position_for_edges(orient_sign, right_scaffold.orient, length_seq, right_scaffold.len, ext)
 
 
-    output_for_gfa = [sol_name, length_seq, str(seq), solution, pos_1, pos_2]
+    output_for_gfa = [sol_name, length_seq, str(seq), solution, pos_1, pos_2, quality]
     return output_for_gfa
 
 
@@ -276,13 +277,14 @@ def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
     pos_2 = output_for_gfa[5]
     s1 = sol_name.split(':')[0]
     s2 = (sol_name.split(':')[1]).split('_gf')[0]
+    quality = output_for_gfa[6]
 
     print("Updating the GFA file with the solution: " + sol_name)
 
     #Save the found seq to a file containing all gapfill seq
     gapfill_file = gfa_name + ".gapfill_seq.fasta"
     with open(gapfill_file, "a") as seq_fasta:
-        seq_fasta.write(">{} _ len {}".format(sol_name, length_seq))
+        seq_fasta.write(">{} _ len_{}_qual_{} ".format(sol_name, length_seq, quality))
         seq_fasta.write("\n" + seq + "\n")
 
     with open(gfa_output_file, "a") as f:
