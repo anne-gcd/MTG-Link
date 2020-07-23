@@ -94,7 +94,7 @@ Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the 
 
 MTG-Link selects the gap-filled sequences with a score [AB]{2} (reference sequence provided) or with a score A[AB]{2} or BA[AB] (using the flanking contigs information).
 
-After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
+After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file (GFA 2.0), containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
 In order to speed up the process, MTG-Link uses a trivial **parallelization** scheme by giving each gap to a separate thread. 
 
@@ -150,8 +150,8 @@ With `<barcoded.shelve>` being the output indexed file.
 
 ### Usage
 
-MTG-Link takes as input a GFA file with gap coordinates, a set of linked reads, a BAM file and an index file containing the index of barcodes.  
-It outputs the results in a GFA file, containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
+MTG-Link takes as input a GFA file (GFA 2.0) with gap coordinates, a set of linked reads, a BAM file and an index file containing the index of barcodes.  
+It outputs the results in a GFA file (GFA 2.0), containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
 The qualitative evaluation of MTG-Link can be performed either with the corresponding reference sequences of the gaps (`-refDir`) or with the flanking contigs sequences.
 
