@@ -1,4 +1,4 @@
 H	VN:Z:2.0
-S	140-L	236326	*	UR:Z:140.1000.5000.left.fasta
-S	140-R	236325	*	UR:Z:140.1000.5000.right.fasta
-G	*	140-L+	140-R+	1000	*
+S	8-L	3152098	*	UR:Z:8.1000.5000.left.fasta
+S	8-R	3152097	*	UR:Z:8.1000.5000.right.fasta
+G	*	8-L+	8-R+	1000	*

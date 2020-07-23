@@ -64,10 +64,10 @@ You can test your installation of MTG-Link using the small dataset in the `test/
 ```
 # If mtglink.py is in your PATH 
 cd test/
-mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.fastq -index barcoded.shelve -out results_MTGLink
+mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.sorted.fastq -index barcoded.shelve -out results_MTGLink
 ```
 The installation is successful if you find a file named `test_mtglink.gfa` in the output directory (`results_MTGLink/`), and it should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
-The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (the forward of length 1999 bp, and the reverse of length 2001 bp).
+The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (one forward and one reverse, both of length 2000 bp).
 
 
 ## User Manual
