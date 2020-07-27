@@ -76,6 +76,8 @@ try:
     all_seq = {}
     fasta_links = []
     i = 0
+    fasta_name = gfa_name.split('.gfa')[0] + "_assembly.fasta"
+
     with open(gfa_file, "r") as f:
         gfa = gfapy.Gfa.from_file(gfa_file)
 
@@ -102,7 +104,7 @@ try:
                             all_seq[current_name] = current_seq
                   
         #Get the paths from the 'Path' line of the input GFA
-        #only the fwd gapfilled seq were kept to construct the path
+        #(only the fwd gapfilled seq were kept to construct the path)
         for line in gfa.paths:
             line = str(line).split('\t')
             scaffolds = str(line[2]).split(',')
@@ -141,7 +143,6 @@ try:
                     assembly += (sequence[over:])[:-over]
 
             #Write the assembly sequence to the FASTA file
-            fasta_name = gfa_name.split('.gfa')[0] + "_assembly.fasta"
             name = ""
             for i in range(0, len(scaffolds), 2):
                 name += scaffolds[i][:-1]
@@ -152,7 +153,7 @@ try:
             name = name[:-1]    #to remove the last '_' char
             name += " len " + str(len(assembly))
 
-            with open(fasta_name, "w") as fasta:
+            with open(fasta_name, "a") as fasta:
                 fasta.write(">" + name)
                 fasta.write("\n" + str(assembly) + "\n")
             
@@ -166,4 +167,4 @@ except Exception as e:
 print("\nThe FASTA output file is saved in " + outDir)
 
 
-#TODO: return gaps as Ns regions
+#TODO: return gaps as Ns regions ?? 
