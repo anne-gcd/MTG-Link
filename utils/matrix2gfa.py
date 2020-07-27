@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(prog="matrix2gfa.py", usage="%(prog)s -in <fast
 
 parser.add_argument("-in", dest="input", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta')", required=True)
 parser.add_argument("-matrix", dest="matrix", action="store", help="File containing the links between the ends of the scaffolds in tabular format", required=True)
-parser.add_argument("-theshold", dest="threshold", type=int,  action="store", help="Minimal number of links to be considered", required=False, default=10)
+parser.add_argument("-threshold", dest="threshold", type=int,  action="store", help="Minimal number of links to be considered", required=False, default=10)
 parser.add_argument("-out", dest="outDir", action="store", help="Output directory for saving the GFA file and the corresponding FASTA file", required=True)
 
 args = parser.parse_args()
@@ -39,10 +39,10 @@ fasta_dict= SeqIO.index(fasta_file, "fasta")
 
 
 mat_file = os.path.abspath(args.matrix)
-mat_name = (mat_file.split("/")[-1]).split("paths")[0]
+mat_name = (mat_file.split("/")[-1]).split("matrix")[0]
 if not os.path.exists(args.matrix):
-        parser.error("The path of the input paths' file doesn't exist")
-print("Input paths' file: " + mat_file)
+        parser.error("The path of the input matrix file doesn't exist")
+print("Input matrix file: " + mat_file)
 
 #----------------------------------------------------
 # Directory for saving results
@@ -67,7 +67,7 @@ start_re = re.compile('0-\d+')
 #----------------------------------------------------
 try:
     fasta_name = outDir + "/" + mat_name+ "."+ "scaffolds.fasta"
-    out_fasta = open (fasta_name, "w")
+    out_fasta = open(fasta_name, "w")
     gfa_file = outDir + "/" + mat_name + ".gfa"
 
     #Initiate GFA file
@@ -109,6 +109,10 @@ try:
                     ctg2_orient='+'
                 gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + ctg2_orient))
         gfa.to_file(gfa_file)
+
+
+    print("\nGFA output file: " + gfa_file)
+    print("Corresponding file containing all FASTA sequences: " + fasta_name + "\n")
 
 
 except Exception as e:
