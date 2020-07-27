@@ -95,13 +95,10 @@ try:
                 continue
             else:
                 with open(seq_link, "r") as input_fasta:
-                    for line in input_fasta:    
-                        #header line
-                        if line[0] == ">":
-                            current_name = (line.lstrip(">")).rstrip("\n").split(" ")[0]
-                        else:
-                            current_seq = line.rstrip('\n')
-                            all_seq[current_name] = current_seq
+                    for record in SeqIO.parse(input_fasta, "fasta"):
+                        name = (record.id).split(" ")[0]
+                        seq = str(record.seq)
+                        all_seq[name] = seq
                   
         #Get the paths from the 'Path' line of the input GFA
         #(only the fwd gapfilled seq were kept to construct the path)
