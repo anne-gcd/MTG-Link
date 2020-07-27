@@ -547,10 +547,13 @@ try:
             if len(output_for_gfa[0]) > 1:          #solution found for the current gap
                 for output in output_for_gfa:
                     gapfill_file = update_gfa_with_solution(outDir, gfa_name, output, out_gfa_file)
+                    success = True
             else:                                   #no solution found for the current gap
                 out_gfa = gfapy.Gfa.from_file(out_gfa_file)
                 out_gfa.add_line(output_for_gfa[0][0])
                 out_gfa.to_file(out_gfa_file)
+                success = False
+
 
         p.close()
 
@@ -574,7 +577,7 @@ print("The results from MindTheGap are saved in " + mtgDir)
 print("The statistics from MTG-Link are saved in " + statsDir)
 print("Summary of the union: " +gfa_name+".union.sum")
 print("GFA output file: " + out_gfa_file)
-if gapfill_file is not None:
+if success == True:
     print("Corresponding file containing all gapfill sequences: " + gapfill_file + "\n")
 
 #----------------------------------------------------
