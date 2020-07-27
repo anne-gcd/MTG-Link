@@ -622,5 +622,6 @@ if (out_fasta_file) is not None:
             quality = str(record.description).split('_qual_')[1]
             print("\t\t* " + orientation + "\t" + length + " bp\t" + quality)
            
+print("\n")
 
 #TODO: two modules, one when reference sequence provided (args.refDir), one when no reference sequence is provided (args.scaff)
