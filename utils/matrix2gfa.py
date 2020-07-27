@@ -39,7 +39,7 @@ fasta_dict= SeqIO.index(fasta_file, "fasta")
 
 
 mat_file = os.path.abspath(args.matrix)
-mat_name = (mat_file.split("/")[-1]).split("matrix")[0]
+mat_name = (mat_file.split("/")[-1]).split(".matrix")[0]
 if not os.path.exists(args.matrix):
         parser.error("The path of the input matrix file doesn't exist")
 print("Input matrix file: " + mat_file)
