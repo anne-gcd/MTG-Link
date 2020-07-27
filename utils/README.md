@@ -58,6 +58,33 @@ optional arguments:
 ```
 
 
+## matrix2gfa.py
+
+The **matrix2gfa.py** script takes as input a file containing the links between the ends of the scaffolds in tabular format and transform it to a GFA file (GFA 2.0).
+
+### Usage
+
+```
+./matrix2gfa.py --help
+
+usage: matrix2gfa.py -in <fasta_file> -matrix <matrix_file> -out <output_directory> -threshold <int>
+
+Transform a file containing the matrix (links between the ends of the scaffolds) to a GFA file
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+[Main options]:
+  -in INPUT             FASTA file containing the sequences of the scaffolds 
+                        obtained from the assembly (format: 'xxx.fasta')
+  -matrix MATRIX        File containing the links between the ends of the 
+                        scaffolds in tabular format
+  -threshold THRESHOLD  Minimal number of links to be considered
+  -out OUTDIR           Output directory for saving the GFA file and the 
+                        corresponding FASTA file
+```
+
+
 ## gfa2_to_gfa1.py
 
 The **gfa2_to_gfa1.py** script converts a GFA 2.0 file into a GFA 1.0 file.
