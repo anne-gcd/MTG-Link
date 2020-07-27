@@ -1,6 +1,6 @@
 ## fasta2gfa.py
 
-The **fasta2gfa.py** script takes as input a FASTA file and treats the 'Ns' regions within the sequences as gaps. It thus transform a FASTA file with 'Ns' regions within sequences to a GFA file.  
+The **fasta2gfa.py** script takes as input a FASTA file and treats the 'Ns' regions within the sequences as gaps. It thus transform a FASTA file with 'Ns' regions within sequences to a GFA file (GFA 2.0).  
 
 It is possible to filter the 'Ns' regions you want to treat as gaps by:
 * their size (e.g. gap sizes)
@@ -32,7 +32,7 @@ optional arguments:
 
 ## paths2gfa.py
 
-The **paths2gfa.py** script takes as input a file containing the paths between scaffolds and transform it to a GFA file.
+The **paths2gfa.py** script takes as input a file containing the paths between scaffolds and transform it to a GFA file (GFA 2.0).
 
 Format of a path: `<int:nb_scaffolds>****<sid1(f|r)>+<sid2(f|r)>`
 
