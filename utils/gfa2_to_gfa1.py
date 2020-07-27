@@ -92,34 +92,61 @@ try:
             gfa1.add_line("S\t{}\t*\tLN:i:{}\t{}".format(name, length, sequence_file))
 
         #Iterate over the 'Edge' lines of the input GFA (GFA 2.0) and rewrite them with GFA 1.0 formatting
-        for line in gfa2.edges:
+        lines = [line for line in gfa2.edges]
+        for i in range(len(lines)):
 
-            s1_orient = str(line).split('\t')[2]
+            s1_orient = str(lines[i]).split('\t')[2]
             s1 = "".join(list(s1_orient)[:-1])
             orient1 = list(s1_orient)[-1]
             
-            s2_orient = str(line).split('\t')[3]
+            s2_orient = str(lines[i]).split('\t')[3]
             s2 = "".join(list(s2_orient)[:-1])
             orient2 = list(s2_orient)[-1]
 
-            overlap_length = int((str(line).split('\t')[-2]).split('$')[0]) - int(str(line).split('\t')[-3])
+            overlap_length = int((str(lines[i]).split('\t')[-2]).split('$')[0]) - int(str(lines[i]).split('\t')[-3])
 
             gfa1.add_line("L\t{}\t{}\t{}\t{}\t{}M".format(s1, orient1, s2, orient2, overlap_length))
 
             #Only keep the fwd gapfilled seq to construct the path
             if ("fwd" in s1_orient) or ("fwd" in s2_orient):
-                if s1_orient not in path:
-                    path.append(s1_orient)
-                if s2_orient not in path:
-                    path.append(s2_orient)
+
+                #New path
+                if path == []:
+                    j = 1
+                    if (s1_orient not in path) and (s2_orient not in path):
+                        path.append(s1_orient)
+                        path.append(s2_orient)
+
+                #Existing path
+                else:
+
+                    #Add a 'Path' line to the GFA 1.0 output, end the existing path and start a new path
+                    if (s1_orient not in path) and (s2_orient not in path):
+                        assembly_path = ','.join(path)
+                        assembly_overlaps = ','.join(overlaps)
+                        gfa1.add_line("P\tpath{}\t{}\t{}".format(j,assembly_path, assembly_overlaps))
+                        path.clear()
+                        overlaps.clear()
+                        j += 1
+                        path.append(s1_orient)
+                        path.append(s2_orient)
+
+                    #Prolongation of the existing path
+                    elif s1_orient not in path:
+                        path.append(s1_orient)
+                    elif s2_orient not in path:
+                        path.append(s2_orient)
 
                 overlap = str(overlap_length) + "M"
                 overlaps.append(overlap)
 
-        #Add a 'Path' line to the GFA 1.0 output
-        assembly_path = ','.join(path)
-        assembly_overlaps = ','.join(overlaps)
-        gfa1.add_line("P\tpath\t{}\t{}".format(assembly_path, assembly_overlaps))
+            #Add a 'Path' line to the GFA 1.0 output and end the existing path
+            if i == len(lines)-1:
+                assembly_path = ','.join(path)
+                assembly_overlaps = ','.join(overlaps)
+                gfa1.add_line("P\tpath{}\t{}\t{}".format(j, assembly_path, assembly_overlaps))
+                path.clear()
+                overlaps.clear()
 
         gfa1.to_file(output_gfa)
 
