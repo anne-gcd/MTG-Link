@@ -322,10 +322,13 @@ def gapfilling(current_gap):
 
                 if not os.path.exists(ref_qry_file):
                     print("Warning: The '{}' file doesn't exits".format(ref_qry_file))
+                    stats = False
                 elif not os.path.exists(qry_qry_file):
                     print("Warning: The '{}' file doesn't exits".format(qry_qry_file))
+                    stats = False
 
                 else:
+                    stats = True
                     ref_qry_output = open(ref_qry_file)
                     qry_qry_output = open(qry_qry_file)
 
@@ -447,9 +450,9 @@ def gapfilling(current_gap):
 
 
                 #If at least one good solution for both fwd and rev strands amongst all solution found, stop searching
-                if ("True_1" and "True_2" in solutions): 
-                    solution = True
-                    break
+                if (stats == True) and ("True_1" and "True_2" in solutions): 
+                        solution = True
+                        break
 
                 else:
                     solution = False
