@@ -151,12 +151,12 @@ def gapfilling(current_gap):
 
     #If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length
     if args.chunk > left_scaffold.len:
-        print("Warning: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length")
+        print("Warning for {}: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gap_label))
         chunk_L = left_scaffold.len
     else:
         chunk_L = args.chunk
     if args.chunk > right_scaffold.len:
-        print("Warning: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length")
+        print("Warning for {}: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gap_label))
         chunk_R = right_scaffold.len
     else:
         chunk_R = args.chunk
@@ -321,9 +321,9 @@ def gapfilling(current_gap):
                 qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
                 if not os.path.exists(ref_qry_file):
-                    parser.error("Warning: The '{}' file doesn't exits".format(ref_qry_file))
+                    print("Warning: The '{}' file doesn't exits".format(ref_qry_file))
                 elif not os.path.exists(qry_qry_file):
-                    parser.error("Warning: The '{}' file doesn't exits".format(qry_qry_file))
+                    print("Warning: The '{}' file doesn't exits".format(qry_qry_file))
 
                 else:
                     ref_qry_output = open(ref_qry_file)
