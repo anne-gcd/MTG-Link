@@ -36,8 +36,6 @@ fasta_name = fasta_file.split('/')[-1]
 print("\nInput FASTA file: " + fasta_file)
 fasta_dict= SeqIO.index(fasta_file, "fasta")
 
-
-
 mat_file = os.path.abspath(args.matrix)
 mat_name = (mat_file.split("/")[-1]).split(".matrix")[0]
 if not os.path.exists(args.matrix):
@@ -59,12 +57,12 @@ except:
 outDir = os.getcwd()
 print("\nThe results are saved in " + outDir)
 
-stored_ctg={}
-
-start_re = re.compile('0-\d+')
 #----------------------------------------------------
 # MATRIX to GFA
 #----------------------------------------------------
+stored_ctg={}
+start_re = re.compile('0-\d+')
+
 try:
     fasta_name = outDir + "/" + mat_name+ "."+ "scaffolds.fasta"
     out_fasta = open(fasta_name, "w")
@@ -89,7 +87,7 @@ try:
                 if (not (ctg1_name in stored_ctg)):
                     ctg1_seq = fasta_dict[ctg1_name] 
                     ctg1_seq.description='_ len ' + str(len(ctg1_seq))
-                    SeqIO.write( ctg1_seq, out_fasta , "fasta")
+                    SeqIO.write(ctg1_seq, out_fasta , "fasta")
                     gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(ctg1_name, str(len(ctg1_seq)), fasta_name))          
                     stored_ctg[ctg1_name]=1
 
@@ -97,19 +95,41 @@ try:
                 if (not (ctg2_name in stored_ctg)):
                     ctg2_seq = fasta_dict[ctg2_name]
                     ctg2_seq.description='_ len ' + str(len(ctg2_seq))  
-                    SeqIO.write( ctg2_seq, out_fasta , "fasta") 
+                    SeqIO.write(ctg2_seq, out_fasta , "fasta") 
                     gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(ctg2_name, str(len(ctg2_seq)), fasta_name))         
                     stored_ctg[ctg2_name]=1  
 
                 ctg1_orient='+'
                 ctg2_orient='-'
                 if (start_re.match(ctg1_end)):
-                    ctg1_orient='-'
+                    if (ctg1_end=="0-"+str(len(fasta_dict[ctg1_name]))):
+                        ctg1_end='both'
+                    else : 
+                        ctg1_orient='-'
                 if (start_re.match(ctg2_end)):
-                    ctg2_orient='+'
-                gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + ctg2_orient))
-        gfa.to_file(gfa_file)
+                    if (ctg2_end=="0-"+str(len(fasta_dict[ctg2_name]))):
+                         ctg2_orient='both'
+                    else : 
+                        ctg2_orient='+'
 
+                if (ctg1_orient == 'both'):
+                    if (ctg2_orient == 'both'):
+                        gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + '+'))
+                        gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + '-'))
+                        gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '-', ctg2_name + '+'))
+                        gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '-', ctg2_name + '-'))
+                    else :
+                        gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + ctg2_orient))
+                        gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '-', ctg2_name + ctg2_orient))
+                    continue
+
+                if (ctg2_orient=='both'):
+                    gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + '+'))
+                    gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + '-'))
+                    continue
+                gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + ctg2_orient))
+
+        gfa.to_file(gfa_file)
 
     print("\nGFA output file: " + gfa_file)
     print("Corresponding file containing all FASTA sequences: " + fasta_name + "\n")
