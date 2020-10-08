@@ -120,7 +120,7 @@ try:
                     else: 
                         ctg2_orient = '+'
 
-                #Orientation of contig1 unknown ('both')
+                #Orientation of contig1 unknown (it can be 'both' + and -)
                 if (ctg1_orient == 'both'):
                     if (ctg2_orient == 'both'):
                         gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + '+'))
@@ -131,11 +131,12 @@ try:
                         gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + ctg2_orient))
                         gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '-', ctg2_name + ctg2_orient))
 
-                #Orientation of contig2 unknown ('both')
+                #Orientation of contig2 unknown (it can be 'both' + and -)
                 elif (ctg2_orient == 'both'):
                     gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + '+'))
                     gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + '-'))
 
+                #Orientations of both contigs are known
                 else:
                     gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + ctg2_orient))
 
