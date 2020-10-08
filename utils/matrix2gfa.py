@@ -14,10 +14,10 @@ from Bio import SeqIO
 #----------------------------------------------------
 parser = argparse.ArgumentParser(prog="matrix2gfa.py", usage="%(prog)s -in <fasta_file> -matrix <matrix_file> -out <output_directory> -threshold <int>",\
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=("Transform a file containing the matrix (links between the ends of the scaffolds) to a GFA file"))
+                                description=("Transform a file containing the matrix (links between the ends of the contigs) to a GFA file"))
 
-parser.add_argument("-in", dest="input", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta')", required=True)
-parser.add_argument("-matrix", dest="matrix", action="store", help="File containing the links between the ends of the scaffolds in tabular format", required=True)
+parser.add_argument("-in", dest="input", action="store", help="FASTA file containing the sequences of the contigs obtained from the assembly (format: 'xxx.fasta')", required=True)
+parser.add_argument("-matrix", dest="matrix", action="store", help="File containing the links between the ends of the contigs in tabular format", required=True)
 parser.add_argument("-threshold", dest="threshold", type=int,  action="store", help="Minimal number of links to be considered", required=False, default=10)
 parser.add_argument("-out", dest="outDir", action="store", help="Output directory for saving the GFA file and the corresponding FASTA file", required=True)
 
@@ -29,6 +29,7 @@ if re.match('^.*.fasta$', args.input) is None:
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
+#FASTA file containing the sequences of the contigs obtained from the assembly
 fasta_file = os.path.abspath(args.input)
 if not os.path.exists(args.input):
     parser.error("The path of the input FASTA file doesn't exist")
@@ -36,6 +37,7 @@ fasta_name = fasta_file.split('/')[-1]
 print("\nInput FASTA file: " + fasta_file)
 fasta_dict= SeqIO.index(fasta_file, "fasta")
 
+#Matrix file containing the links between the ends of the contigs in tabular format
 mat_file = os.path.abspath(args.matrix)
 mat_name = (mat_file.split("/")[-1]).split(".matrix")[0]
 if not os.path.exists(args.matrix):
@@ -64,6 +66,7 @@ stored_ctg={}
 start_re = re.compile('0-\d+')
 
 try:
+    #Output files' names
     fasta_name = outDir + "/" + mat_name+ "."+ "scaffolds.fasta"
     out_fasta = open(fasta_name, "w")
     gfa_file = outDir + "/" + mat_name + ".gfa"
@@ -74,44 +77,50 @@ try:
 
     gaps=''
 
-    #Iterate over the scaffolds in the PATH
+    #Iterate over the links in the matrix file
     with open(mat_file, "r") as mat:
         for line in mat:
             (ctg1,ctg2,links) = line.split(" ")
-            if (int(links) > args.threshold):
-                (ctg1_name, ctg1_end) = ctg1.split(":")
-                (ctg2_name, ctg2_end) = ctg2.split(":")
-                if (ctg1_name == ctg2_name) :
+
+            #Keep only the links over a certain threshold
+            if (int(links) >= args.threshold):
+                (ctg1_name, ctg1_pos) = ctg1.split(":")
+                (ctg2_name, ctg2_pos) = ctg2.split(":")
+
+                #If both contigs are the same, do not consider this link
+                if (ctg1_name == ctg2_name):
                     continue
-                #Save the scaffolds' sequence to FASTA file
+
+                #Save the contigs' sequence to the output FASTA and GFA files
                 if (not (ctg1_name in stored_ctg)):
-                    ctg1_seq = fasta_dict[ctg1_name] 
+                    ctg1_seq = fasta_dict[ctg1_name]
                     ctg1_seq.description='_ len ' + str(len(ctg1_seq))
-                    SeqIO.write(ctg1_seq, out_fasta , "fasta")
+                    SeqIO.write(ctg1_seq, out_fasta, "fasta")
                     gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(ctg1_name, str(len(ctg1_seq)), fasta_name))          
                     stored_ctg[ctg1_name]=1
-
-                
                 if (not (ctg2_name in stored_ctg)):
                     ctg2_seq = fasta_dict[ctg2_name]
                     ctg2_seq.description='_ len ' + str(len(ctg2_seq))  
-                    SeqIO.write(ctg2_seq, out_fasta , "fasta") 
+                    SeqIO.write(ctg2_seq, out_fasta, "fasta") 
                     gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(ctg2_name, str(len(ctg2_seq)), fasta_name))         
                     stored_ctg[ctg2_name]=1  
 
+                #Find the orientations of both contigs
+                #if len(ctg) too short, the orientation of ctg is unknown, it can be 'both' + and -
                 ctg1_orient='+'
                 ctg2_orient='-'
-                if (start_re.match(ctg1_end)):
-                    if (ctg1_end=="0-"+str(len(fasta_dict[ctg1_name]))):
-                        ctg1_end='both'
-                    else : 
-                        ctg1_orient='-'
-                if (start_re.match(ctg2_end)):
-                    if (ctg2_end=="0-"+str(len(fasta_dict[ctg2_name]))):
-                         ctg2_orient='both'
-                    else : 
-                        ctg2_orient='+'
+                if (start_re.match(ctg1_pos)):
+                    if (ctg1_pos == "0-" + str(len(fasta_dict[ctg1_name]))):
+                        ctg1_orient = 'both'
+                    else: 
+                        ctg1_orient = '-'
+                if (start_re.match(ctg2_pos)):
+                    if (ctg2_pos == "0-" + str(len(fasta_dict[ctg2_name]))):
+                         ctg2_orient = 'both'
+                    else: 
+                        ctg2_orient = '+'
 
+                #Orientation of contig1 unknown ('both')
                 if (ctg1_orient == 'both'):
                     if (ctg2_orient == 'both'):
                         gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + '+'))
@@ -121,13 +130,14 @@ try:
                     else :
                         gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '+', ctg2_name + ctg2_orient))
                         gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + '-', ctg2_name + ctg2_orient))
-                    continue
 
-                if (ctg2_orient=='both'):
+                #Orientation of contig2 unknown ('both')
+                elif (ctg2_orient == 'both'):
                     gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + '+'))
                     gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + '-'))
-                    continue
-                gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + ctg2_orient))
+
+                else:
+                    gfa.add_line("G\t*\t{}\t{}\t0\t*".format(ctg1_name + ctg1_orient, ctg2_name + ctg2_orient))
 
         gfa.to_file(gfa_file)
 
