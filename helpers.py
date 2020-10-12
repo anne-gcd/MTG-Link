@@ -159,7 +159,7 @@ class Scaffold(Gap):
         '''Method to get the sequence of the scaffold'''
         #if relative path
         if not str(self.seq_path).startswith('/'):
-            seq_link = str('/'.join(str(self.gfa_file).split('/')[:-1])) + str(self.seq_path)
+            seq_link = str('/'.join(str(self.gfa_file).split('/')[:-1])) +"/"+ str(self.seq_path)
         #if absolute path
         else:
             seq_link = self.seq_path
