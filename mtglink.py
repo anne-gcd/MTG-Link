@@ -183,15 +183,15 @@ def gapfilling(current_gap):
     #Initiate a dictionary to count the occurences of each barcode
     barcodes_occ = {}
     
-    #Obtain the left barcodes and store the elements in a set
+    #Obtain the left barcodes that are extracted on the left region and store the barcodes and their occurences in the dict 'barcodes_occ'
     left_region = left_scaffold.chunk(chunk_L)
     extract_barcodes(bam_file, gap_label, left_region, barcodes_occ)
 
-    #Obtain the right barcodes and store the elements in a set
+    #Obtain the right barcodes that are extracted on the right region and store the barcodes and their occurences in the dict 'barcodes_occ'
     right_region = right_scaffold.chunk(chunk_R)
     extract_barcodes(bam_file, gap_label, right_region, barcodes_occ)
 
-    #Calculate the union 
+    #Do the union of the barcodes on both left and right regions
     union_barcodes_file = "{}.{}.g{}.c{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk)
     with open(union_barcodes_file, "w") as union_barcodes:
         #Filter barcodes by freq

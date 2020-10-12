@@ -83,9 +83,9 @@ class Gap:
     def label(self):
         '''Method to label the gap'''
         if self._identity == "*":
-            return str(self._left) +"_"+ str(self._right)
+            return str(self.left) +"_"+ str(self.right)
         else:
-            return str(self._identity)
+            return str(self.identity)
 
     #Method "info"
     def info(self):
@@ -97,7 +97,7 @@ class Gap:
 
     #Method "__repr__"
     def __repr__(self):
-        return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self._identity, self._length, self._left, self._right)
+        return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self.identity, self.length, self.left, self.right)
 
 
 #----------------------------------------------------
@@ -158,15 +158,15 @@ class Scaffold(Gap):
     def sequence(self):
         '''Method to get the sequence of the scaffold'''
         #if relative path (e.g. not absolute path)
-        if not str(self._seq_path).startswith('/'):
-            self.seq_path = '/'.join(str(self.gfa_file).split('/')[:-1]) + str(self._seq_path)
+        if not str(self.seq_path).startswith('/'):
+            self.seq_path = '/'.join(str(self.gfa_file).split('/')[:-1]) + str(self.seq_path)
 
         #get the sequence of the scaffold
-        for record in SeqIO.parse(self._seq_path, "fasta"):
-            if re.match(self._name, record.id):
-                if self._orient == "+":
+        for record in SeqIO.parse(self.seq_path, "fasta"):
+            if re.match(self.name, record.id):
+                if self.orient == "+":
                     return record.seq
-                elif self._orient == "-":
+                elif self.orient == "-":
                     return rc(record.seq)
 
     #Method "chunk"
@@ -175,34 +175,34 @@ class Scaffold(Gap):
         #----------------------------------------------------
         # For simulated datasets
         #----------------------------------------------------
-        if ('-L' in self._name) or ('-R' in self._name):
+        if ('-L' in self.name) or ('-R' in self.name):
             #if left scaffold
             if self.scaffold == self.left:
                 start = self._slen - c
                 end = self._slen
             #if right scaffold
             elif self.scaffold == self.right:
-                start = self._slen + self.length
-                end = self._slen + self.length + c
-            contig_name = str(self._name).split("-")[0]
+                start = self.slen + self.length
+                end = self.slen + self.length + c
+            contig_name = str(self.name).split("-")[0]
             return str(contig_name) +":"+ str(start) +"-"+ str(end)
         #----------------------------------------------------
         # For real datasets
         #----------------------------------------------------
         else:
             #if left_fwd or right_rev
-            if (self._orient == "+" and self.scaffold == self.left) or (self._orient == "-" and self.scaffold == self.right):
-                start = self._slen - c
-                end = self._slen
+            if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):
+                start = self.slen - c
+                end = self.slen
             #if right_fwd or left_rev
-            elif (self._orient == "+" and self.scaffold == self.right) or (self._orient == "-" and self.scaffold == self.left):
+            elif (self.orient == "+" and self.scaffold == self.right) or (self.orient == "-" and self.scaffold == self.left):
                 start = 0
                 end = c
-            return str(self._name) +":"+ str(start) +"-"+ str(end)
+            return str(self.name) +":"+ str(start) +"-"+ str(end)
 
     #Method "__repr__"
     def __repr__(self):
-        return "Scaffold: name ({}), orientation ({}), length ({}), sequence's file ({})".format(self._name, self._orient, self._slen, self._seq_path)
+        return "Scaffold: name ({}), orientation ({}), length ({}), sequence's file ({})".format(self.name, self.orient, self.slen, self.seq_path)
 
     
 
@@ -218,12 +218,14 @@ To extract the barcodes of reads mapping on chunks, with BamExtractor:
 def extract_barcodes(bam, gap_label, region, barcodes_occ):
     command = ["BamExtractor", bam, region]
     bamextractorLog = str(gap_label) + "_bamextractor.log"
-
     tmp_barcodes_file = str(gap_label) + "_bam-extractor-stdout.txt"
+
+    #BamExtractor
     with open(tmp_barcodes_file, "w+") as f, open(bamextractorLog, "a") as log:
         subprocess.run(command, stdout=f, stderr=log)
         f.seek(0)
 
+        #Save the barcodes and their occurences in the dict 'barcodes_occ'
         for line in f.readlines():
             #remove the '-1' at the end of the sequence
             barcode_seq = line.split('-')[0]
@@ -253,6 +255,7 @@ def get_reads(reads, index, gap_label, barcodes, out_reads):
     command = ["reads_bx_sqlite3.py", "--fastq", reads, "--idx", index, "--bdx", barcodes, "--mode", "shelve"]
     getreadsLog = str(gap_label) + ".barcodes.txt"
 
+    #reads_bx_sqlite3.py
     with open(getreadsLog, "a") as log:
         subprocess.run(command, stdout=out_reads, stderr=log)
 
