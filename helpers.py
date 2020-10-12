@@ -157,12 +157,15 @@ class Scaffold(Gap):
     #Method "sequence"
     def sequence(self):
         '''Method to get the sequence of the scaffold'''
-        #if relative path (e.g. not absolute path)
+        #if relative path
         if not str(self.seq_path).startswith('/'):
-            self.seq_path = str('/'.join(str(self.gfa_file).split('/')[:-1])) + str(self.seq_path)
-
+            seq_link = str('/'.join(str(self.gfa_file).split('/')[:-1])) + str(self.seq_path)
+        #if absolute path
+        else:
+            seq_link = self.seq_path
+            
         #get the sequence of the scaffold
-        for record in SeqIO.parse(self.seq_path, "fasta"):
+        for record in SeqIO.parse(seq_link, "fasta"):
             if re.match(self.name, record.id):
                 if self.orient == "+":
                     return record.seq
