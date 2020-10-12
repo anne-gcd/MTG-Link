@@ -44,7 +44,7 @@ parser = argparse.ArgumentParser(prog="mtglink.py", usage="%(prog)s -gfa <input.
 parserMain = parser.add_argument_group("[Main options]")
 parserMtg = parser.add_argument_group("[MindTheGap option]")
 
-parserMain.add_argument('-gfa', dest="input_gfa", action="store", help="Input GFA file (format: xxx.gfa)", required=True)
+parserMain.add_argument('-gfa', dest="input_gfa", action="store", help="Input GFA file (GFA 2.0) (format: xxx.gfa)", required=True)
 parserMain.add_argument('-c', dest="chunk", action="store", type=int, help="Chunk size (bp)", required=True)
 parserMain.add_argument('-bam', dest="bam", action="store", help="BAM file: linked reads mapped on current genome assembly (format: xxx.bam)", required=True)
 parserMain.add_argument('-fastq', dest="reads", action="store", help="File of indexed reads (format: xxx.fastq | xxx.fq)", required=True)
@@ -76,25 +76,30 @@ if re.match('^.*.bam$', args.bam) is None:
 #----------------------------------------------------
 # Input files and arguments
 #----------------------------------------------------
+#GFA 2.0 file
 gfa_file = os.path.abspath(args.input_gfa)
 if not os.path.exists(gfa_file):
     parser.error("Warning: The path of the GFA file doesn't exist")
 gfa_name = gfa_file.split('/')[-1]
 print("\nInput GFA file: " + gfa_file)
 
+#BAM file: linked reads mapped on current genome assembly
 bam_file = os.path.abspath(args.bam)
 if not os.path.exists(bam_file): 
     parser.error("Warning: The path of the BAM file doesn't exist")
 print("BAM file: " + bam_file)
 
+#Reads file: file of indexed reads
 reads_file = os.path.abspath(args.reads)
 if not os.path.exists(reads_file):
     parser.error("Warning: The path of the file of indexed reads doesn't exist")
 print("File of indexed reads: " + reads_file)
 
+#Prefix of barcodes index file
 index_file = os.path.abspath(args.index)
 print("Barcodes index file (prefix): " + index_file)
 
+#Directory containing the reference sequences if any
 if args.refDir is not None:
     refDir = os.path.abspath(args.refDir)
     if not os.path.exists(refDir):
@@ -132,18 +137,28 @@ statsDir = outDir + "/alignments_stats"
 #----------------------------------------------------
 # gapfilling function - Pipeline
 #----------------------------------------------------
+'''
+To perform the gap-filling on a specific gap:
+    - it takes as input the current gap on which we want to perform the gap-filling
+    - it outputs the list 'union_summary' containing the gap ID, the names of the left and right flanking sequences, the gap size, the chunk size, and the number of barcodes and reads extracted on the chunks to perform the gap-filling
+    - it outputs as well the list 'output_for_gfa' containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the sequence
+'''
 def gapfilling(current_gap):
 
     os.chdir(outDir)
 
-    #Open the input GFA file to get the corresponding Gap line
+    #Open the input GFA file to get the corresponding Gap line ('G' line)
     gfa = gfapy.Gfa.from_file(gfa_file)
     for _gap_ in gfa.gaps:
         if str(_gap_) == current_gap:
             current_gap = _gap_
             gap = Gap(current_gap)
 
-    gap.info()
+    #Print some information on the current gap we are working on
+    print("WORKING ON GAP:")
+    print(gap.__dict__)
+    
+    #Get the label of the current gap
     gap_label = gap.label()
 
     left_scaffold = Scaffold(current_gap, gap.left, gfa_file)
@@ -496,7 +511,9 @@ def gapfilling(current_gap):
 # Gapfilling with MindTheGap
 #----------------------------------------------------
 try:
+    #Open the input GFA file
     gfa = gfapy.Gfa.from_file(gfa_file)
+    #Create the output GFA file
     out_gfa_file = str(gfa_name).split('.gfa')[0] + "_mtglink.gfa"
 
     #----------------------------------------------------
