@@ -34,23 +34,62 @@ from datetime import datetime
 # Gap class
 #----------------------------------------------------
 class Gap:
+    '''
+    Class defining a gap characterized by:
+    - its ID
+    - its length
+    - its left flanking sequence's name
+    - its right flanking sequence's name
+    '''
+
+    #Constructor
     def __init__(self, gap):
-        self.id = gap.gid
-        self.length = gap.disp
-        self.left = gap.sid1
-        self.right = gap.sid2
+        self._id = gap.gid
+        self._length = gap.disp
+        self._left = gap.sid1
+        self._right = gap.sid2
 
+    #Accessors
+    def _get_id(self):
+        '''Method to be call when we want to access the attribute "id"'''
+        return self._id
+    def _get_length(self):
+        '''Method to be call when we want to access the attribute "length"'''
+        return self._length
+    def _get_left(self):
+        '''Method to be call when we want to access the attribute "left"'''
+        return self._left
+    def _get_right(self):
+        '''Method to be call when we want to access the attribute "right"'''
+        return self._right
+
+    #Properties
+    id = property(_get_id)
+    length = property(_get_length)
+    left = property(_get_left)
+    right = property(_get_right)
+
+    #Method "__getattr__"
+    def __getattr__(self, attr):
+        '''If Python doesn't find the attribute "attr", it calls this method and print an alert'''
+        print("WARNING: There is no attribute {} here !".format(attr))
+
+    #Method "__delattr_"
+    def __delattr_(self, attr):
+        '''We can't delete an attribute, we raise the exception AttributeError'''
+        raise AttributeError("You can't delete attributes from this class")
+    
+    #Method "label"
     def label(self):
-        if self.id == "*":
-            return str(self.left) +"_"+ str(self.right)
+        '''Method to label the gap'''
+        if self._id == "*":
+            return str(self._left) +"_"+ str(self._right)
         else:
-            return str(self.id)
+            return str(self._id)
 
-    def info(self):
-        if self.id == "*":
-            print("WORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
-        else:
-            print("WORKING ON GAP: {}; length {}\n".format(self.id, self.length))
+    #Method "__repr__"
+    def __repr__(self):
+        return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self._id, self._length, self._left, self._right)
 
 
 #----------------------------------------------------
