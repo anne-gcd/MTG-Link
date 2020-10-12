@@ -134,6 +134,10 @@ os.mkdir(unionDir)
 mtgDir = outDir + "/mtg_results"
 os.mkdir(mtgDir)
 
+#contigDir
+contigDir = outDir + "/contigs"
+os.mkdir(contigDir)
+
 #statsDir
 statsDir = outDir + "/alignments_stats"
 
@@ -315,7 +319,7 @@ def gapfilling(current_gap):
                 elif (args.refDir is None) or (ref_file is None):
 
                     #Merge both left and right flanking contigs sequences into a unique file (ref_file)
-                    ref_file = outDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
+                    ref_file = contigDir +"/"+ str(gap_label) +".g"+ str(gap.length) + ".contigs.fasta"
                     with open(ref_file, "w") as ref_fasta:
 
                         #Left scaffold oriented '+'
