@@ -272,7 +272,7 @@ def gapfilling(current_gap):
             print("\nGapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
             
             #Input arguments for MindTheGap
-            input_file = os.path.join(outDir, union_reads_file)
+            input_file = os.path.join(unionDir, union_reads_file)
             output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a)
             max_nodes = args.max_nodes
             max_length = args.max_length
@@ -285,6 +285,7 @@ def gapfilling(current_gap):
             #Perform the gap-filling with MindTheGap
             mtg_fill(gap_label, input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
+            #If at least one solution is found, perform qualitative evaluation of the gap-filled sequence(s)
             if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
                 insertion_file = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
 
@@ -319,8 +320,8 @@ def gapfilling(current_gap):
 
                         #Left scaffold oriented '+'
                         if left_scaffold.orient == "+":
-                            ref_fasta.write(">" + left_scaffold.name + "_region:" + str(left_scaffold.len-ext) + "-" + str(left_scaffold.len) + "\n")
-                            ref_fasta.write(seq_L[(left_scaffold.len - ext):left_scaffold.len])
+                            ref_fasta.write(">" + left_scaffold.name + "_region:" + str(left_scaffold.slen-ext) + "-" + str(left_scaffold.slen) + "\n")
+                            ref_fasta.write(seq_L[(left_scaffold.slen - ext):left_scaffold.slen])
                         #Left scaffold oriented '-' ~ Right scaffold oriented '+'
                         elif left_scaffold.orient == "-":
                             ref_fasta.write(">" + left_scaffold.name + "_region:0-" + str(ext) + "\n")
@@ -332,8 +333,8 @@ def gapfilling(current_gap):
                             ref_fasta.write(seq_R[0:ext])
                         #Right scaffold oriented '-' ~ Left scaffold oriented '+'
                         elif right_scaffold.orient == "-":
-                            ref_fasta.write("\n>" + right_scaffold.name + "_region:" + str(right_scaffold.len-ext) + "-" + str(right_scaffold.len) + "\n")
-                            ref_fasta.write(str(rc(seq_R)[(right_scaffold.len - ext):right_scaffold.len]))
+                            ref_fasta.write("\n>" + right_scaffold.name + "_region:" + str(right_scaffold.slen-ext) + "-" + str(right_scaffold.slen) + "\n")
+                            ref_fasta.write(str(rc(seq_R)[(right_scaffold.slen - ext):right_scaffold.slen]))
 
                 if not os.path.isfile(ref_file):
                     print("Warning: Something wrong with the specified reference file. Exception-", sys.exc_info())
@@ -489,7 +490,7 @@ def gapfilling(current_gap):
                     os.chdir(mtgDir)
             
 
-            #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file
+            #If no solution found, remove the 'xxx.insertions.fasta' and 'xxx.insertions.vcf' file, and set 'solution' to False
             else:
                 output_for_gfa = []
                 insertion_fasta = os.path.abspath(mtgDir +"/"+ output + ".insertions.fasta")
