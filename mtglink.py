@@ -126,6 +126,10 @@ except:
 outDir = os.getcwd()
 print("\nThe results are saved in " + outDir + "\n")
 
+#unionDir
+unionDir = outDir + "/union"
+os.mkdir(unionDir)
+
 #mtgDir
 mtgDir = outDir + "/mtg_results"
 os.mkdir(mtgDir)
@@ -180,6 +184,9 @@ def gapfilling(current_gap):
     #----------------------------------------------------
     # BamExtractor
     #----------------------------------------------------
+    #Union output directory
+    os.chdir(unionDir)
+    
     #Initiate a dictionary to count the occurences of each barcode
     barcodes_occ = {}
     
