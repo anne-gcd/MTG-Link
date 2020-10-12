@@ -247,7 +247,7 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
 # get_reads function
 #----------------------------------------------------
 '''
-To extract the the reads associated to the barcodes
+To extract the the reads associated to the barcodes:
     - it takes as input the reads file, the barcodes index file, the gap label, the file containing the barcodes of the union, and the name of the output file containing the reads of the union
     - it outputs the file containing the reads of the union
 '''
@@ -265,7 +265,12 @@ def get_reads(reads, index, gap_label, barcodes, out_reads):
 #----------------------------------------------------
 # mtg_fill function
 #----------------------------------------------------
-#Function to execute MindTheGap fill module
+'''
+To execute MindTheGap fill:
+    - it takes as input the gap label, the file containing the reads of the union, the bkpt file, the kmer value, the abudance threshold for solid kmers values, the maximum number of nodes in the contig graph,
+      the maximum length of gap-filling (bp), the number of cores and the max memory (in MBytes) for graph building, the verbosity level and the prefix of the output file on which to save the results
+    - it outputs the results obtained from MindTheGap
+'''
 def mtg_fill(gap_label, input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output_prefix):
     if max_memory == 0:
         command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \

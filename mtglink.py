@@ -232,11 +232,12 @@ def gapfilling(current_gap):
     #----------------------------------------------------
     # MindTheGap pipeline
     #----------------------------------------------------        
-    #Get flanking contigs sequences and save them into a file
+    #Get flanking contigs sequences
     seq_L = str(left_scaffold.sequence())
     seq_R = str(right_scaffold.sequence())
 
     #Execute MindTheGap fill module on the union, in breakpoint mode
+    #Iterate over the kmer values, starting with the highest
     for k in args.kmer:
 
         #MindTheGap output directory
@@ -250,7 +251,7 @@ def gapfilling(current_gap):
 
             #Left kmer and Reverse Right kmer (dependent on orientation left scaffold)
             line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, k)
-            line2 = seq_L[(left_scaffold.len - ext - k):(left_scaffold.len - ext)]
+            line2 = seq_L[(left_scaffold.slen - ext - k):(left_scaffold.slen - ext)]
             line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, left_scaffold.name, k)
             line8 = str(rc(seq_L)[ext:(ext + k)])
 
@@ -258,16 +259,19 @@ def gapfilling(current_gap):
             line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, k)
             line4 = seq_R[ext:(ext + k)]
             line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gap_label), gap.length, right_scaffold.name, k)
-            line6 = str(rc(seq_R)[(right_scaffold.len - ext - k):(right_scaffold.len - ext)])
+            line6 = str(rc(seq_R)[(right_scaffold.slen - ext - k):(right_scaffold.slen - ext)])
 
             bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
 
         #----------------------------------------------------
         # Gapfilling
         #----------------------------------------------------
+        #Iterate over the abundance threshold values, starting with the highest
         for a in args.abundance_threshold:
 
             print("\nGapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
+            
+            #Input arguments for MindTheGap
             input_file = os.path.join(outDir, union_reads_file)
             output = "{}.{}.g{}.c{}.k{}.a{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk, k, a)
             max_nodes = args.max_nodes
@@ -277,6 +281,8 @@ def gapfilling(current_gap):
             nb_cores = args.nb_cores
             max_memory = args.max_memory
             verbose = args.verbosity
+
+            #Perform the gap-filling with MindTheGap
             mtg_fill(gap_label, input_file, bkpt_file, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output)
 
             if os.path.getsize(mtgDir +"/"+ output + ".insertions.fasta") > 0:
