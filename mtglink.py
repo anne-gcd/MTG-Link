@@ -194,7 +194,7 @@ def gapfilling(current_gap):
     #Calculate the union 
     union_barcodes_file = "{}.{}.g{}.c{}.bxu".format(gfa_name, str(gap_label), gap.length, args.chunk)
     with open(union_barcodes_file, "w") as union_barcodes:
-        #filter barcodes by freq
+        #Filter barcodes by freq
         for (barcode, occurences) in barcodes_occ.items():
             if occurences >= args.freq:
                 union_barcodes.write(barcode + "\n")
@@ -205,6 +205,7 @@ def gapfilling(current_gap):
     #If the reads of the union are already extracted, use the corresponding file
     if args.rbxu is not None:
         union_reads_file = os.path.abspath(args.rbxu)
+
     #Union: extract the reads associated with the barcodes
     else:
         union_reads_file = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, args.chunk)
@@ -216,7 +217,7 @@ def gapfilling(current_gap):
     #----------------------------------------------------
     bxu = sum(1 for line in open(union_barcodes_file, "r"))
     rbxu = sum(1 for line in open(union_reads_file, "r"))/4
-    union_summary = [str(gap.id), str(gap.left), str(gap.right), gap.length, args.chunk, bxu, rbxu]
+    union_summary = [str(gap.identity), str(gap.left), str(gap.right), gap.length, args.chunk, bxu, rbxu]
 
     #Remove the barcodes files
     subprocess.run(["rm", union_barcodes_file])

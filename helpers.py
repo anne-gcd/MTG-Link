@@ -157,11 +157,11 @@ class Scaffold(Gap):
     #Method "sequence"
     def sequence(self):
         '''Method to get the sequence of the scaffold'''
-        #If relative path (e.g. not absolute path)
+        #if relative path (e.g. not absolute path)
         if not str(self._seq_path).startswith('/'):
             self.seq_path = '/'.join(str(self.gfa_file).split('/')[:-1]) + str(self._seq_path)
 
-        #Get the sequence of the scaffold
+        #get the sequence of the scaffold
         for record in SeqIO.parse(self._seq_path, "fasta"):
             if re.match(self._name, record.id):
                 if self._orient == "+":
@@ -176,11 +176,11 @@ class Scaffold(Gap):
         # For simulated datasets
         #----------------------------------------------------
         if ('-L' in self._name) or ('-R' in self._name):
-            #If left scaffold
+            #if left scaffold
             if self.scaffold == self.left:
                 start = self._slen - c
                 end = self._slen
-            #If right scaffold
+            #if right scaffold
             elif self.scaffold == self.right:
                 start = self._slen + self.length
                 end = self._slen + self.length + c
@@ -190,11 +190,11 @@ class Scaffold(Gap):
         # For real datasets
         #----------------------------------------------------
         else:
-            #If left_fwd or right_rev
+            #if left_fwd or right_rev
             if (self._orient == "+" and self.scaffold == self.left) or (self._orient == "-" and self.scaffold == self.right):
                 start = self._slen - c
                 end = self._slen
-            #If right_fwd or left_rev
+            #if right_fwd or left_rev
             elif (self._orient == "+" and self.scaffold == self.right) or (self._orient == "-" and self.scaffold == self.left):
                 start = 0
                 end = c
@@ -215,7 +215,6 @@ To extract the barcodes of reads mapping on chunks, with BamExtractor:
     - it takes as input the BAM file, the gap label, the chunk region on which to extract the barcodes, and the dictionary 'barcodes_occ'
     - it outputs the updated dictionary 'barcodes_occ' containing the occurences for each barcode extracted on the chunk region
 '''
-#Function to extract the barcodes of reads mapping on chunks, with BamExtractor 
 def extract_barcodes(bam, gap_label, region, barcodes_occ):
     command = ["BamExtractor", bam, region]
     bamextractorLog = str(gap_label) + "_bamextractor.log"
@@ -228,7 +227,7 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
         for line in f.readlines():
             #remove the '-1' at the end of the sequence
             barcode_seq = line.split('-')[0]
-            #count occurences of each barcode and save them in a dict
+            #count occurences of each barcode and save them in the dict 'barcodes_occ'
             if barcode_seq in barcodes_occ:
                 barcodes_occ[barcode_seq] += 1
             else:
@@ -245,7 +244,11 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
 #----------------------------------------------------
 # get_reads function
 #----------------------------------------------------
-#Function to extract the reads associated with the barcodes
+'''
+To extract the the reads associated to the barcodes
+    - it takes as input the reads file, the barcodes index file, the gap label, the file containing the barcodes of the union, and the name of the output file containing the reads of the union
+    - it outputs the file containing the reads of the union
+'''
 def get_reads(reads, index, gap_label, barcodes, out_reads):
     command = ["reads_bx_sqlite3.py", "--fastq", reads, "--idx", index, "--bdx", barcodes, "--mode", "shelve"]
     getreadsLog = str(gap_label) + ".barcodes.txt"
