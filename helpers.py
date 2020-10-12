@@ -87,6 +87,14 @@ class Gap:
         else:
             return str(self._id)
 
+    #Method "info"
+    def info(self):
+        '''Method to get some information on the gap'''
+        if self.id == "*":
+            print("WORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
+        else:
+            print("WORKING ON GAP: {}; length {}\n".format(self.id, self.length))
+
     #Method "__repr__"
     def __repr__(self):
         return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self._id, self._length, self._left, self._right)

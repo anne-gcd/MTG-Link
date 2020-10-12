@@ -143,6 +143,7 @@ def gapfilling(current_gap):
             current_gap = _gap_
             gap = Gap(current_gap)
 
+    #Get some information on the current gap we are working on
     gap.info()
     gap_label = gap.label()
 
