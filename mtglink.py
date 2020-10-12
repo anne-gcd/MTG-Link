@@ -152,21 +152,25 @@ def gapfilling(current_gap):
     for _gap_ in gfa.gaps:
         if str(_gap_) == current_gap:
             current_gap = _gap_
+            #Create the object 'gap' from the class 'Gap'
             gap = Gap(current_gap)
 
     #Get some information on the current gap we are working on
     gap.info()
     gap_label = gap.label()
 
+    #Create two objects ('left_scaffold' and 'right_scaffold') from the class 'Scaffold'
     left_scaffold = Scaffold(current_gap, gap.left, gfa_file)
     right_scaffold = Scaffold(current_gap, gap.right, gfa_file)
 
     #If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length
+    #chunk_L
     if args.chunk > left_scaffold.len:
         print("Warning for {}: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gap_label))
         chunk_L = left_scaffold.len
     else:
         chunk_L = args.chunk
+    #chunk_R
     if args.chunk > right_scaffold.len:
         print("Warning for {}: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gap_label))
         chunk_R = right_scaffold.len

@@ -44,15 +44,15 @@ class Gap:
 
     #Constructor
     def __init__(self, gap):
-        self._id = gap.gid
+        self._identity = gap.gid
         self._length = gap.disp
         self._left = gap.sid1
         self._right = gap.sid2
 
     #Accessors
-    def _get_id(self):
-        '''Method to be call when we want to access the attribute "id"'''
-        return self._id
+    def _get_identity(self):
+        '''Method to be call when we want to access the attribute "identity"'''
+        return self._identity
     def _get_length(self):
         '''Method to be call when we want to access the attribute "length"'''
         return self._length
@@ -64,7 +64,7 @@ class Gap:
         return self._right
 
     #Properties
-    id = property(_get_id)
+    identity = property(_get_identity)
     length = property(_get_length)
     left = property(_get_left)
     right = property(_get_right)
@@ -82,76 +82,129 @@ class Gap:
     #Method "label"
     def label(self):
         '''Method to label the gap'''
-        if self._id == "*":
+        if self._identity == "*":
             return str(self._left) +"_"+ str(self._right)
         else:
-            return str(self._id)
+            return str(self._identity)
 
     #Method "info"
     def info(self):
         '''Method to get some information on the gap'''
-        if self.id == "*":
+        if self.identity == "*":
             print("WORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
         else:
-            print("WORKING ON GAP: {}; length {}\n".format(self.id, self.length))
+            print("WORKING ON GAP: {}; length {}\n".format(self.identity, self.length))
 
     #Method "__repr__"
     def __repr__(self):
-        return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self._id, self._length, self._left, self._right)
+        return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self._identity, self._length, self._left, self._right)
 
 
 #----------------------------------------------------
 # Scaffold class
 #----------------------------------------------------
 class Scaffold(Gap):
+    '''
+    Class defining a scaffold characterized by:
+    - the gap it is linked to
+    - its name
+    - its orientation
+    - its length
+    - the path of its sequence
+    '''
+
+    #Constructor
     def __init__(self, gap, scaffold, gfa_file):
         super().__init__(gap)
         self.gap = gap
         self.scaffold = scaffold
-        self.name = scaffold.name
-        self.orient = scaffold.orient
-        self.len = scaffold.line.slen
-        self.seq_path = scaffold.line.UR
+        self._name = scaffold.name
+        self._orient = scaffold.orient
+        self._slen = scaffold.line.slen
+        self._seq_path = scaffold.line.UR
         self.gfa_file = gfa_file
     
-    def sequence(self):
-        if not str(self.seq_path).startswith('/'):
-            self.seq_path = str(self.gfa_file).split('test.gfa')[0] + str(self.seq_path)
+    #Accessors
+    def _get_name(self):
+        '''Method to be call when we want to access the attribute "name"'''
+        return self._name
+    def _get_orient(self):
+        '''Method to be call when we want to access the attribute "orient"'''
+        return self._orient
+    def _get_slen(self):
+        '''Method to be call when we want to access the attribute "slen"'''
+        return self._slen
+    def _get_seq_path(self):
+        '''Method to be call when we want to access the attribute "seq_path"'''
+        return self._seq_path
 
-        for record in SeqIO.parse(self.seq_path, "fasta"):
-            if re.match(self.name, record.id):
-                if self.orient == "+":
+    #Properties
+    name = property(_get_name)
+    orient = property(_get_orient)
+    slen = property(_get_slen)
+    seq_path = property(_get_seq_path)
+
+    #Method "__getattr__"
+    def __getattr__(self, attr):
+        '''If Python doesn't find the attribute "attr", it calls this method and print an alert'''
+        print("WARNING: There is no attribute {} here !".format(attr))
+
+    #Method "__delattr_"
+    def __delattr_(self, attr):
+        '''We can't delete an attribute, we raise the exception AttributeError'''
+        raise AttributeError("You can't delete attributes from this class")
+
+    #Method "sequence"
+    def sequence(self):
+        '''Method to get the sequence of the scaffold'''
+        #If relative path (e.g. not absolute path)
+        if not str(self._seq_path).startswith('/'):
+            self.seq_path = '/'.join(str(self.gfa_file).split('/')[:-1]) + str(self._seq_path)
+
+        #Get the sequence of the scaffold
+        for record in SeqIO.parse(self._seq_path, "fasta"):
+            if re.match(self._name, record.id):
+                if self._orient == "+":
                     return record.seq
-                elif self.orient == "-":
+                elif self._orient == "-":
                     return rc(record.seq)
 
+    #Method "chunk"
     def chunk(self, c):
+        '''Method to get the region of the chunk'''
         #----------------------------------------------------
         # For simulated datasets
         #----------------------------------------------------
-        if ('-L' in self.name) or ('-R' in self.name):
-            if self.scaffold == self.left:          #if left scaffold
-                start = self.len - c
-                end = self.len
-            elif self.scaffold == self.right:       #if right scaffold
-                start = self.len + self.length
-                end = self.len + self.length + c
-            contig_name = str(self.name).split("-")[0]
+        if ('-L' in self._name) or ('-R' in self._name):
+            #If left scaffold
+            if self.scaffold == self.left:
+                start = self._slen - c
+                end = self._slen
+            #If right scaffold
+            elif self.scaffold == self.right:
+                start = self._slen + self.length
+                end = self._slen + self.length + c
+            contig_name = str(self._name).split("-")[0]
             return str(contig_name) +":"+ str(start) +"-"+ str(end)
-
         #----------------------------------------------------
         # For real datasets
         #----------------------------------------------------
         else:
-            if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):   #if left_fwd or right_rev
-                start = self.len - c
-                end = self.len
-            elif (self.orient == "+" and self.scaffold == self.right) or (self.orient == "-" and self.scaffold == self.left):  #if right_fwd or left_rev
+            #If left_fwd or right_rev
+            if (self._orient == "+" and self.scaffold == self.left) or (self._orient == "-" and self.scaffold == self.right):
+                start = self._slen - c
+                end = self._slen
+            #If right_fwd or left_rev
+            elif (self._orient == "+" and self.scaffold == self.right) or (self._orient == "-" and self.scaffold == self.left):
                 start = 0
                 end = c
-            return str(self.name) +":"+ str(start) +"-"+ str(end)
+            return str(self._name) +":"+ str(start) +"-"+ str(end)
 
+    #Method "__repr__"
+    def __repr__(self):
+        return "Scaffold: name ({}), orientation ({}), length ({}), sequence's file ({})".format(self._name, self._orient, self._slen, self._seq_path)
 
+    
 
 
 #----------------------------------------------------
