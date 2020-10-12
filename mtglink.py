@@ -165,15 +165,15 @@ def gapfilling(current_gap):
 
     #If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length
     #chunk_L
-    if args.chunk > left_scaffold.len:
+    if args.chunk > left_scaffold.slen:
         print("Warning for {}: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gap_label))
-        chunk_L = left_scaffold.len
+        chunk_L = left_scaffold.slen
     else:
         chunk_L = args.chunk
     #chunk_R
-    if args.chunk > right_scaffold.len:
+    if args.chunk > right_scaffold.slen:
         print("Warning for {}: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gap_label))
-        chunk_R = right_scaffold.len
+        chunk_R = right_scaffold.slen
     else:
         chunk_R = args.chunk
 

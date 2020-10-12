@@ -210,6 +210,11 @@ class Scaffold(Gap):
 #----------------------------------------------------
 # extract_barcodes function
 #----------------------------------------------------
+'''
+To extract the barcodes of reads mapping on chunks, with BamExtractor:
+    - it takes as input the BAM file, the gap label, the chunk region on which to extract the barcodes, and the dictionary 'barcodes_occ'
+    - it outputs the updated dictionary 'barcodes_occ' containing the occurences for each barcode extracted on the chunk region
+'''
 #Function to extract the barcodes of reads mapping on chunks, with BamExtractor 
 def extract_barcodes(bam, gap_label, region, barcodes_occ):
     command = ["BamExtractor", bam, region]
