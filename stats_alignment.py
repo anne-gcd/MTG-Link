@@ -54,11 +54,11 @@ parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry
                                 Note: there are kmer flanking regions on the edges of the inserted sequence (which are included in '-ext' bp flanking regions)
                                 '''))
 
-parser.add_argument("-qry", "--query", action="store", help="file containing the inserted sequences obtained from MindTheGap (format: 'xxx.insertions.fasta')", required=True)
-parser.add_argument("-ref", "--reference", action="store", help="file containing the reference sequence of the gap (format: 'xxx.fasta')", required=True)
-parser.add_argument("-ext", "--ext", action="store", type=int, help="size of the gap, on both sides; determine start/end of gapfilling", required=True)
-parser.add_argument("-p", "--prefix", action="store", help="prefix of output file to save the statistical results", required=True)
-parser.add_argument("-out", "--outDir", action="store", default="./mtglink_results/alignments_stats", help="output directory for saving results")
+parser.add_argument("-qry", "--query", action="store", help="File containing the inserted sequences obtained from MindTheGap (format: 'xxx.insertions.fasta')", required=True)
+parser.add_argument("-ref", "--reference", action="store", help="File containing either the reference sequence or the flanking contigs sequences of the gap (format: 'xxx.fasta')", required=True)
+parser.add_argument("-ext", "--ext", action="store", type=int, help="Extension size of the gap, on both sides; determine start/end of gapfilling", required=True)
+parser.add_argument("-p", "--prefix", action="store", help="Prefix of output file to save the statistical results", required=True)
+parser.add_argument("-out", "--outDir", action="store", default="./mtglink_results/alignments_stats", help="Output directory for saving results")
 
 args = parser.parse_args()
 
@@ -71,10 +71,12 @@ if re.match('^.*.fasta$', args.reference) is None:
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
+#Query file: inserted/gap-filled sequences file
 qry_file = os.path.abspath(args.query)
 if not os.path.exists(args.query):
     parser.error("Warning: Qualitative evaluation _ The path of the query file (inserted sequences file) doesn't exist")
 
+#Reference file: containing either the reference sequence or the flanking contigs sequences
 ref_file = os.path.abspath(args.reference)
 if not os.path.exists(ref_file):
     parser.error("Warning: Qualitative evaluation _ The path of the reference file doesn't exist")

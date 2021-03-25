@@ -297,7 +297,11 @@ def mtg_fill(gap_label, input_file, bkpt, k, a, max_nodes, max_length, nb_cores,
 #----------------------------------------------------
 # stats_align function
 #----------------------------------------------------
-#Function to do statistics on the alignment between a reference sequence and query sequences
+'''
+To perform statistics on the alignment between a reference sequence and query sequences
+    - it takes as input the gap label, the file containing the gap-filled sequences obtained from MindTheGap, the file containing either the reference sequence or the flanking contigs' sequences, 
+      the size of the extension of the gap, the prefix name of the output files, the name of the output directory for saving the results
+'''
 def stats_align(gap_label, qry_file, ref_file, ext, prefix, out_dir):
     scriptPath = sys.path[0]
     stats_align_command = os.path.join(scriptPath, "stats_alignment.py")
@@ -373,8 +377,8 @@ def get_output_for_gfa(record, ext, k, s1, s2, left_scaffold, right_scaffold):
     sol_name = str(s1) +":"+ str(s2) + "_gf" + sol_name +"_"+ orient
     solution = sol_name + orient_sign
 
-    pos_1 = get_position_for_edges(left_scaffold.orient, orient_sign, left_scaffold.len, length_seq, ext)
-    pos_2 = get_position_for_edges(orient_sign, right_scaffold.orient, length_seq, right_scaffold.len, ext)
+    pos_1 = get_position_for_edges(left_scaffold.orient, orient_sign, left_scaffold.slen, length_seq, ext)
+    pos_2 = get_position_for_edges(orient_sign, right_scaffold.orient, length_seq, right_scaffold.slen, ext)
 
 
     output_for_gfa = [sol_name, length_seq, str(seq), solution, pos_1, pos_2, quality]
