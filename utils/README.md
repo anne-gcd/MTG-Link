@@ -109,7 +109,7 @@ optional arguments:
 
 ## gfa2fasta.py
 
-The **gfa2fasta** script takes as input a GFA file (GFA 1.0) and transform it to a FASTA file. The gaps of the GFA file are returned as 'Ns' regions in the output FASTA file.
+The **gfa2fasta.py** script takes as input a GFA file (GFA 1.0) and transform it to a FASTA file. The gaps of the GFA file are returned as 'Ns' regions in the output FASTA file.
 
 ### Usage
 
@@ -126,4 +126,49 @@ optional arguments:
 [Main options]:
   -in INPUT             GFA 1.0 file (format: 'xxx.gfa')
   -out OUTDIR           Output directory for saving the FASTA file
+```
+
+
+## gfa2_to_fasta.py
+
+The **gfa2_to_fasta.py** script takes as input a GFA file (GFA 2.0) and transform it to a FASTA file. The gaps of the GFA file are returned as 'Ns' regions in the output FASTA file.
+
+### Usage
+
+```
+./gfa2_to_fasta.py --help
+
+usage: gfa2_to_fasta.py -in <gfa_file> -out <output_directory>
+
+Transform a GFA file (GFA 2.0) to a FASTA file (gaps are returned as 'Ns' regions)
+                                
+optional arguments:
+  -h, --help            show this help message and exit
+
+[Main options]:
+  -in INPUT             GFA 2.0 file (format: 'xxx.gfa')
+  -out OUTDIR           Output directory for saving the FASTA file
+```
+
+
+## mergegfa.py
+
+The **mergegfa.py** script takes as input two GFA files (GFA 2.0) and merge them together.
+
+### Usage
+
+```
+./mergegfa.py --help
+
+usage: mergegfa.py -1 <gfa_file1> -2 <gfa_file2> -out <merged_gfa_file>
+
+Merge two GFA files together
+                                
+optional arguments:
+  -h, --help            show this help message and exit
+
+[Main options]:
+  -1 INPUT              GFA 2.0 file no.1 (format: 'xxx.gfa')
+  -2 INPUT              GFA 2.0 file no.2 (format: 'xxx.gfa')
+  -out OUTDIR           Name of the output merged GFA file
 ```
