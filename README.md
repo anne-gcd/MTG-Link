@@ -92,7 +92,7 @@ Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the 
     * X<sub>2</sub>: alignment to the right flanking sequence (`ext`)
     * X<sub>3</sub>: complementarity of the forward and reverse gap-filled sequences
 
-MTG-Link selects the gap-filled sequences with a score [AB]{2} (reference sequence provided) or with a score A[AB]{2} or BA[AB] (using the flanking contigs information).
+MTG-Link selects the gap-filled sequences with a score [AB]{2} (reference sequence provided) or with a score [AB]{3} (using the flanking contigs information).
 
 After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file (GFA 2.0), containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
@@ -126,6 +126,7 @@ How to obtain a GFA file:
 * If you have a file containing the paths between scaffolds, you can use the **paths2gfa.py** script (in the `utils/` directory).  
   format of a path: `<int:nb_scaffolds>****<sid1(f|r)>+<sid2(f|r)>`
 * If you have a FASTA file with sequences containing 'Ns' regions (where 'Ns' regions will be treated as gaps), you can use the **fasta2gfa.py** script (in the `utils/` directory).
+* If you have a file containing the links between the ends of the scaffolds in tabular format (e.g. a matrix), you can use the **matrix2gfa.py** script (in the `utils/` directory).
 
 
 #### 2. BAM file
@@ -167,7 +168,7 @@ optional arguments:
   -h, --help            show this help message and exit
 
 [Main options]:
-  -gfa INPUT            Input GFA file (format: xxx.gfa)
+  -gfa INPUT_GFA        Input GFA file (GFA 2.0) (format: xxx.gfa)
   -c CHUNK              Chunk size (bp)
   -bam BAM              BAM file: linked reads mapped on current genome
                         assembly (format: xxx.bam)
@@ -175,7 +176,7 @@ optional arguments:
   -index INDEX          Prefix of barcodes index file (format: xxx.shelve)
   -f FREQ               Minimal frequence of barcodes extracted in the chunk
                         of size '-c' [default: 2]
-  -out OUTDIR           Output directory [default './mtg10x_results']
+  -out OUTDIR           Output directory [default './mtglink_results']
   -refDir REFDIR        Directory containing the reference sequences if any
   -line LINE            Line of GFA file input from which to start analysis
                         (if not provided, start analysis from first line of
@@ -211,12 +212,18 @@ or just add comments to say if it doesn't work, try with these parameters
 
 Using MTG-Link on the small dataset of the `test/` dir, you will get:
 
-* a text file (`.barcodes.txt`), containing the barcodes observed in the gap flanking sequences. 
-* a reads file (`.rbxu.fastq`). It contains the linked reads whose barcode is observed in the gap flanking sequences.
-* a sequence file (`.contigs.fasta`) in FASTA format. It contains the gap flanking sequences. 
 * a log file (`.union.sum`), a tabular file with some information on the number of barcodes and reads extracted for each gap.
 * an assembly graph file (`_mtglink.gfa`) in GFA format. It contains the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. 
 * a sequence file (`.gapfill_seq.fasta`) in FASTA format. It contains the set of gap-filled sequences.
+
+There is also a `union/` directory, with:
+
+* a text file (`.barcodes.txt`), containing the barcodes observed in the gap flanking sequences.
+* a reads file (`.rbxu.fastq`). It contains the linked reads whose barcode is observed in the gap flanking sequences.
+
+There is also a `contigs/` directory, with:
+
+* a sequence file (`.contigs.fasta`) in FASTA format. It contains the gap flanking sequences.
 
 There is also a `mtg_results/` directory, with:
 
