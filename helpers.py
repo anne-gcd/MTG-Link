@@ -220,11 +220,11 @@ To extract the barcodes of reads mapping on chunks, with BamExtractor:
 '''
 def extract_barcodes(bam, gap_label, region, barcodes_occ):
     command = ["BamExtractor", bam, region]
-    bamextractorLog = str(gap_label) + "_bamextractor.log"
-    tmp_barcodes_file = str(gap_label) + "_bam-extractor-stdout.txt"
+    extractLog = str(gap_label) + "_extract.log"
+    tmp_barcodes_file = str(gap_label) + "_extract_stdout.txt"
 
     #BamExtractor
-    with open(tmp_barcodes_file, "w+") as f, open(bamextractorLog, "a") as log:
+    with open(tmp_barcodes_file, "w+") as f, open(extractLog, "a") as log:
         subprocess.run(command, stdout=f, stderr=log)
         f.seek(0)
 
@@ -240,8 +240,8 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
 
     #remove the raw files obtained from BamExtractor
     subprocess.run(["rm", tmp_barcodes_file])
-    if os.path.getsize(bamextractorLog) <= 0:
-        subprocess.run(["rm", bamextractorLog])
+    if os.path.getsize(extractLog) == 0:
+        subprocess.run(["rm", extractLog])
 
     return barcodes_occ
 
@@ -256,11 +256,15 @@ To extract the the reads associated to the barcodes:
 '''
 def get_reads(reads, index, gap_label, barcodes, out_reads):
     command = ["reads_bx_sqlite3.py", "--fastq", reads, "--idx", index, "--bdx", barcodes, "--mode", "shelve"]
-    getreadsLog = str(gap_label) + ".barcodes.txt"
+    getreadsLog = str(gap_label) + "_getreads.log"
 
     #reads_bx_sqlite3.py
     with open(getreadsLog, "a") as log:
         subprocess.run(command, stdout=out_reads, stderr=log)
+
+    #remove the raw files obtained from reads_bx_sqlite3.py
+    if os.path.getsize(getreadsLog) == 0:
+        subprocess.run(["rm", getreadsLog])
 
     return out_reads
 

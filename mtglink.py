@@ -229,9 +229,7 @@ def gapfilling(current_gap):
     bxu = sum(1 for line in open(union_barcodes_file, "r"))
     rbxu = sum(1 for line in open(union_reads_file, "r"))/4
     union_summary = [str(gap.identity), str(gap.left), str(gap.right), gap.length, args.chunk, bxu, rbxu]
-
-    #Remove the barcodes files
-    subprocess.run(["rm", union_barcodes_file])
+    
 
     #----------------------------------------------------
     # MindTheGap pipeline
