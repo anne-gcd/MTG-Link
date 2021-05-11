@@ -4,8 +4,7 @@
 biopython
 blast=2.9.0=pl526h979a64d_3
 gfapy=1.0.0
-indexed_gzip
-lrez=1.1=h179b981_0
+lrez=2.1.1
 mindthegap=2.2.2=he513fc3_0
 mummer=3.23=pl526_8
 pathos=0.2.5=py_0

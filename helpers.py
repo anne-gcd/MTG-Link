@@ -213,17 +213,19 @@ class Scaffold(Gap):
 #----------------------------------------------------
 # extract_barcodes function
 #----------------------------------------------------
-'''
-To extract the barcodes of reads mapping on chunks, with BamExtractor:
+def extract_barcodes(bam, gap_label, region, barcodes_occ):
+    """
+    To extract the barcodes of reads mapping on chunks, with `LRez extract`:
     - it takes as input the BAM file, the gap label, the chunk region on which to extract the barcodes, and the dictionary 'barcodes_occ'
     - it outputs the updated dictionary 'barcodes_occ' containing the occurences for each barcode extracted on the chunk region
-'''
-def extract_barcodes(bam, gap_label, region, barcodes_occ):
-    command = ["BamExtractor", bam, region]
+    """
+
+    #LRez extract
+    ## parameter -d to include duplicate barcodes
+    command = ["LRez", "extract", "--bam", bam, "--region", region, "-d"]
     extractLog = str(gap_label) + "_extract.log"
     tmp_barcodes_file = str(gap_label) + "_extract_stdout.txt"
 
-    #BamExtractor
     with open(tmp_barcodes_file, "w+") as f, open(extractLog, "a") as log:
         subprocess.run(command, stdout=f, stderr=log)
         f.seek(0)
@@ -238,7 +240,7 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
             else:
                 barcodes_occ[barcode_seq] = 1
 
-    #remove the raw files obtained from BamExtractor
+    #remove the raw files obtained from LRez extract
     subprocess.run(["rm", tmp_barcodes_file])
     if os.path.getsize(extractLog) == 0:
         subprocess.run(["rm", extractLog])
@@ -249,20 +251,21 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
 #----------------------------------------------------
 # get_reads function
 #----------------------------------------------------
-'''
-To extract the the reads associated to the barcodes:
+def get_reads(reads, index, gap_label, barcodes, out_reads):
+    """
+    To extract the the reads associated to the barcodes:
     - it takes as input the reads file, the barcodes index file, the gap label, the file containing the barcodes of the union, and the name of the output file containing the reads of the union
     - it outputs the file containing the reads of the union
-'''
-def get_reads(reads, index, gap_label, barcodes, out_reads):
-    command = ["reads_bx_sqlite3.py", "--fastq", reads, "--idx", index, "--bdx", barcodes, "--mode", "shelve"]
+    """
+
+    #LRez query fastq
+    command = ["LRez", "query", "fastq", "--fastq", reads, "--index", index, "--list", barcodes]
     getreadsLog = str(gap_label) + "_getreads.log"
 
-    #reads_bx_sqlite3.py
     with open(getreadsLog, "a") as log:
         subprocess.run(command, stdout=out_reads, stderr=log)
 
-    #remove the raw files obtained from reads_bx_sqlite3.py
+    #remove the raw files obtained from LRez query fastq
     if os.path.getsize(getreadsLog) == 0:
         subprocess.run(["rm", getreadsLog])
 
