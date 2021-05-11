@@ -27,7 +27,7 @@ For this run, you should get the following:
 #### Simulated dataset with reference sequences
 
 Simulated run with solutions obtained for different values of `-k` and `-a`, the qualitative evaluation being performed with the reference sequence:  
-`mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.sorted.fastq -index barcoded.shelve -k 61 51 41 31 21 -refDir test/full_test/ -out results_MTGLink_withref`
+`mtglink.py -gfa test.gfa -c 5000 -bam test.bam -fastq reads.sorted.fastq -index barcoded.shelve -k 61 51 41 31 21 -refDir . -out results_MTGLink_withref`
 
 Results:  
 For this run, you should get the following:  
