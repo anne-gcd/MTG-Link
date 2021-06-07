@@ -351,30 +351,18 @@ def gapfilling(current_gap):
                 #----------------------------------------------------
                 #Reader for alignment stats' files
                 ref_qry_file = statsDir + "/" + prefix + ".ref_qry.alignment.stats"
-                qry_qry_file = statsDir + "/" + prefix + ".qry_qry.alignment.stats"
 
                 if not os.path.exists(ref_qry_file):
                     print("Warning: The '{}' file doesn't exits".format(ref_qry_file))
-                    stats = False
-                elif not os.path.exists(qry_qry_file):
-                    print("Warning: The '{}' file doesn't exits".format(qry_qry_file))
-                    stats = False
 
                 else:
-                    stats = True
                     ref_qry_output = open(ref_qry_file)
-                    qry_qry_output = open(qry_qry_file)
 
                     reader_ref_stats = csv.DictReader(ref_qry_output, \
                                                     fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
                                                                 "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
                                                     delimiter='\t')
 
-                    reader_revcomp_stats = csv.DictReader(qry_qry_output, \
-                                                        fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Solution1", "Len_Q1", "Solution2", "Len_Q2", \
-                                                                    "Start_Q1", "End_Q1", "Start_Q2", "End_Q2", "Len_align_Q1", "Len_align_Q2", "%_Id", "%_Cov_Q1", "%_Cov_Q2", "Frame_Q1", "Frame_Q2", "Quality"), \
-                                                        delimiter='\t')
-                    
                     #Obtain a quality score for each gapfilled seq
                     solutions = []
                     output_for_gfa = []
@@ -400,18 +388,8 @@ def gapfilling(current_gap):
 
                                 ref_qry_output.seek(0)
 
-                                #quality score for stats about the reverse complement strand
-                                quality_revcomp = []
-                                for row in reader_revcomp_stats:
-                                    if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
-                                        or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
-                                        quality_revcomp.append(row["Quality"])
-                                if quality_revcomp == []:
-                                    quality_revcomp.append('D')
-                                qry_qry_output.seek(0)
-
                                 #global quality score
-                                quality_gapfilled_seq = min(quality_ref) + min(quality_revcomp)
+                                quality_gapfilled_seq = min(quality_ref)
                                 
                                 record.description = "Quality " + str(quality_gapfilled_seq)
                                 SeqIO.write(record, qualified, "fasta")
@@ -445,24 +423,14 @@ def gapfilling(current_gap):
 
                                 ref_qry_output.seek(0)
 
-                                #quality score for stats about the reverse complement strand
-                                quality_revcomp = []
-                                for row in reader_revcomp_stats:
-                                    if ((record.id.split('_')[-1] in row["Solution1"]) and (("bkpt1" in record.id and "fwd" in row["Solution1"]) or ("bkpt2" in record.id and "rev" in row["Solution1"]))) \
-                                        or ((record.id.split('_')[-1] in row["Solution2"]) and (("bkpt1" in record.id and "fwd" in row["Solution2"]) or ("bkpt2" in record.id and "rev" in row["Solution2"]))):
-                                        quality_revcomp.append(row["Quality"])
-                                if quality_revcomp == []:
-                                    quality_revcomp.append('D')
-                                qry_qry_output.seek(0)
-
                                 #global quality score
-                                quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right) + min(quality_revcomp)
+                                quality_gapfilled_seq = min(quality_ext_left) + min(quality_ext_right)
 
                                 record.description = "Quality " + str(quality_gapfilled_seq)
                                 SeqIO.write(record, qualified, "fasta")
 
                                 #Update GFA with only the good solutions (the ones having a good quality score)
-                                if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{3}$', record.description)):
+                                if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
                                     check = "True_" + str(strand)
                                     solutions.append(check)
                                     gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
@@ -482,8 +450,8 @@ def gapfilling(current_gap):
                     subprocess.run(['mv', insertion_quality_file, insertion_file])
 
 
-                #If at least one good solution for both fwd and rev strands amongst all solution found, stop searching
-                if (stats == True) and ("True_1" and "True_2" in solutions): 
+                #If at least one good solution for either fwd or rev strand amongst all solution found, stop searching
+                if "True_1" or "True_2" in solutions: 
                         solution = True
                         break
 
