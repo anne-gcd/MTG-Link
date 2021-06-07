@@ -88,15 +88,13 @@ MTG-Link automatically tests different parameters values for gap-filling, follow
 More specifically, different *de Bruijn graphs* will be created for **different k-mer sizes** `-k`, starting with the highest -k value, and MindTheGap will try to find a path, testing **different values of abundance thresholds** for solid k-mers `-a`, starting as well with the highest -a value. 
 
 Once it has find a path (e.g. a gap-filled sequence), MTG-Link will perform the **qualitative evaluation** of the gap-filled sequence(s) obtained to distinguish positive gap-filled sequences from negative ones. To do so, it will assign a quality score to each gap-filled sequence:
-* If a reference sequence is provided (`-refDir`):  2-letters score X<sub>1</sub>X<sub>2</sub> with X = [A, B, C, D]
+* If a reference sequence is provided (`-refDir`):  1-letter score X<sub>1</sub> with X = [A, B, C, D]
     * X<sub>1</sub>: alignment to the entire reference sequence
-    * X<sub>2</sub>: complementarity of the forward and reverse gap-filled sequences
-* Using the flanking contigs information: 3-letters score X<sub>1</sub>X<sub>2</sub>X<sub>3</sub> with X = [A, B, C, D]
+* Using the flanking contigs information: 2-letters score X<sub>1</sub>X<sub>2</sub> with X = [A, B, C, D]
     * X<sub>1</sub>: alignment to the left flanking sequence (`-ext`)
     * X<sub>2</sub>: alignment to the right flanking sequence (`ext`)
-    * X<sub>3</sub>: complementarity of the forward and reverse gap-filled sequences
 
-MTG-Link selects the gap-filled sequences with a score [AB]{2} (reference sequence provided) or with a score [AB]{3} (using the flanking contigs information).
+MTG-Link selects the gap-filled sequences with a score [AB] (reference sequence provided) or with a score [AB]{2} (using the flanking contigs information).
 
 After evaluation of the best sequence assembly, MTG-Link stops searching for the other parameters values, and returns the results in a **GFA** file (GFA 2.0), containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 

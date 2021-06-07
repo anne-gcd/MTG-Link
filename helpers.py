@@ -283,11 +283,11 @@ To execute MindTheGap fill:
 '''
 def mtg_fill(gap_label, input_file, bkpt, k, a, max_nodes, max_length, nb_cores, max_memory, verbose, output_prefix):
     if max_memory == 0:
-        command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
-                    "-nb-cores", str(nb_cores), "-verbose", str(verbose), "-out", output_prefix]
+        command = ["/home/genouest/inra_umr1349/aguichard/Gapfilling/DBG/scripts/MindTheGap/build/bin/MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
+                    "-nb-cores", str(nb_cores), "-verbose", str(verbose), "-fwd-only", "-out", output_prefix]
     else:
-        command = ["MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
-                    "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-verbose", str(verbose), "-out", output_prefix]
+        command = ["/home/genouest/inra_umr1349/aguichard/Gapfilling/DBG/scripts/MindTheGap/build/bin/MindTheGap", "fill", "-in", input_file, "-bkpt", bkpt, "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
+                    "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-verbose", str(verbose), "-fwd-only", "-out", output_prefix]
     mtgfillLog = str(gap_label) + "_mtgfill.log"
 
     with open(mtgfillLog, "a") as log:
