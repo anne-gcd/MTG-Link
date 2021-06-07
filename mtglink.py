@@ -395,7 +395,7 @@ def gapfilling(current_gap):
                                 SeqIO.write(record, qualified, "fasta")
 
                                 #Update GFA with only the good solutions (the ones having a good quality score)
-                                if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
+                                if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]$', record.description)):
                                     check = "True_" + str(strand)
                                     solutions.append(check)
                                     gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
