@@ -364,7 +364,7 @@ def gapfilling(current_gap):
                                                     delimiter='\t')
 
                     #Obtain a quality score for each gapfilled seq
-                    solutions = []
+                    solution = False
                     output_for_gfa = []
                     insertion_quality_file = os.path.abspath(mtgDir +"/"+ output + ".insertions_quality.fasta")
                     with open(input_file, "r") as query, open(insertion_quality_file, "w") as qualified:
@@ -396,13 +396,9 @@ def gapfilling(current_gap):
 
                                 #Update GFA with only the good solutions (the ones having a good quality score)
                                 if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]$', record.description)):
-                                    check = "True_" + str(strand)
-                                    solutions.append(check)
+                                    solution = True
                                     gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
                                     output_for_gfa.append(gfa_output)
-                                else:
-                                    check = "False_" + str(strand)
-                                    solutions.append(check)
     
                             #----------------------------------------------------
                             #Ref = flanking contigs' sequences
@@ -431,14 +427,9 @@ def gapfilling(current_gap):
 
                                 #Update GFA with only the good solutions (the ones having a good quality score)
                                 if (len(seq) > 2*ext) and (re.match('^.*Quality [AB]{2}$', record.description)):
-                                    check = "True_" + str(strand)
-                                    solutions.append(check)
+                                    solution = True
                                     gfa_output = get_output_for_gfa(record, ext, k, gap.left, gap.right, left_scaffold, right_scaffold)
                                     output_for_gfa.append(gfa_output)
-
-                                else:
-                                    check = "False_" + str(strand)
-                                    solutions.append(check)
 
                         qualified.seek(0)
 
@@ -451,12 +442,10 @@ def gapfilling(current_gap):
 
 
                 #If at least one good solution for either fwd or rev strand amongst all solution found, stop searching
-                if "True_1" or "True_2" in solutions: 
-                        solution = True
-                        break
+                if solution == True:
+                    break
 
                 else:
-                    solution = False
                     os.chdir(mtgDir)
             
 
@@ -483,12 +472,9 @@ def gapfilling(current_gap):
                 output_for_gfa.append([str(current_gap)])
 
 
-    
-
     #TODO: remove the flanking_contig.fasta files
 
     os.chdir(outDir)
-
 
     return union_summary, output_for_gfa
 
