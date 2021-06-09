@@ -237,7 +237,6 @@ And finally, there is also a `alignments_stats/` directory, with:
 
 * a log file (`.log`), a text file with some information on the input files used for the alignment. 
 * an alignment file (`.ref_qry.alignment.stats`), a tabular file with some information on the alignment of the inserted sequences against a reference sequence.
-* an alignment file (`.qry_qry.alignment.stats`), a tabular file with some information on the alignment of the forward inserted sequences against the reverse inserted sequences (evaluation of the complementarity).
 
 
 <!--

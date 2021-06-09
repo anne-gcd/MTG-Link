@@ -14,14 +14,14 @@ Simulated run with solutions obtained for different values of `-k` and `-a`, the
 Results:  
 For this run, you should get the following:  
 * gap 95-L-_95-R-: 2 solutions for k61.a2  
-    * 1 forward of length 2000 bp (Quality AAA)  
-    * 1 reverse of length 2000 bp (Quality AAA)  
+    * 1 forward of length 2000 bp (Quality AA)  
+    * 1 reverse of length 2000 bp (Quality AA)  
 * gap 68-L+_68-R+: 2 solutions for k61.a2  
-    * 1 forward of length 2000 bp (Quality AAA)  
-    * 1 reverse of length 2000 bp (Quality AAA)  
+    * 1 forward of length 2000 bp (Quality AA)  
+    * 1 reverse of length 2000 bp (Quality AA)  
 * gap 26939-L+_26939-R+: 2 solution for k51.a3  
-    * 1 forward of length 2004 bp (Quality AAA)  
-    * 1 reverse of length 2004 bp (Quality AAA)  
+    * 1 forward of length 2004 bp (Quality AA)  
+    * 1 reverse of length 2004 bp (Quality AA)  
 * scaffold 27292: no solution
 
 #### Simulated dataset with reference sequences
@@ -32,13 +32,13 @@ Simulated run with solutions obtained for different values of `-k` and `-a`, the
 Results:  
 For this run, you should get the following:  
 * gap 95-L-_95-R-: 2 solutions for k61.a2  
-    * 1 forward of length 2000 bp (Quality AA)  
-    * 1 reverse of length 2000 bp (Quality AA)  
+    * 1 forward of length 2000 bp (Quality A)  
+    * 1 reverse of length 2000 bp (Quality A)  
 * gap 68-L+_68-R+: 2 solutions for k61.a2  
-    * 1 forward of length 2000 bp (Quality AA)  
-    * 1 reverse of length 2000 bp (Quality AA)  
+    * 1 forward of length 2000 bp (Quality A)  
+    * 1 reverse of length 2000 bp (Quality A)  
 * gap 26939-L+_26939-R+: 2 solution for k51.a3  
-    * 1 forward of length 2004 bp (Quality BA)  
-    * 1 reverse of length 2004 bp (Quality BA)  
+    * 1 reverse of length 2004 bp (Quality B)  
+    * 1 forward of length 2004 bp (Quality B)  
 * scaffold 27292: no solution
 
