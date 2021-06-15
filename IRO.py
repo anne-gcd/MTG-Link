@@ -35,7 +35,7 @@ import sys
 from Bio import SeqIO
 from Bio.Seq import Seq
 from operator import itemgetter
-from main import gfa_name, subsamplingDir, chunk_size, ext_size, seed_size, min_overlap, abundance_minList, dmax, readList
+from main import gfa_name, subsamplingDir, chunk_size, ext_size
 from helpers import Graph
 from ProgDynOptim import DynamicMatrixOptim
 
@@ -94,7 +94,7 @@ def index_read(read, i, read_rc, seed_size, seedDict):
 #----------------------------------------------------
 # find_overlapping_reads function
 #----------------------------------------------------
-def find_overlapping_reads(assembly, len_read, seed_size, min_overlap, dmax, seedDict):
+def find_overlapping_reads(assembly, len_read, readList, seed_size, min_overlap, dmax, seedDict):
     """
     To find the reads overlapping with the current assembly's sequence S
 
@@ -103,6 +103,8 @@ def find_overlapping_reads(assembly, len_read, seed_size, min_overlap, dmax, see
             current assembly's sequence
         - len_read: int
             length of the read from which we want to extend
+        - readList: list
+            reads of the union
         - seed_size: int
             size of the seed used for indexing the reads
         - min_overlap: int
@@ -158,7 +160,7 @@ def find_overlapping_reads(assembly, len_read, seed_size, min_overlap, dmax, see
 #----------------------------------------------------
 # extend function
 #----------------------------------------------------
-def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog):
+def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog):
     """
     To extend a read's sequence with overlapping reads.
     This is an iterative function.
@@ -182,6 +184,8 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, seed
         - assemblyHash = hashtable/dict
             hashtable/dictionary indicating if the search for overlapping reads has already been performed on the corresponding sequence (key):
             key = the last 70 bp of the current assembly's sequence ; value = Boolean value (0: overlapping reads search not performed / 1: overlapping reads search performed)
+        - readList: list
+            reads of the union
         - seed_size: int
             size of the seed used for indexing the reads
         - min_overlap: int
@@ -216,7 +220,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, seed
                 return "\nPath already explored: No solution", False
                 
         # Search for reads overlapping with the current assembly's sequence.
-        overlapping_reads = find_overlapping_reads(assembly, len_read, seed_size, min_overlap, dmax, seedDict)
+        overlapping_reads = find_overlapping_reads(assembly, len_read, readList, seed_size, min_overlap, dmax, seedDict)
         if not overlapping_reads:
             with open(iroLog, "a") as log:
                 log.write("\n>" + input_seqName + " _ No_read_overlapping")
@@ -453,7 +457,7 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
 
             # Extend the assembly sequence (e.g. the current read containing the whole kmer START's sequence).
             assemblyHash[read[-70:]] = 0
-            res, success = extend(read, len(read), input_seqName, STOP, seedDict, assemblyHash, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog)
+            res, success = extend(read, len(read), input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog)
 
             # Case of successful gap-filling.
             break
@@ -470,7 +474,7 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
 #----------------------------------------------------
 # iro_assembly function
 #----------------------------------------------------
-def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, max_length):
+def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, max_length, seed_size, min_overlap, abundance_minList, dmax):
     """
     To perform the Local Assembly step using an Iterative Read Overlap (IRO) algorithm.  
     The IRO algorithm is based on on-the-fly computations of read overlaps and iterative extensions of the current assembly sequence. This module is executed on the reads of the union.
@@ -491,6 +495,15 @@ def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
             right flanking contig sequence
         - max_length: int
             maximum assembly length (bp)
+        - seed_size: int
+            size of the seed used for indexing the reads
+        - min_overlap: int
+            minimum overlapping size
+        - abundance_minList: list
+            list of minimal abundance(s) of reads used for gapfilling
+            extension's groups having less than this number of reads are discarded from the graph
+        - dmax: int
+            maximum number of gaps/substitutions allowed in the inexact overlap between reads
 
     Return:
         - gapfillingFile: file

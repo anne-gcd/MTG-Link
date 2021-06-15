@@ -33,7 +33,7 @@ import subprocess
 import sys
 from gfapy.sequence import rc
 from Bio import SeqIO
-from main import gfa_name, subsamplingDir, assemblyDir, chunk_size, ext_size, kmer_sizeList, abundance_thresholdList, max_nodes, nb_cores, max_memory, verbosity
+from main import gfa_name, subsamplingDir, assemblyDir, chunk_size, ext_size,
 
 
 #----------------------------------------------------
@@ -54,7 +54,7 @@ def mtg_fill(gap_label, reads_file, bkpt_file, k, a, max_nodes, max_length, nb_c
         - k: int
             k-mer size
         - a: int
-            minimal abundance threshold for solide k-mers
+            minimal abundance threshold for solid k-mers
         - max_nodes: int
             maximum number of nodes in contig graph
         - max_length: int
@@ -121,7 +121,7 @@ def mtg_fill(gap_label, reads_file, bkpt_file, k, a, max_nodes, max_length, nb_c
 #----------------------------------------------------
 # dbg_assembly function
 #----------------------------------------------------
-def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, max_length):
+def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, max_length, kmer_sizeList, abundance_thresholdList, max_nodes, nb_cores, max_memory, verbosity):
     """
     To perform the Local Assembly step using a De Bruijn Graph (DBG) algorithm.  
     The DBG algorithm is performed with the 'fill' module of the software MindTheGap. This module is executed on the reads of the union, in breakpoint mode.
@@ -142,6 +142,18 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
             right flanking contig sequence
         - max_length: int
             maximum assembly length (bp)
+        - kmer_sizeList: list
+            list of k-mer sizes
+        - abundance_thresholdList: list
+            list of minimal abundance thresholds for solid k-mers
+        - max_nodes: int
+            maximum number of nodes in contig graph
+        - nb_cores: int
+            number of cores
+        - max_memory: int
+            maximum memory for graph building (in MBytes)
+        - verbosity: int
+            verbosity level
 
     Return:
         - gapfillingFile: file

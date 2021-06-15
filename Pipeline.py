@@ -32,7 +32,7 @@ import re
 import subprocess
 import sys
 import gfapy
-from main import gfaFile, outDir, subsamplingDir, assemblyDir, contigDir, module, chunk_size, max_length
+import main
 from helpers import Gap, Scaffold
 from ReadSubsampling import read_subsampling
 from DBG import dbg_assembly
@@ -62,14 +62,14 @@ def gapfilling(current_gap):
     # Pre-processing
     #----------------------------------------------------
     try:
-        os.chdir(outDir)
+        os.chdir(main.outDir)
     except OSError:
         print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
         sys.exit(1)
     
     try:
         # Open the input GFA file to get the corresponding Gap line ('G' line).
-        gfa = gfapy.Gfa.from_file(gfaFile)
+        gfa = gfapy.Gfa.from_file(main.gfaFile)
         for _gap_ in gfa.gaps:
             if str(_gap_) == current_gap:
                 current_gap = _gap_
@@ -81,22 +81,22 @@ def gapfilling(current_gap):
         gap_label = gap.label()
 
         # Create two objects ('left_scaffold' and 'right_scaffold') from the class 'Scaffold'.
-        left_scaffold = Scaffold(current_gap, gap.left, gfaFile)
-        right_scaffold = Scaffold(current_gap, gap.right, gfaFile)
+        left_scaffold = Scaffold(current_gap, gap.left, main.gfaFile)
+        right_scaffold = Scaffold(current_gap, gap.right, main.gfaFile)
 
         # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
         ## Left chunk
-        if chunk_size > left_scaffold.slen:
+        if main.chunk_size > left_scaffold.slen:
             print("\nWarning for {}: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gap_label))
             chunk_L = left_scaffold.slen
         else:
-            chunk_L = chunk_size
+            chunk_L = main.chunk_size
         ## Right chunk
-        if chunk_size > right_scaffold.slen:
+        if main.chunk_size > right_scaffold.slen:
             print("\nWarning for {}: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gap_label))
             chunk_R = right_scaffold.slen
         else:
-            chunk_R = chunk_size
+            chunk_R = main.chunk_size
 
     except Exception as e:
         print("\nFile 'Pipeline.py': Something wrong with the Pre-processing step")
@@ -109,7 +109,7 @@ def gapfilling(current_gap):
     # Read Subsampling
     #----------------------------------------------------
     try:
-        os.chdir(subsamplingDir)
+        os.chdir(main.subsamplingDir)
     except OSError:
         print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
         sys.exit(1)
@@ -129,7 +129,7 @@ def gapfilling(current_gap):
     # Local Assembly
     #----------------------------------------------------  
     try:
-        os.chdir(assemblyDir)
+        os.chdir(main.assemblyDir)
     except OSError:
         print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
         sys.exit(1)      
@@ -140,11 +140,11 @@ def gapfilling(current_gap):
         seq_R = str(right_scaffold.sequence())
 
         # Determine which module to execute: DBG or IRO.
-        if module == "DBG":
-            gapfillingFile = dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, max_length)
+        if main.module == "DBG":
+            gapfillingFile = dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, main.max_length, main.kmer_sizeList, main.abundance_thresholdList, main.max_nodes, main.nb_cores, main.max_memory, main.verbosity)
 
-        if module == "IRO":
-            gapfillingFile = iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, max_length)
+        if main.module == "IRO":
+            gapfillingFile = iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, main.max_length, main.seed_size, main.min_overlap, main.abundance_minList, main.dmax)
 
     except Exception as e:
         print("\nFile 'Pipeline.py': Something wrong with the Local Assembly step")
@@ -171,7 +171,7 @@ def gapfilling(current_gap):
 
         # Change directory.
         try:
-            os.chdir(outDir)
+            os.chdir(main.outDir)
         except OSError:
             print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
             sys.exit(1)
