@@ -90,7 +90,7 @@ parserIRO.add_argument('-dmax', dest="max_score", action="store", type=int, defa
 
 args = parser.parse_args()
 
-if re.match('^.*.gfa$', args.input_gfa) is None:
+if re.match('^.*.gfa$', args.gfa) is None:
     parser.error("\nWarning: The suffix of the GFA file should be: '.gfa'")
 
 if re.match('^.*.bam$', args.bam) is None:
@@ -193,16 +193,22 @@ try:
     barcodes_min_freq = args.freq
     ext_size = args.extension
     max_length = args.max_length
-    kmer_sizeList = args.kmer_size
-    abundance_thresholdList = args.abundance_threshold
-    max_nodes = args.max_nodes
-    nb_cores = args.nb_cores
-    max_memory = args.max_memory
-    verbosity = args.verbosity
-    seed_size = args.seed_size
-    min_overlap = args.min_overlap
-    abundance_minList = args.abundance_min
-    dmax = args.max_score
+
+    # Module DBG.
+    if module == "DBG":
+        kmer_sizeList = args.kmer_size
+        abundance_thresholdList = args.abundance_threshold
+        max_nodes = args.max_nodes
+        nb_cores = args.nb_cores
+        max_memory = args.max_memory
+        verbosity = args.verbosity
+
+    # Module IRO.
+    if module == "IRO":
+        seed_size = args.seed_size
+        min_overlap = args.min_overlap
+        abundance_minList = args.abundance_min
+        dmax = args.max_score
 
 except Exception as e:
     print("\nFile 'main.py': Something wrong with the parameters")
