@@ -35,7 +35,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 #from multiprocessing import Pool
 import gfapy
 from Bio import SeqIO
-from main import gfaFile, gfa_name, line_gfa, outDir, assemblyDir, evalDir, module
+from main import gfaFile, gfa_name, line_gfa, outDir, subsamplingDir, assemblyDir, evalDir, module
 from Pipeline import gapfilling
 from helpers import update_gfa_with_solution
 
@@ -125,13 +125,15 @@ except Exception as e:
     sys.exit(1)
 
 
-print("\nThe results from MTG-Link are saved in " + outDir)
-print("The results from MindTheGap are saved in " + assemblyDir)
-print("The statistics from MTG-Link are saved in " + evalDir)
-print("Summary of the union: " + gfa_name + ".union.sum")
+print("\nThe results from MTG-Link are saved in: " + outDir)
+print("The results from the Read Subsampling step are saved in " + subsamplingDir)
+print("The results from the Local Assembly step are saved in " + assemblyDir)
+print("The results from the Qualitative Evaluation step are saved in " + evalDir)
+
+print("\nSummary of the union: " + gfa_name + ".union.sum")
 print("GFA output file: " + out_gfaFile)
 if success == True:
-    print("Corresponding file containing all gapfill sequences: " + gapfillFile + "\n")
+    print("Corresponding file containing all gap-filled sequences: " + gapfillFile + "\n")
 
 
 #----------------------------------------------------
@@ -140,6 +142,7 @@ if success == True:
 try:
     print("\n------------------------------------------------------------------------------------------------------------------------\n")
     print("MTG-Link " + module)
+    print("------------------")
 
     gfa_output = gfapy.Gfa.from_file(outDir +"/"+ str(out_gfaFile))
 
@@ -159,7 +162,7 @@ try:
         print("The gap {} was not successfully gap-filled".format(gap_end))
 
     nb_gapfill = len(total_gaps) - len(no_gapfill)
-    print("\nIn total, {} gaps were successfully gap-filled:\n".format(str(nb_gapfill)))
+    print("In total, {} gaps were successfully gap-filled:".format(str(nb_gapfill)))
 
     # Gaps gap-filled.
     out_fasta_file = outDir +"/"+ gapfillFile

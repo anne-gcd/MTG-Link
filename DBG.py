@@ -198,7 +198,7 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
         for a in abundance_thresholdList:
 
             try:
-                print("\nGapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
+                print("Gapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
                 
                 # Input and output files.
                 union_readsFile = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, chunk_size)
