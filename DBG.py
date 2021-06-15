@@ -198,7 +198,7 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
         for a in abundance_thresholdList:
 
             try:
-                print("Gapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
+                print("\nGapfilling of {} for k={} and a={} (union)".format(str(gap_label), k, a))
                 
                 # Input and output files.
                 union_readsFile = "{}.{}.g{}.c{}.rbxu.fastq".format(gfa_name, str(gap_label), gap.length, chunk_size)
@@ -238,7 +238,7 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
         # Case of unsuccessful gap-filling.
         if not success:
             print("\n{}: {}".format(gap_label, res))
-            gapfillingFile = insertion_file
+            gapfillingFile = os.path.abspath(insertion_file)
 
         # Case of successful gap-filling.
         if success:
@@ -255,14 +255,6 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
                     else:
                         record.id = record.id + "_sol_1/1"
                     SeqIO.write(record, corrected, "fasta")
-
-        # Remove the raw files obtained from the DBG algorithm.
-        h5_file = os.path.abspath(assemblyDir +"/"+ insertion_file.split('.insertions')[0] + ".h5")
-        insertion_fasta = os.path.abspath(assemblyDir +"/"+ insertion_file)
-        insertion_vcf = os.path.abspath(assemblyDir +"/"+ insertion_file.split('.fasta')[0] + ".vcf")
-        subprocess.run(["rm", h5_file])
-        subprocess.run(["rm", insertion_fasta])
-        subprocess.run(["rm", insertion_vcf])
     
     except Exception as e:
         print("\nFile 'IRO.py': Something wrong with the processing of the output from the IRO algorithm")

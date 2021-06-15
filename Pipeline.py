@@ -170,19 +170,41 @@ def gapfilling(current_gap):
         if len(output_for_gfa) == 0:
             output_for_gfa.append([str(current_gap)])
 
-        # Change directory.
-        try:
-            os.chdir(main.outDir)
-        except OSError:
-            print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
-            sys.exit(1)
-
     except Exception as e:
         print("\nFile 'Pipeline.py': Something wrong with the Qualitative Evaluation step")
         print("Exception-")
         print(e)
         sys.exit(1)
         
+    #----------------------------------------------------
+    # Remove raw files from local assembly step
+    #----------------------------------------------------
+    try:
+        ## Local assembly with the DBG algorithm
+        if main.module == "DBG":
+            try:
+                os.chdir(main.assemblyDir)
+            except OSError:
+                print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
+                sys.exit(1)
+            subprocess.run("rm -f *.h5", shell=True)
+            subprocess.run("rm -f *.vcf", shell=True)
+            subprocess.run("rm -f *.insertions.fasta", shell=True)
+
+    except Exception as e:
+        print("\nFile 'Pipeline.py': Something wrong with the removing of raw files")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
     
+
+    # Change directory.
+    try:
+        os.chdir(main.outDir)
+    except OSError:
+        print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
+        sys.exit(1)
+
+
     return union_summary, output_for_gfa
 
