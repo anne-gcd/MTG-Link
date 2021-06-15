@@ -142,7 +142,7 @@ if success == True:
 try:
     print("\n------------------------------------------------------------------------------------------------------------------------\n")
     print("MTG-Link " + module)
-    print("------------------")
+    print("------------")
 
     gfa_output = gfapy.Gfa.from_file(outDir +"/"+ str(out_gfaFile))
 
@@ -175,8 +175,7 @@ try:
                 # For a new gap.
                 if gap_name not in gap_names:
                     gap_names.append(gap_name)
-                    k = str(record.id).split('.k')[-1].split('_')[0]
-                    print("\t* " + gap_name + "\tk" + k)
+                    print("\t* " + gap_name)
 
                 # For all gaps.
                 orientation = str(record.id).split('_')[-1]
