@@ -67,7 +67,7 @@ def stats_align(gap_label, qry_file, ref_file, ext, prefix, out_dir):
         # `stats_alignment.py`.
         scriptPath = sys.path[0]
         stats_align_command = os.path.join(scriptPath, "stats_alignment.py")
-        command = [stats_align_command, "-qry", qry_file, "-ref", ref_file, "-ext", ext, "-p", prefix, "-out", out_dir]
+        command = [stats_align_command, "-qry", str(qry_file), "-ref", str(ref_file), "-ext", str(ext), "-p", prefix, "-out", out_dir]
         statsLog = str(gap_label) + "_stats_align.log"
 
         with open(statsLog, "a") as log:

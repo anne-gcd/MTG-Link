@@ -113,7 +113,7 @@ if not re.match('^.*.contigs.fasta$', args.reference):
         log_file = str(prefix) + ".log"
         with open(log_file, "a") as log:
             log.write("Query file: " + str(qry_file) + "\n")
-            log.write("Reference file" + str(ref_file) + "\n")
+            log.write("Reference file: " + str(ref_file) + "\n")
             log.write("The results are saved in " + outDir)
 
         nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
@@ -155,7 +155,7 @@ if not re.match('^.*.contigs.fasta$', args.reference):
             k = int("".join(list(kmer_size)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
             a = int("".join(list(abundance_min)[1:]))
-            qry_id = qry_file.split('/')[-1].split('.')[1]
+            qry_id = qry_file.split('/')[-1].split('.')[2]
 
         # Local assembly performed with the IRO algorithm.
         if ".dmax" in qry_file.split('/')[-1]:
@@ -173,7 +173,7 @@ if not re.match('^.*.contigs.fasta$', args.reference):
             a = int("".join(list(abundance_min)[1:]))
             dmax = qry_file.split('.bxu')[0].split('.')[-1]
             d = int("".join(list(abundance_min)[1:]))
-            qry_id = qry_file.split('/')[-1].split('.')[1]
+            qry_id = qry_file.split('/')[-1].split('.')[2]
 
     except Exception as e:
         print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = reference sequence")
@@ -187,8 +187,16 @@ if not re.match('^.*.contigs.fasta$', args.reference):
     try:
         # Output stats file of NUCmer alignment (Query vs Ref).
         ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats.unsorted"
-        stats_legend = ["Gap", "Len_gap", "Chunk", "Seed_size", "Min_overlap", "Len_Q", "Ref", "Len_R", \
-                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+
+        ## Local assembly performed with the DBG algorithm
+        if ".k" in qry_file.split('/')[-1]:
+            stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+
+        ## Local assembly performed with the IRO algorithm
+        if ".dmax" in qry_file.split('/')[-1]:
+            stats_legend = ["Gap", "Len_gap", "Chunk", "Seed_size", "Min_overlap", "Len_Q", "Ref", "Len_R", \
+                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
         # Get output values from NUCmer.
         reader = csv.DictReader(open(coords_sorted_file), \
@@ -359,7 +367,14 @@ if not re.match('^.*.contigs.fasta$', args.reference):
                                 quality_rq = 'D'
 
                             # Write stats results in output file.
-                            stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
+                            ## Local assembly performed with the DBG algorithm
+                            if ".k" in qry_file.split('/')[-1]:
+                                stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
+                                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+
+                            ## Local assembly performed with the IRO algorithm
+                            if ".dmax" in qry_file.split('/')[-1]:
+                                stats = [qry_id, g, c, s, o, a, d, len_q, ref, len_r, \
                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                             with open(ref_qry_sorted, "a") as output_ref:
@@ -387,7 +402,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
         log_file = str(prefix) + ".log"
         with open(log_file, "a") as log:
             log.write("Query file: " + str(qry_file) + "\n")
-            log.write("Reference file" + str(ref_file) + "\n")
+            log.write("Reference file: " + str(ref_file) + "\n")
             log.write("The results are saved in " + outDir)
 
         nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
@@ -423,7 +438,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
             k = int("".join(list(kmer_size)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
             a = int("".join(list(abundance_min)[1:]))
-            qry_id = qry_file.split('/')[-1].split('.')[1]
+            qry_id = qry_file.split('/')[-1].split('.')[2]
 
         # Local assembly performed with the IRO algorithm.
         if ".dmax" in qry_file.split('/')[-1]:
@@ -441,7 +456,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
             a = int("".join(list(abundance_min)[1:]))
             dmax = qry_file.split('.bxu')[0].split('.')[-1]
             d = int("".join(list(abundance_min)[1:]))
-            qry_id = qry_file.split('/')[-1].split('.')[1]
+            qry_id = qry_file.split('/')[-1].split('.')[2]
 
     except Exception as e:
         print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = flanking contigs' sequences")
@@ -455,8 +470,17 @@ elif re.match('^.*.contigs.fasta$', args.reference):
     try:
         # Output stats file of NUCmer alignment (Query vs Ref).
         ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
-        stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+
+        ## Local assembly performed with the DBG algorithm
+        if ".k" in qry_file.split('/')[-1]:
+            stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+
+        ## Local assembly performed with the IRO algorithm
+        if ".dmax" in qry_file.split('/')[-1]:
+            stats_legend = ["Gap", "Len_gap", "Chunk", "Seed_size", "Min_overlap", "Len_Q", "Ref", "Len_R", \
+                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+        
         
         # Get output values from NUCmer.
         reader = csv.DictReader(open(coords_file), \
@@ -582,9 +606,6 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                     stats = [qry_id, g, c, s, o, a, d, len_q, ref, len_r, \
                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-                stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
-                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
-
                 ## Write in output file
                 if os.path.exists(ref_qry_output):
                     with open(ref_qry_output, "a") as output:
@@ -604,10 +625,10 @@ elif re.match('^.*.contigs.fasta$', args.reference):
 #----------------------------------------------------
 # Remove raw files
 #----------------------------------------------------
-#Remove the raw files obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
-subprocess.run(["rm", nucmerLog])
-subprocess.run(["rm", delta_file])
-subprocess.run(["rm", coords_file])
-if not re.match('^.*.contigs.fasta$', args.reference):
-    subprocess.run(["rm", coords_sorted_file])  #only when refDir
+# #Remove the raw files obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
+# subprocess.run(["rm", nucmerLog])
+# subprocess.run(["rm", delta_file])
+# subprocess.run(["rm", coords_file])
+# if not re.match('^.*.contigs.fasta$', args.reference):
+#     subprocess.run(["rm", coords_sorted_file])  #only when refDir
 
