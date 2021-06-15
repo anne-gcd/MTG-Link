@@ -33,7 +33,7 @@ import subprocess
 import sys
 from gfapy.sequence import rc
 from Bio import SeqIO
-from main import gfa_name, subsamplingDir, assemblyDir, chunk_size, ext_size,
+from main import gfa_name, subsamplingDir, assemblyDir, chunk_size, ext_size
 
 
 #----------------------------------------------------
@@ -84,11 +84,11 @@ def mtg_fill(gap_label, reads_file, bkpt_file, k, a, max_nodes, max_length, nb_c
         # `MindTheGap fill`.
         ## The option '-fwd-only' is used to avoid redundancies as MTG-Link already perform the local assembly step in both orientations
         if max_memory == 0:
-            command = ["MindTheGap", "fill", "-in", reads_file, "-bkpt", bkpt_file, \
+            command = ["MindTheGap", "fill", "-in", str(reads_file), "-bkpt", str(bkpt_file), \
                         "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
                         "-nb-cores", str(nb_cores), "-verbose", str(verbosity), "-fwd-only", "-out", output_prefix]
         else:
-            command = ["MindTheGap", "fill", "-in", reads_file, "-bkpt", bkpt_file, \
+            command = ["MindTheGap", "fill", "-in", str(reads_file), "-bkpt", str(bkpt_file), \
                         "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
                         "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-verbose", str(verbosity), "-fwd-only", "-out", output_prefix]
         mtgfillLog = str(gap_label) + "_mtgfill.log"
@@ -102,8 +102,8 @@ def mtg_fill(gap_label, reads_file, bkpt_file, k, a, max_nodes, max_length, nb_c
             subprocess.run(["rm", mtgfillLog])
 
         # If we find a complete gap-filled sequence (e.g. we reach the kmer stop), return the assembly sequence along with True.
-        if os.path.getsize(assemblyDir +"/"+ output + ".insertions.fasta") > 0:
-            res = os.path.abspath(assemblyDir +"/"+ output + ".insertions.fasta")
+        if os.path.getsize(assemblyDir +"/"+ output_prefix + ".insertions.fasta") > 0:
+            res = os.path.abspath(assemblyDir +"/"+ output_prefix + ".insertions.fasta")
             return res, True
 
         # If we don't find a complete gap-filled sequence, return "Gap-filling not completed..." along with False.
