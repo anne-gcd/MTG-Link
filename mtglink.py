@@ -193,3 +193,27 @@ except Exception as e:
     print(exc_type, fname, exc_tb.tb_lineno)
     sys.exit(1)
 
+
+#----------------------------------------------------
+# Remove raw files from local assembly step
+#----------------------------------------------------
+try:
+    ## Local assembly with the DBG algorithm
+    if module == "DBG":
+        try:
+            os.chdir(assemblyDir)
+        except OSError:
+            print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
+            sys.exit(1)
+        subprocess.run("rm -f *.h5", shell=True)
+        subprocess.run("rm -f *.vcf", shell=True)
+        subprocess.run("rm -f *.insertions.fasta", shell=True)
+
+except Exception as e:
+    print("\nException-")
+    print(e)
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(exc_type, fname, exc_tb.tb_lineno)
+    sys.exit(1)
+
