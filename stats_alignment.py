@@ -27,13 +27,10 @@ import re
 import csv
 import argparse
 import subprocess
-import gfapy
-from gfapy.sequence import rc
-from Bio import SeqIO, Align
-from Bio.Seq import Seq
+from Bio import Align
 
 
-#PairwiseAligner object
+# PairwiseAligner object.
 aligner = Align.PairwiseAligner()
 aligner.match_score = 1
 aligner.mismatch_score = -1
@@ -50,66 +47,68 @@ aligner.target_end_extend_gap_score = -0.5
 parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry <query_sequences_file> -ref <reference_sequence> -ext <extension_size> -p <output_file_prefix> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=(''' \
-                                Statistics about the inserted sequence obtained from MindTheGap (-qry)
-                                Note: there are kmer flanking regions on the edges of the inserted sequence (which are included in '-ext' bp flanking regions)
+                                Statistics about the Nucmer alignments between a Query and a Reference
+                                Note: there are k-mer flanking regions on the edges of the gap-filled sequence (Query) 
+                                Note: the gap-filled sequences are those for the extended gap (so they include the '-ext' bp flanking regions)
                                 '''))
 
-parser.add_argument("-qry", "--query", action="store", help="File containing the inserted sequences obtained from MindTheGap (format: 'xxx.insertions.fasta')", required=True)
-parser.add_argument("-ref", "--reference", action="store", help="File containing either the reference sequence or the flanking contigs sequences of the gap (format: 'xxx.fasta')", required=True)
-parser.add_argument("-ext", "--ext", action="store", type=int, help="Extension size of the gap, on both sides; determine start/end of gapfilling", required=True)
-parser.add_argument("-p", "--prefix", action="store", help="Prefix of output file to save the statistical results", required=True)
-parser.add_argument("-out", "--outDir", action="store", default="./mtglink_results/alignments_stats", help="Output directory for saving results")
+parser.add_argument("-qry", "--query", action="store", help="File containing the query sequences (format: 'xxx.insertions.fasta')", required=True)
+parser.add_argument("-ref", "--reference", action="store", help="File containing either the reference sequence or the gap flanking contigs sequences (format: 'xxx.fasta')", required=True)
+parser.add_argument("-ext", "--ext", action="store", type=int, help="Size of the extension of the gap on both sides (bp); determine start/end of gapfilling", required=True)
+parser.add_argument("-p", "--prefix", action="store", help="Prefix of the output files", required=True)
+parser.add_argument("-out", "--outDir", action="store", help="Output directory for saving results", required=True)
 
 args = parser.parse_args()
 
 if re.match('^.*.insertions.fasta$', args.query) is None:
-    parser.error("Warning: Qualitative evaluation _ The suffix of the inserted sequences (query sequences) file should be: '.insertions.fasta'")
+    parser.error("\nWarning: Qualitative evaluation _ The suffix of the query sequences file should be: '.insertions.fasta'")
 
 if re.match('^.*.fasta$', args.reference) is None:
-    parser.error("Warning: Qualitative evaluation _ The suffix of the reference sequence file should be: '.fasta'")
+    parser.error("\nWarning: Qualitative evaluation _ The suffix of the reference sequence file should be: '.fasta'")
+
 
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
-#Query file: inserted/gap-filled sequences file
+# Query file: gap-filled sequences file.
 qry_file = os.path.abspath(args.query)
 if not os.path.exists(args.query):
-    parser.error("Warning: Qualitative evaluation _ The path of the query file (inserted sequences file) doesn't exist")
+    parser.error("\nWarning: Qualitative evaluation _ The path of the query file doesn't exist")
 
-#Reference file: containing either the reference sequence or the flanking contigs sequences
+# Reference file: containing either the reference sequence or the flanking contigs sequences.
 ref_file = os.path.abspath(args.reference)
 if not os.path.exists(ref_file):
-    parser.error("Warning: Qualitative evaluation _ The path of the reference file doesn't exist")
+    parser.error("\nWarning: Qualitative evaluation _ The path of the reference file doesn't exist")
+
 
 #----------------------------------------------------
 # Directory for saving results
 #----------------------------------------------------
 cwd = os.getcwd()
+
+# Create the directory 'outDir', where the results will be saved.
 if not os.path.exists(args.outDir):
     os.mkdir(args.outDir)
 try:
     os.chdir(args.outDir)
-except:
-    print("Something wrong with specified directory. Exception-", sys.exc_info())
+except OSError:
+    print("\nSomething wrong with specified directory. Exception-", sys.exc_info())
     print("Restoring the path")
     os.chdir(cwd)
 outDir = os.getcwd()
 
-try:
-    #-----------------------------------------------------------------------------
-    # Statistics about the Alignment Ref vs Qry
-    #-----------------------------------------------------------------------------
 
-    if not re.match('^.*.contigs.fasta$', args.reference):
-        #----------------------------------------------------
-        # Ref = reference sequence of simulated gap
-        #----------------------------------------------------
-        #Run NUCmer to obtain alignment of the reference sequence against the query's sequences
-        qry_id = qry_file.split('.')[-9]
-        qry_k = qry_file.split('.')[-6]
-        qry_a = qry_file.split('.')[-5]
-        id_ = str(qry_id) + "." + str(qry_k) + "." + str(qry_a)
-        prefix = id_ + ".ref_qry"
+#----------------------------------------------------
+# Ref = reference sequence of simulated gap
+#----------------------------------------------------
+if not re.match('^.*.contigs.fasta$', args.reference):
+
+    #----------------------------------------------------
+    # NUCmer alignments
+    #----------------------------------------------------
+    try: 
+        # Run NUCmer to obtain alignments of the reference sequence against the query's sequences.
+        prefix = args.prefix + ".ref_qry"
 
         log_file = str(prefix) + ".log"
         with open(log_file, "a") as log:
@@ -117,7 +116,7 @@ try:
             log.write("Reference file" + str(ref_file) + "\n")
             log.write("The results are saved in " + outDir)
 
-        nucmerLog = "{}_nucmer_ref_qry.log".format(id_)
+        nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
         delta_file = prefix + ".delta"
         coords_file = prefix + ".coords.unsorted" 
 
@@ -128,33 +127,76 @@ try:
             subprocess.run(nucmer_command, stderr=log)
             subprocess.run(coords_command, stdout=coords, stderr=log)
 
-        #Sort the 'xxx.coords.unsorted' file for further analysis
+        # Sort the 'xxx.coords.unsorted' file for further analysis.
         coords_sorted_file = prefix + ".coords"
         sort_command = ["sort", "-n", coords_file]
         with open(coords_sorted_file, "w") as coords_sorted:
             subprocess.run(sort_command, stdout=coords_sorted)
 
-        #Output stats file of alignment query vs ref
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with the NUCmer alignments, when ref = reference sequence")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+
+    #----------------------------------------------------
+    # Parameters of the local assembly step
+    #----------------------------------------------------
+    try:
+        # Local assembly performed with the DBG algorithm.
+        if ".k" in qry_file.split('/')[-1]:
+            gap_size = qry_file.split('.bxu')[0].split('.')[-4]
+            g = int("".join(list(gap_size)[1:]))
+            if g == 0:
+                g = "NA"
+            chunk_size = qry_file.split('.bxu')[0].split('.')[-3]
+            c = int("".join(list(chunk_size)[1:]))
+            kmer_size = qry_file.split('.bxu')[0].split('.')[-2]
+            k = int("".join(list(kmer_size)[1:]))
+            abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
+            a = int("".join(list(abundance_min)[1:]))
+            qry_id = qry_file.split('/')[-1].split('.')[1]
+
+        # Local assembly performed with the IRO algorithm.
+        if ".dmax" in qry_file.split('/')[-1]:
+            gap_size = qry_file.split('.bxu')[0].split('.')[-6]
+            g = int("".join(list(gap_size)[1:]))
+            if g == 0:
+                g = "NA"
+            chunk_size = qry_file.split('.bxu')[0].split('.')[-5]
+            c = int("".join(list(chunk_size)[1:]))
+            seed_size = qry_file.split('.bxu')[0].split('.')[-4]
+            s = int("".join(list(seed_size)[1:]))
+            min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
+            o = int("".join(list(min_overlap)[1:]))
+            abundance_min = qry_file.split('.bxu')[0].split('.')[-2]
+            a = int("".join(list(abundance_min)[1:]))
+            dmax = qry_file.split('.bxu')[0].split('.')[-1]
+            d = int("".join(list(abundance_min)[1:]))
+            qry_id = qry_file.split('/')[-1].split('.')[1]
+
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = reference sequence")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+
+    #----------------------------------------------------
+    # Quality estimation
+    #----------------------------------------------------
+    try:
+        # Output stats file of NUCmer alignment (Query vs Ref).
         ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats.unsorted"
-        stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+        stats_legend = ["Gap", "Len_gap", "Chunk", "Seed_size", "Min_overlap", "Len_Q", "Ref", "Len_R", \
                         "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
-        #Get the gap size, chunk size, kmer size and abundance min values
-        gap_size = qry_file.split('.')[-8]
-        g = int("".join(list(gap_size)[1:]))
-        chunk_size = qry_file.split('.')[-7]
-        c = int("".join(list(chunk_size)[1:]))
-        k = int("".join(list(qry_k)[1:]))
-        a = int("".join(list(qry_a)[1:]))
-
-        #Get output values from NUCmer:
+        # Get output values from NUCmer.
         reader = csv.DictReader(open(coords_sorted_file), \
                                     fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
                                     delimiter='\t')
 
         rows = list(reader)
         for row in rows[3:]:
-
             len_q = row["LEN_Q"]
             ref = row["TAG_1"]
             len_r = row["LEN_R"]
@@ -169,28 +211,31 @@ try:
             cov_q = row["COV_Q"]
             frame_r = row["FRM_R"]
             frame_q = row["FRM_Q"]
-            solution = str(row["TAG_2"]).split('_sol_')[1]
 
-            if "bkpt1" in str(row["TAG_2"]):
-                strand = "fwd"
-            else:
-                strand = "rev"
+            # Local assembly performed with the DBG algorithm.
+            if ".k" in qry_file.split('/')[-1]:
+                solution = str(row["TAG_2"]).split('_sol_')[1]
+                if "bkpt1" in str(row["TAG_2"]):
+                    strand = "fwd"
+                else:
+                    strand = "rev"
 
-            # Estimate quality of gapfilled sequence
+            # Estimate quality of gap-filled sequence (Query).
             ref_len = int(len_r)
-            error_10_perc = int(0.1 * ref_len)
             qry_len = int(len_q) - 2*args.ext
+            error_10_perc = int(0.1 * ref_len)
+            error_50_perc = int(0.5 * ref_len)
 
-            #length of query sequence is equal +-10% of ref length
+            # Length of query sequence is equal +-10% of ref length.
             if qry_len in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                #the gapfilled seq matches to the whole ref seq
+                ## The gapfilled seq matches to the whole ref seq
                 if int(len_align_q) == ref_len:
                     quality_rq = 'A'
-                #the gapfilled seq matches to the ref seq +-10% of ref length
+                ## The gapfilled seq matches to the ref seq +-10% of ref length
                 elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
                     quality_rq = 'B'
-                #the gapfilled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
-                elif int(len_align_q) >= int(0.5*ref_len) and int(len_align_r) >= int(0.5*qry_len):
+                ## The gapfilled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
+                elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
                     quality_rq = 'C'
                 else:
                     quality_rq = 'D'
@@ -198,10 +243,18 @@ try:
             else:
                 quality_rq = 'D'
 
-            #Write stats results in output file
-            stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
+            # Write stats results in output file.
+            ## Local assembly performed with the DBG algorithm
+            if ".k" in qry_file.split('/')[-1]:
+                stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
+            ## Local assembly performed with the IRO algorithm
+            if ".dmax" in qry_file.split('/')[-1]:
+                stats = [qry_id, g, c, s, o, a, d, len_q, ref, len_r, \
+                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+
+            ## Write in output file
             if os.path.exists(ref_qry_output):
                 with open(ref_qry_output, "a") as output:
                     output.write('\n' + '\t'.join(str(i) for i in stats))
@@ -210,108 +263,126 @@ try:
                     output.write('\t'.join(j for j in stats_legend))
                     output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
-        #Sort the 'xxx.alignment.stats.unsorted' file for further analysis
+        # Sort the 'xxx.alignment.stats.unsorted' file for further analysis.
         ref_qry_sorted = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
         order_command = ["sort", "-k6,7", "-k11,12n", "-r", ref_qry_output]
         with open(ref_qry_sorted, "w") as r_sorted:
             subprocess.run(order_command, stdout=r_sorted)
 
-        #If alignment in multiple chunks, calculate the appropriate quality score
-        with open(ref_qry_sorted, "r") as r:
-            r.seek(0)
-            reader = csv.DictReader(r, fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                                    "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
-                                    delimiter='\t')
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with the quality estimation, when ref = reference sequence")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+        
+    #----------------------------------------------------
+    # Alignment in multiple chunks (for DBG)
+    #----------------------------------------------------
+    try:      
+        # If alignment in multiple chunks, calculate the appropriate quality score.
+        ## Local assembly performed with the DBG algorithm
+        if ".k" in qry_file.split('/')[-1]:
+            with open(ref_qry_sorted, "r") as r:
+                r.seek(0)
+                reader = csv.DictReader(r, fieldnames=("Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                                        delimiter='\t')
 
-            rows = list(reader)
-            for i in range(1, len(rows)):
-                if ("fwd" in rows[i]["Strand"]) or ("rev" in rows[i]["Strand"]):
+                rows = list(reader)
+                for i in range(1, len(rows)):
+                    if ("fwd" in rows[i]["Strand"]) or ("rev" in rows[i]["Strand"]):
+                        qry_id = rows[i]["Gap"]
+                        g = rows[i]["Len_gap"]
+                        c = rows[i]["Chunk"]
+                        k = rows[i]["k"]
+                        a = rows[i]["a"]
+                        strand = rows[i]["Strand"]
+                        solution = rows[i]["Solution"]
+                        len_q = rows[i]["Len_Q"]
+                        ref = rows[i]["Ref"]
+                        len_r = rows[i]["Len_R"]
+                        frame_r = rows[i]["Frame_R"]
+                        frame_q = rows[i]["Frame_Q"]
+                        ref_len = int(len_r)
+                        qry_len = int(len_q) - 2*args.ext
 
-                    qry_id = rows[i]["Gap"]
-                    g = rows[i]["Len_gap"]
-                    c = rows[i]["Chunk"]
-                    k = rows[i]["k"]
-                    a = rows[i]["a"]
-                    strand = rows[i]["Strand"]
-                    solution = rows[i]["Solution"]
-                    len_q = rows[i]["Len_Q"]
-                    ref = rows[i]["Ref"]
-                    len_r = rows[i]["Len_R"]
-                    frame_r = rows[i]["Frame_R"]
-                    frame_q = rows[i]["Frame_Q"]
-                    ref_len = int(len_r)
-                    qry_len = int(len_q) - 2*args.ext
+                        if (strand != rows[i-1]["Strand"]) or (solution != rows[i-1]["Solution"]):
+                            lack_ref = 0
+                            lack_qry = 0
+                            start_r = int(rows[i]["Start_ref"])
+                            lack_ref += start_r - 1
+                            if frame_q == "1":
+                                start_q = int(rows[i]["Start_qry"])
+                                lack_qry += start_q - (args.ext+1)
+                            elif frame_q == "-1":
+                                end_q = int(rows[i]["Start_qry"])
+                                lack_qry += qry_len - (end_q - args.ext)
 
-                    if (strand != rows[i-1]["Strand"]) or (solution != rows[i-1]["Solution"]):
-                        lack_ref = 0
-                        lack_qry = 0
-                        start_r = int(rows[i]["Start_ref"])
-                        lack_ref += start_r - 1
-                        if frame_q == "1":
-                            start_q = int(rows[i]["Start_qry"])
-                            lack_qry += start_q - (args.ext+1)
-                        elif frame_q == "-1":
-                            end_q = int(rows[i]["Start_qry"])
-                            lack_qry += qry_len - (end_q - args.ext)
+                        if (strand == rows[i-1]["Strand"]) and (solution == rows[i-1]["Solution"]):
+                            if int(rows[i]["Start_ref"]) > int(rows[i-1]["End_ref"]):
+                                lack_ref += int(rows[i]["Start_ref"]) - int(rows[i-1]["End_ref"])
+                            if frame_q == "1":
+                                if int(rows[i]["Start_qry"]) > int(rows[i-1]["End_qry"]):
+                                    lack_qry += int(rows[i]["Start_qry"]) - int(rows[i-1]["End_qry"])
+                            elif frame_q == "-1":
+                                if int(rows[i]["Start_qry"]) < int(rows[i-1]["End_qry"]):
+                                    lack_qry += int(rows[i-1]["End_qry"]) - int(rows[i]["Start_qry"])
 
-                    if (strand == rows[i-1]["Strand"]) and (solution == rows[i-1]["Solution"]):
-                        if int(rows[i]["Start_ref"]) > int(rows[i-1]["End_ref"]):
-                            lack_ref += int(rows[i]["Start_ref"]) - int(rows[i-1]["End_ref"])
-                        if frame_q == "1":
-                            if int(rows[i]["Start_qry"]) > int(rows[i-1]["End_qry"]):
-                                lack_qry += int(rows[i]["Start_qry"]) - int(rows[i-1]["End_qry"])
-                        elif frame_q == "-1":
-                            if int(rows[i]["Start_qry"]) < int(rows[i-1]["End_qry"]):
-                                lack_qry += int(rows[i-1]["End_qry"]) - int(rows[i]["Start_qry"])
+                        if (i == len(rows)-1) or ((strand != rows[i+1]["Strand"]) or (solution != rows[i+1]["Solution"])):
+                            end_r = int(rows[i]["End_ref"])
+                            lack_ref += ref_len - end_r
+                            if frame_q == "1":
+                                end_q = int(rows[i]["End_qry"])
+                                lack_qry += qry_len - (end_q - args.ext)
+                            elif frame_q == "-1":
+                                start_q = int(rows[i]["End_qry"])
+                                lack_qry += start_q - (args.ext+1)
 
-                    if (i == len(rows)-1) or ((strand != rows[i+1]["Strand"]) or (solution != rows[i+1]["Solution"])):
-                        end_r = int(rows[i]["End_ref"])
-                        lack_ref += ref_len - end_r
-                        if frame_q == "1":
-                            end_q = int(rows[i]["End_qry"])
-                            lack_qry += qry_len - (end_q - args.ext)
-                        elif frame_q == "-1":
-                            start_q = int(rows[i]["End_qry"])
-                            lack_qry += start_q - (args.ext+1)
+                            len_align_r = ref_len - lack_ref
+                            len_align_q = qry_len - lack_qry
 
-                        len_align_r = ref_len - lack_ref
-                        len_align_q = qry_len - lack_qry
+                            identity = "/"
+                            cov_r = "/"
+                            cov_q = "/"
 
-                        identity = "/"
-                        cov_r = "/"
-                        cov_q = "/"
+                            # Assign a quality score.
+                            ## The gapfilled seq matches to the whole ref seq
+                            if int(len_align_q) == ref_len:
+                                quality_rq = 'A'
+                            ## The gapfilled seq matches to the ref seq +-10% of ref length
+                            elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+                                quality_rq = 'B'
+                            ## The gapfilled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
+                            elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
+                                quality_rq = 'C'
+                            else:
+                                quality_rq = 'D'
 
-                        #Assign a quality score
-                        #the gapfilled seq matches to the whole ref seq
-                        if int(len_align_q) == ref_len:
-                            quality_rq = 'A'
-                        #the gapfilled seq matches to the ref seq +-10% of ref length
-                        elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                            quality_rq = 'B'
-                        #the gapfilled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
-                        elif int(len_align_q) >= int(0.5*ref_len) and int(len_align_r) >= int(0.5*qry_len):
-                            quality_rq = 'C'
-                        else:
-                            quality_rq = 'D'
+                            # Write stats results in output file.
+                            stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
+                                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-                        #Write stats results in output file
-                        stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
-                                start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+                            with open(ref_qry_sorted, "a") as output_ref:
+                                output_ref.write('\n' + '\t'.join(str(i) for i in stats))
 
-                        with open(ref_qry_sorted, "a") as output_ref:
-                            output_ref.write('\n' + '\t'.join(str(i) for i in stats))
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with the quality estimation for alignment in multiple chunks (DBG), when ref = reference sequence")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+        
 
+#----------------------------------------------------
+# Ref = gap flanking contigs' sequences
+#----------------------------------------------------
+elif re.match('^.*.contigs.fasta$', args.reference):
 
-    elif re.match('^.*.contigs.fasta$', args.reference):
-        #----------------------------------------------------
-        # Ref = contigs' sequences
-        #----------------------------------------------------
-        #Run NUCmer to obtain alignment of extension portions (-ext) (of the flanking contigs) against the query's sequences
-        qry_id = qry_file.split('.')[-9]
-        qry_k = qry_file.split('.')[-6]
-        qry_a = qry_file.split('.')[-5]
-        id_ = str(qry_id) + "." + str(qry_k) + "." + str(qry_a)
-        prefix = id_ + ".ref_qry"
+    #----------------------------------------------------
+    # NUCmer alignments
+    #----------------------------------------------------
+    try:
+        # Run NUCmer to obtain alignments of extension portions (-ext) (of the flanking contigs) against the query's sequences.
+        prefix = args.prefix + ".ref_qry"
 
         log_file = str(prefix) + ".log"
         with open(log_file, "a") as log:
@@ -319,7 +390,7 @@ try:
             log.write("Reference file" + str(ref_file) + "\n")
             log.write("The results are saved in " + outDir)
 
-        nucmerLog = "{}_nucmer_ref_qry.log".format(id_)
+        nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
         delta_file = prefix + ".delta"
         coords_file = prefix + ".coords"
 
@@ -330,22 +401,64 @@ try:
             subprocess.run(nucmer_command, stderr=log)
             subprocess.run(coords_command, stdout=coords, stderr=log)
 
-        #Output stats file of alignment query vs ref
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with the NUCmer alignments, when ref = flanking contigs' sequences")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+
+    #----------------------------------------------------
+    # Parameters of the local assembly step
+    #----------------------------------------------------
+    try:
+        # Local assembly performed with the DBG algorithm.
+        if ".k" in qry_file.split('/')[-1]:
+            gap_size = qry_file.split('.bxu')[0].split('.')[-4]
+            g = int("".join(list(gap_size)[1:]))
+            if g == 0:
+                g = "NA"
+            chunk_size = qry_file.split('.bxu')[0].split('.')[-3]
+            c = int("".join(list(chunk_size)[1:]))
+            kmer_size = qry_file.split('.bxu')[0].split('.')[-2]
+            k = int("".join(list(kmer_size)[1:]))
+            abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
+            a = int("".join(list(abundance_min)[1:]))
+            qry_id = qry_file.split('/')[-1].split('.')[1]
+
+        # Local assembly performed with the IRO algorithm.
+        if ".dmax" in qry_file.split('/')[-1]:
+            gap_size = qry_file.split('.bxu')[0].split('.')[-6]
+            g = int("".join(list(gap_size)[1:]))
+            if g == 0:
+                g = "NA"
+            chunk_size = qry_file.split('.bxu')[0].split('.')[-5]
+            c = int("".join(list(chunk_size)[1:]))
+            seed_size = qry_file.split('.bxu')[0].split('.')[-4]
+            s = int("".join(list(seed_size)[1:]))
+            min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
+            o = int("".join(list(min_overlap)[1:]))
+            abundance_min = qry_file.split('.bxu')[0].split('.')[-2]
+            a = int("".join(list(abundance_min)[1:]))
+            dmax = qry_file.split('.bxu')[0].split('.')[-1]
+            d = int("".join(list(abundance_min)[1:]))
+            qry_id = qry_file.split('/')[-1].split('.')[1]
+
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = flanking contigs' sequences")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+
+    #----------------------------------------------------
+    # Quality estimation
+    #----------------------------------------------------
+    try:
+        # Output stats file of NUCmer alignment (Query vs Ref).
         ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
         stats_legend = ["Gap", "Len_gap", "Chunk", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
                         "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
-        #Get the gap size, chunk size, kmer size and abundance min values
-        gap_size = qry_file.split('.')[-8]
-        g = int("".join(list(gap_size)[1:]))
-        if g == 0:
-            g = "NA"
-        chunk_size = qry_file.split('.')[-7]
-        c = int("".join(list(chunk_size)[1:]))
-        k = int("".join(list(qry_k)[1:]))
-        a = int("".join(list(qry_a)[1:]))
-
-        #Get output values from NUCmer:
+        # Get output values from NUCmer.
         reader = csv.DictReader(open(coords_file), \
                                     fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
                                     delimiter='\t')
@@ -353,7 +466,6 @@ try:
         rows = list(reader)
         for row in rows[3:]:
             if row["TAG_1"].split("_")[0] in str(qry_id):
-
                 len_q = row["LEN_Q"]
                 ref = row["TAG_1"].split("_")[0]
                 len_r = row["LEN_R"]
@@ -368,58 +480,112 @@ try:
                 cov_q = row["COV_Q"]
                 frame_r = row["FRM_R"]
                 frame_q = row["FRM_Q"]
-                solution = str(row["TAG_2"]).split('_sol_')[1]
 
-                if "bkpt1" in str(row["TAG_2"]):
-                    strand = "fwd"
-                else:
-                    strand = "rev"
+                # Local assembly performed with the DBG algorithm.
+                if ".k" in qry_file.split('/')[-1]:
+                    solution = str(row["TAG_2"]).split('_sol_')[1]
+                    if "bkpt1" in str(row["TAG_2"]):
+                        strand = "fwd"
+                    else:
+                        strand = "rev"
 
-                # Estimate quality of gapfilled sequence
+                # Estimate quality of gap-filled sequence (Query).
                 left = str(qry_id).split('_')[0]
                 left_scaffold = left[:-1]
                 right = str(qry_id).split('_')[1]
                 right_scaffold = right[:-1]
                 error_10_perc = int(0.1 * args.ext)
+                error_50_perc = int(0.5 * args.ext)
 
-                #ref = Left scaffold
-                if ref == left_scaffold:
-                    #extension of qry match perfectly as expected to ref
-                    if ('+' in left and ((strand == "fwd" and int(start_q) == 1 and int(end_q) == args.ext) or (strand == "rev" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext + 1)))) \
-                        or ('-' in left and ((strand == "fwd" and int(start_q) == args.ext and int(end_q) == 1) or (strand == "rev" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)))):
-                        quality_rq = 'A'
-                    #extension of qry almost match as expected to ref (+-10% of extension size) 
-                    elif ('+' in left and ((strand == "fwd" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))))) \
-                        or ('-' in left and ((strand == "fwd" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))))):
-                        quality_rq = 'B'
-                    #extension of qry almost match (+-ext) as expected to ref
-                    elif ('+' in left and ((strand == "fwd" and int(end_q) <= 2*args.ext) or (strand == "rev" and int(end_q) >= (int(len_q) - 2*args.ext)))) \
-                        or ('-' in left and ((strand == "fwd" and int(start_q) <= 2*args.ext) or (strand == "rev" and int(start_q) >= (int(len_q) - 2*args.ext)))):
-                        quality_rq = 'C'
-                    else:
-                        quality_rq = 'D'
+                # Local assembly performed with the DBG algorithm.
+                if ".k" in qry_file.split('/')[-1]:
+    
+                    # Ref = Left scaffold.
+                    if ref == left_scaffold:                    
+                        ## Extension of qry match perfectly as expected to ref
+                        if ('+' in left and ((strand == "fwd" and int(start_q) == 1 and int(end_q) == args.ext) or (strand == "rev" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext + 1)))) \
+                            or ('-' in left and ((strand == "fwd" and int(start_q) == args.ext and int(end_q) == 1) or (strand == "rev" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)))):
+                            quality_rq = 'A'
+                        ## Extension of qry almost match as expected to ref (+-10% of extension size) 
+                        elif ('+' in left and ((strand == "fwd" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))))) \
+                            or ('-' in left and ((strand == "fwd" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))))):
+                            quality_rq = 'B'
+                        ## Extension of qry almost match as expected to ref (+-50% of extension size) 
+                        elif ('+' in left and ((strand == "fwd" and int(start_q) in range(1, (1 + error_50_perc+1)) and int(end_q) in range((args.ext - error_50_perc), (args.ext + error_50_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q) - error_50_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_50_perc), (int(len_q)-args.ext+1 + error_50_perc+1))))) \
+                            or ('-' in left and ((strand == "fwd" and int(start_q) in range((args.ext - error_50_perc), (args.ext + error_50_perc+1)) and int(end_q) in range(1, (1 + error_50_perc+1))) or (strand == "rev" and int(start_q) in range((int(len_q)-args.ext+1 - error_50_perc), (int(len_q)-args.ext+1 + error_50_perc+1)) and int(end_q) in range((int(len_q) - error_50_perc), (int(len_q)+1))))):
+                            quality_rq = 'C'
+                        else:
+                            quality_rq = 'D'
 
-                #ref = Right scaffold
-                elif ref == right_scaffold:
-                    #extension of qry match perfectly as expected to ref
-                    if ('+' in right and ((strand == "fwd" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)) or (strand == "rev" and int(start_q) == args.ext and int(end_q) == 1))) \
-                        or ('-' in right and ((strand == "fwd" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext +1)) or (strand == "rev" and int(start_q) == 1 and int(end_q) == args.ext))):
-                        quality_rq = 'A'
-                    #extension of qry almost match as expected to ref (+-10% of extension size) 
-                    elif ('+' in right and ((strand == "fwd" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))) or (strand == "rev" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))))) \
-                        or ('-' in right and ((strand == "fwd" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))))):
-                        quality_rq = 'B'
-                    #extension of qry almost match (+-ext) as expected to ref
-                    elif ('+' in right and ((strand == "fwd" and int(start_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(start_q) <= 2*args.ext))) \
-                        or ('-' in right and ((strand == "fwd" and int(end_q) >= (int(len_q) - 2*args.ext)) or (strand == "rev" and int(end_q) <= 2*args.ext))):
-                        quality_rq = 'C'
-                    else:
-                        quality_rq = 'D'
-                
-                #Write stats results in output file
+                    # Ref = Right scaffold.
+                    elif ref == right_scaffold:
+                        ## Extension of qry match perfectly as expected to ref
+                        if ('+' in right and ((strand == "fwd" and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == int(len_q)) or (strand == "rev" and int(start_q) == args.ext and int(end_q) == 1))) \
+                            or ('-' in right and ((strand == "fwd" and int(start_q) == int(len_q) and int(end_q) == (int(len_q) - args.ext +1)) or (strand == "rev" and int(start_q) == 1 and int(end_q) == args.ext))):
+                            quality_rq = 'A'
+                        ## Extension of qry almost match as expected to ref (+-10% of extension size) 
+                        elif ('+' in right and ((strand == "fwd" and int(start_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q)+1))) or (strand == "rev" and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1)) and int(end_q) in range(1, (1 + error_10_perc+1))))) \
+                            or ('-' in right and ((strand == "fwd" and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_10_perc), (int(len_q)-args.ext+1 + error_10_perc+1))) or (strand == "rev" and int(start_q) in range(1, (1 + error_10_perc+1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc+1))))):
+                            quality_rq = 'B'
+                        ## Extension of qry almost match as expected to ref (+-50% of extension size) 
+                        elif ('+' in right and ((strand == "fwd" and int(start_q) in range((int(len_q)-args.ext+1 - error_50_perc), (int(len_q)-args.ext+1 + error_50_perc+1)) and int(end_q) in range((int(len_q) - error_50_perc), (int(len_q)+1))) or (strand == "rev" and int(start_q) in range((args.ext - error_50_perc), (args.ext + error_50_perc+1)) and int(end_q) in range(1, (1 + error_50_perc+1))))) \
+                            or ('-' in right and ((strand == "fwd" and int(start_q) in range((int(len_q) - error_50_perc), (int(len_q)+1)) and int(end_q) in range((int(len_q)-args.ext+1 - error_50_perc), (int(len_q)-args.ext+1 + error_50_perc+1))) or (strand == "rev" and int(start_q) in range(1, (1 + error_50_perc+1)) and int(end_q) in range((args.ext - error_50_perc), (args.ext + error_50_perc+1))))):
+                            quality_rq = 'C'
+                        else:
+                            quality_rq = 'D'
+
+                # Local assembly performed with the IRO algorithm.
+                if ".dmax" in qry_file.split('/')[-1]:
+                    
+                    # Ref = Left scaffold.
+                    if ref == left_scaffold:
+                        ## Extension of qry match perfectly as expected to ref
+                        if ('+' in left and int(start_q) == 1 and int(end_q) == args.ext) \
+                            or ('-' in left and int(start_q) == args.ext and int(end_q) == 1):
+                            quality_rq = 'A'
+                        ## Extension of qry almost match as expected to ref (+-10% of extension size) 
+                        elif ('+' in left and int(start_q) in range(1, (1 + error_10_perc + 1)) and int(end_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc + 1))) \
+                            or ('-' in left and int(start_q) in range((args.ext - error_10_perc), (args.ext + error_10_perc + 1)) and int(end_q) in range(1, (1 + error_10_perc + 1))):
+                            quality_rq = 'B'
+                        ## Extension of qry almost match as expected to ref (+-50% of extension size) 
+                        elif ('+' in left and int(start_q) in range(1, (1 + error_50_perc + 1)) and int(end_q) in range((args.ext - error_50_perc), (args.ext + error_50_perc + 1))) \
+                            or ('-' in left and int(start_q) in range((args.ext - error_50_perc), (args.ext + error_50_perc + 1)) and int(end_q) in range(1, (1 + error_50_perc + 1))):
+                            quality_rq = 'C'
+                        else:
+                            quality_rq = 'D'
+
+                    # Ref = Right scaffold.
+                    elif ref == right_scaffold:
+                        ## Extension of qry match perfectly as expected to ref
+                        if ('+' in right and int(start_q) == (int(len_q) - args.ext + 1) and int(end_q) == (int(len_q))) \
+                            or ('-' in right and int(start_q) == (int(len_q)) and int(end_q) == (int(len_q) - args.ext + 1)):
+                            quality_rq = 'A'
+                        ## Extension of qry almost match as expected to ref (+-10% of extension size) 
+                        elif ('+' in right and int(start_q) in range((int(len_q) - args.ext + 1 - error_10_perc), (int(len_q) - args.ext + 1 + error_10_perc + 1)) and int(end_q) in range((int(len_q) - error_10_perc), (int(len_q) + 1))) \
+                            or ('-' in right and int(start_q) in range((int(len_q) - error_10_perc), (int(len_q) + 1)) and int(end_q) in range((int(len_q) - args.ext + 1 - error_10_perc), (int(len_q) - args.ext + 1 + error_10_perc + 1))):
+                            quality_rq = 'B'
+                        ## Extension of qry almost match as expected to ref (+-50% of extension size) 
+                        elif ('+' in right and int(start_q) in range((int(len_q) - args.ext + 1 - error_50_perc), (int(len_q) - args.ext + 1 + error_50_perc + 1)) and int(end_q) in range((int(len_q) - error_50_perc), (int(len_q) + 1))) \
+                            or ('-' in right and int(start_q) in range((int(len_q) - error_50_perc), (int(len_q) + 1)) and int(end_q) in range((int(len_q) - args.ext + 1 - error_50_perc), (int(len_q) - args.ext + 1 + error_50_perc + 1))):
+                            quality_rq = 'C'
+                        else:
+                            quality_rq = 'D'
+
+                # Write stats results in output file.
+                ## Local assembly performed with the DBG algorithm
+                if ".k" in qry_file.split('/')[-1]:
+                    stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
+                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+
+                ## Local assembly performed with the IRO algorithm
+                if ".dmax" in qry_file.split('/')[-1]:
+                    stats = [qry_id, g, c, s, o, a, d, len_q, ref, len_r, \
+                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+
                 stats = [qry_id, g, c, k, a, strand, solution, len_q, ref, len_r, \
                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
+                ## Write in output file
                 if os.path.exists(ref_qry_output):
                     with open(ref_qry_output, "a") as output:
                         output.write('\n' + '\t'.join(str(i) for i in stats))
@@ -428,19 +594,20 @@ try:
                         output.write('\t'.join(j for j in stats_legend))
                         output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
-
-    #Remove the raw file obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
-    subprocess.run(["rm", nucmerLog])
-    subprocess.run(["rm", delta_file])
-    subprocess.run(["rm", coords_file])
-    if not re.match('^.*.contigs.fasta$', args.reference):
-        subprocess.run(["rm", coords_sorted_file])  #only when refDir
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with the quality estimation, when ref = flanking contigs' sequences")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
 
 
-except Exception as e:
-    print("\nException-")
-    print(e)
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(exc_type, fname, exc_tb.tb_lineno)
-    sys.exit(1)
+#----------------------------------------------------
+# Remove raw files
+#----------------------------------------------------
+#Remove the raw files obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
+subprocess.run(["rm", nucmerLog])
+subprocess.run(["rm", delta_file])
+subprocess.run(["rm", coords_file])
+if not re.match('^.*.contigs.fasta$', args.reference):
+    subprocess.run(["rm", coords_sorted_file])  #only when refDir
+
