@@ -340,14 +340,14 @@ def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfi
 
             # Obtain a quality score for each gapfilled seq.
             output_for_gfa = []
-            assembly_quality_file = os.path.abspath(assemblyDir +"/"+ gapfillingFile.split('.bxu')[0] + ".bxu.insertions_quality.fasta")
-            bad_solutions_file = os.path.abspath(outDir + "/bad_solutions.fasta")
+            assembly_quality_file = assemblyDir +"/"+ gapfillingFile.split('/')[-1].split('.bxu')[0] + ".bxu.insertions_quality.fasta"
+            bad_solutions_file = outDir + "/bad_solutions.fasta"
 
             with open(gapfillingFile, "r") as query, open(assembly_quality_file, "w") as qualified:
                 for record in SeqIO.parse(query, "fasta"):
                     seq = record.seq
 
-                    ## Local assembly performed with the IRO algorithm
+                    ## Local assembly performed with the DBG algorithm
                     if ".k" in gapfillingFile.split('/')[-1]:
                         strand = str(record.id).split('_')[0][-1]
 
