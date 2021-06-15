@@ -625,10 +625,10 @@ elif re.match('^.*.contigs.fasta$', args.reference):
 #----------------------------------------------------
 # Remove raw files
 #----------------------------------------------------
-# #Remove the raw files obtained from statistics ('.log', '.delta', '.coords', '.unsorted' files)
-# subprocess.run(["rm", nucmerLog])
-# subprocess.run(["rm", delta_file])
-# subprocess.run(["rm", coords_file])
-# if not re.match('^.*.contigs.fasta$', args.reference):
-#     subprocess.run(["rm", coords_sorted_file])  #only when refDir
+# Remove the raw files obtained from statistics ('.log', '.delta', '.coords' files).
+subprocess.run(["rm", nucmerLog])
+subprocess.run(["rm", delta_file])
+subprocess.run(["rm", coords_file])
+if not re.match('^.*.contigs.fasta$', args.reference):
+    subprocess.run(["rm", coords_sorted_file])  #only when refDir
 

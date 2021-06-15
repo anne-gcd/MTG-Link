@@ -139,10 +139,11 @@ def gapfilling(current_gap):
         seq_L = str(left_scaffold.sequence())
         seq_R = str(right_scaffold.sequence())
 
-        # Determine which module to execute: DBG or IRO.
+        # Local assembly with the DBG algorithm.
         if main.module == "DBG":
             gapfillingFile = dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, main.max_length, main.kmer_sizeList, main.abundance_thresholdList, main.max_nodes, main.nb_cores, main.max_memory, main.verbosity)
 
+        # Local assembly with the IRO algorithm
         if main.module == "IRO":
             gapfillingFile = iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, main.max_length, main.seed_size, main.min_overlap, main.abundance_minList, main.dmax)
 

@@ -255,6 +255,14 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
                     else:
                         record.id = record.id + "_sol_1/1"
                     SeqIO.write(record, corrected, "fasta")
+
+        # Remove the raw files obtained from the DBG algorithm.
+        h5_file = os.path.abspath(assemblyDir +"/"+ insertion_file.split('.insertions')[0] + ".h5")
+        insertion_fasta = os.path.abspath(assemblyDir +"/"+ insertion_file)
+        insertion_vcf = os.path.abspath(assemblyDir +"/"+ insertion_file.split('.fasta')[0] + ".vcf")
+        subprocess.run(["rm", h5_file])
+        subprocess.run(["rm", insertion_fasta])
+        subprocess.run(["rm", insertion_vcf])
     
     except Exception as e:
         print("\nFile 'IRO.py': Something wrong with the processing of the output from the IRO algorithm")
