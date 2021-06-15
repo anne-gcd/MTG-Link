@@ -84,11 +84,11 @@ def mtg_fill(gap_label, reads_file, bkpt_file, k, a, max_nodes, max_length, nb_c
         # `MindTheGap fill`.
         ## The option '-fwd-only' is used to avoid redundancies as MTG-Link already perform the local assembly step in both orientations
         if max_memory == 0:
-            command = ["/home/genouest/inra_umr1349/aguichard/Gapfilling/DBG/scripts/MindTheGap/build/bin/MindTheGap", "fill", "-in", reads_file, "-bkpt", bkpt_file, \
+            command = ["MindTheGap", "fill", "-in", reads_file, "-bkpt", bkpt_file, \
                         "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
                         "-nb-cores", str(nb_cores), "-verbose", str(verbosity), "-fwd-only", "-out", output_prefix]
         else:
-            command = ["/home/genouest/inra_umr1349/aguichard/Gapfilling/DBG/scripts/MindTheGap/build/bin/MindTheGap", "fill", "-in", reads_file, "-bkpt", bkpt_file, \
+            command = ["MindTheGap", "fill", "-in", reads_file, "-bkpt", bkpt_file, \
                         "-kmer-size", str(k), "-abundance-min", str(a), "-max-nodes", str(max_nodes), "-max-length", str(max_length), \
                         "-nb-cores", str(nb_cores), "-max-memory", str(max_memory), "-verbose", str(verbosity), "-fwd-only", "-out", output_prefix]
         mtgfillLog = str(gap_label) + "_mtgfill.log"
@@ -214,7 +214,7 @@ def dbg_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
         # Case of successful gap-filling.
         if success:
             break
-                    
+
 
     #----------------------------------------------------
     # Output from `MindTheGap fill`
