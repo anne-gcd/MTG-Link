@@ -349,7 +349,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
                 assemblyHash[(assembly+extension)[-70:]] = 0
             
             # Extend the updated assembly sequence (e.g. assembly+extension sequence).
-            res, success = extend(assembly+extension, len(extGroup_filtered[extension][0][0]), input_seqName, STOP, seedDict, assemblyHash, seed_size, min_overlap, abundance_minList, dmax, max_length)
+            res, success = extend(assembly+extension, len(extGroup_filtered[extension][0][0]), input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog)
 
             # If we find a complete gap-filled sequence (e.g. we reach the kmer STOP), return the assembly sequence along with True.
             if success:
