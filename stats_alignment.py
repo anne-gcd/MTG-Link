@@ -170,9 +170,9 @@ if not re.match('^.*.contigs.fasta$', args.reference):
             min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
             o = int("".join(list(min_overlap)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-2]
-            a = int("".join(list(abundance_min)[1:]))
+            a = str("".join(list(abundance_min)[1:]))
             dmax = qry_file.split('.bxu')[0].split('.')[-1]
-            d = int("".join(list(abundance_min)[1:]))
+            d = int("".join(list(dmax)[4:]))
             qry_id = qry_file.split('/')[-1].split('.')[2]
 
     except Exception as e:
@@ -453,9 +453,9 @@ elif re.match('^.*.contigs.fasta$', args.reference):
             min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
             o = int("".join(list(min_overlap)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-2]
-            a = int("".join(list(abundance_min)[1:]))
+            a = str("".join(list(abundance_min)[1:]))
             dmax = qry_file.split('.bxu')[0].split('.')[-1]
-            d = int("".join(list(abundance_min)[1:]))
+            d = int("".join(list(dmax)[4:]))
             qry_id = qry_file.split('/')[-1].split('.')[2]
 
     except Exception as e:
