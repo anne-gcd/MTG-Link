@@ -408,7 +408,7 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
         assemblyHash = {}
 
         # Initiate the log file.
-        iroLog = str(gap_label) + "_iro.log"
+        iroLog = str(gap_label) + ".iro.log"
 
         # Get the k-mers gap flanking sequences (kmers START and STOP).
         with open(fasta_file, "r") as fasta_input:
@@ -590,7 +590,7 @@ def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
                 pass
 
             # Save the reason why there is no complete gap-filling in a log file.
-            iroLog = str(gap_label) + "_iro.log"
+            iroLog = str(gap_label) + ".iro.log"
             with open(iroLog, "a") as log:
                 log.write("\n" + res)
 
@@ -609,7 +609,7 @@ def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
                 assembly_startBegin = res.index(START)
                 assembly_stopBegin = res.index(STOP)
                 seq = res[assembly_startBegin+len(START):assembly_stopBegin]
-                seq_name = "assembly." + input_seqName + " len_" + str(len(seq))
+                seq_name = "assembly." + input_seqName + "_len_" + str(len(seq))
                 gapfilling_file.write(">" + seq_name)
                 gapfilling_file.write("\n" + seq + "\n")
     
