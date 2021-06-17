@@ -448,10 +448,8 @@ def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfi
 
                 qualified.seek(0)
 
-            # If local assembly performed with the DBG algorithm
-            if ".k" in gapfillingFile.split('/')[-1]:
-                # Remove the 'gapfillingFile' once done with it.
-                subprocess.run(["rm", gapfillingFile])
+            # Remove the 'gapfillingFile' once done with it.
+            subprocess.run(["rm", gapfillingFile])
 
     except Exception as e:
         print("\nFile 'QualEval.py': Something wrong with the estimation of the quality of gap-filled sequence(s)")
