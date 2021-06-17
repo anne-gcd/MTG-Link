@@ -68,7 +68,7 @@ For this run, you should get the following:
 
 #### Simulated dataset with reference sequences
 
-Simulated run with default values, the qualitative evaluation being performed with the reference sequence:  
+Simulated run with user value for `-s` (s = 20), the qualitative evaluation being performed with the reference sequence:  
 `mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq -index barcoded.shelve -s 20 -refDir . -out results_MTGLink_IRO_withref`
 
 Results:  
