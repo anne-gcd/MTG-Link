@@ -212,12 +212,12 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
             return assembly, True
 
         if len(assembly) > max_length:
-            return "\n|S| > max_length", False
+            return "|S| > max_length", False
 
         if len(assembly) >= 70:
             # Check that we didn't already search for overlapping reads on this region (e.g. on the last 70 bp of the current assembly's sequence).
             if assemblyHash[assembly[-70:]] == 1:
-                return "\nPath already explored: No solution", False
+                return "Path already explored: No solution", False
                 
         # Search for reads overlapping with the current assembly's sequence.
         overlapping_reads = find_overlapping_reads(assembly, len_read, readList, seed_size, min_overlap, dmax, seedDict)
@@ -225,7 +225,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
             with open(iroLog, "a") as log:
                 log.write("\n>" + input_seqName + " _ No_read_overlapping")
                 log.write("\n"+str(assembly)+"\n")
-            return "\nNo overlapping reads", False
+            return "No overlapping reads", False
 
         # Group the overlapping reads by their extension.
         extGroup = {}
@@ -327,7 +327,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
             with open(iroLog, "a") as log:
                 log.write("\n>" + input_seqName + " _ No_extGroup")
                 log.write("\n"+str(assembly)+"\n")
-            return "\nNo extension", False
+            return "No extension", False
 
         # Sort extGroup by the extension whose read has the largest overlap with the current assembly's sequence (smallest i). 
         '''NB: values of extGroup sorted by reads having the larger overlap'''
@@ -443,8 +443,7 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
         
         # If there is no read containing the kmer START, raise an exception.
         if not read_with_startList:
-            print("\n{}: No read in the dataset provided contains the kmer START... Hence, tentative of gapfilling aborted...".format(gap_label))
-            sys.exit(1)
+            return "No read in the dataset provided contains the kmer START", False
 
         # Extend the reads containing the whole kmer START's sequence.
         for (pos_read, index) in read_with_startList:
@@ -581,11 +580,14 @@ def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
     #----------------------------------------------------
     try:
         # Output file containing the gap-filled sequence(s)
-        gapfillingFile = "{}.{}.g{}.c{}.s{}.o{}.a{}.dmax{}.bxu.insertions.fasta".format(gfa_name, str(gap_label), gap.length, chunk_size, seed_size, min_overlap, abundance_min, dmax)
+        insertion_file = "{}.{}.g{}.c{}.s{}.o{}.a{}.dmax{}.bxu.insertions.fasta".format(gfa_name, str(gap_label), gap.length, chunk_size, seed_size, min_overlap, abundance_min, dmax)
 
         # Case of unsuccessful gap-filling.
         if not success:
             print("\n{}: {}".format(gap_label, res))
+            gapfillingFile = os.path.abspath(insertion_file)
+            with open(gapfillingFile, "w") as file_:
+                pass
 
             # Save the reason why there is no complete gap-filling in a log file.
             iroLog = str(gap_label) + "_iro.log"
@@ -602,6 +604,7 @@ def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
             input_seqName = "ctg{}_start-ctg{}_stop".format(gap.left, gap.right)
 
             # Save and pre-process the gap-filled sequence obtained for further qualitative evaluation.
+            gapfillingFile = os.path.abspath(insertion_file)
             with open(gapfillingFile, "a") as gapfilling_file:
                 assembly_startBegin = res.index(START)
                 assembly_stopBegin = res.index(STOP)
