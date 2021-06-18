@@ -41,7 +41,7 @@ MTGLINK_VERSION = "1.2.0"
 
 parser = argparse.ArgumentParser(prog="mtglink.py", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=("Gapfilling with linked read data, using either a De Bruijn Graph (DBG) or an Iterative Read Overlap (IRO) algorithm"))
+                                description=("Gapfilling with linked read data, using either a De Bruijn Graph (DBG) algorithm or an Iterative Read Overlap (IRO) algorithm"))
 
 parser.add_argument('-v', action="version", version='%(prog)s {version}'.format(version=MTGLINK_VERSION))
 
