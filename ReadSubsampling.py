@@ -71,8 +71,8 @@ def extract_barcodes(bam, gap_label, region, barcodes_occ):
 
             # Save the barcodes and their occurences in the dict 'barcodes_occ'.
             for line in f.readlines():
-                ## Remove the '-1' at the end of the sequence
-                barcode_seq = line.split('-')[0]
+                ## Remove the '\n' at the end of the sequence (if any)
+                barcode_seq = line.split('\n')[0]
                 ## Count occurences of each barcode and save them in the dict 'barcodes_occ'
                 if barcode_seq in barcodes_occ:
                     barcodes_occ[barcode_seq] += 1
