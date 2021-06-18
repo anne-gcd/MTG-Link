@@ -1,8 +1,28 @@
 #!/usr/bin/env python3
+#*****************************************************************************
+#  Name: MTG-Link
+#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
+#  linked read data.
+#  Copyright (C) 2020 INRAE
+#  Author: Anne Guichard
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Affero General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Affero General Public License for more details.
+#
+#  You should have received a copy of the GNU Affero General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#*****************************************************************************
+
 """Module 'ProgDynOptim.py': class of an optimized dynamic programmation
 
-The module 'ProgDynOptim.py' contains the class of an optimized dynamic programmation, 
-that is used to determine the alignment between two sequences overlapping.
+The module 'ProgDynOptim.py' contains the class of an optimized dynamic programmation, that is used to determine the alignment between two sequences overlapping.
 But we determine the alignment after the seed sequence so it is equivalent to a global alignment. 
 """
 

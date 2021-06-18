@@ -20,9 +20,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*****************************************************************************
 
-"""Module 'helpers.py': Classes
-#TODO
-The module 'helpers.py' contains the classes and functions used in the script OLC.
+"""Module 'helpers.py': Classes and general functions
+
+The module 'helpers.py' contains the classes and general functions used in the gap-filling pipeline MTG-Link.
 """
 
 import os
@@ -32,7 +32,7 @@ import subprocess
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO
-#from datetime import datetime      #TODO
+#from datetime import datetime
 
 
 #----------------------------------------------------
