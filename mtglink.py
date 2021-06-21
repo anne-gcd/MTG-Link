@@ -166,7 +166,7 @@ try:
     print("In total, {} gaps were successfully gap-filled:".format(str(nb_gapfill)))
 
     # Gaps gap-filled.
-    if success == True:
+    if successful_solution == True:
         out_fasta_file = outDir +"/"+ gapfillFile
         gap_names = []
         if (out_fasta_file) is not None:
