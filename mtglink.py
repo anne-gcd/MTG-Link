@@ -91,6 +91,8 @@ try:
         legend = ["Gap_ID", "Left_scaffold", "Right_scaffold", "Gap_size", "Chunk_size", "Nb_barcodes", "Nb_reads"]
         union_sum.write('\t'.join(j for j in legend))
 
+        successful_solution = False
+
         for union_summary, output_for_gfa in p.map(gapfilling, gaps):
             # Write all union_summary (obtained for each gap) from 'gapfilling' into the 'union_sum' file.
             union_sum.write("\n" + '\t'.join(str(i) for i in union_summary))
@@ -101,13 +103,12 @@ try:
             if len(output_for_gfa[0]) > 1:          
                 for output in output_for_gfa:
                     gapfillFile = update_gfa_with_solution(outDir, gfa_name, output, out_gfaFile)
-                    success = True
+                    successful_solution = True
             ## No solution found for the current gap
             else:                                   
                 out_gfa = gfapy.Gfa.from_file(out_gfaFile)
                 out_gfa.add_line(output_for_gfa[0][0])
                 out_gfa.to_file(out_gfaFile)
-                success = False
 
         p.close()
 
@@ -132,7 +133,7 @@ print("The results from the Qualitative Evaluation step are saved in " + evalDir
 
 print("\nSummary of the union: " + gfa_name + ".union.sum")
 print("GFA output file: " + out_gfaFile)
-if success == True:
+if successful_solution == True:
     print("Corresponding file containing all gap-filled sequences: " + gapfillFile + "\n")
 
 
