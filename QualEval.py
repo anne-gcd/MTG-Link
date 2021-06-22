@@ -157,7 +157,7 @@ def get_position_for_edges(orient1, orient2, length1, length2, ext):
 #----------------------------------------------------
 # get_output_for_gfa function
 #----------------------------------------------------
-def get_output_for_gfa(record, ext, s1, s2, left_scaffold, right_scaffold):
+def get_output_for_gfa(record, ext, s1, s2, left_scaffold, right_scaffold, module):
     """
     To get the ouput variables for updating the GFA when a solution is found for a gap
 
@@ -174,6 +174,8 @@ def get_output_for_gfa(record, ext, s1, s2, left_scaffold, right_scaffold):
             Scaffold object for the left scaffold
         - right_scaffold: object
             Scaffold object for the right scaffold
+        - module: str
+            name of the module used for the local assembly step (DBG or IRO)
 
     Return:
         - output_for_gfa: list
@@ -192,7 +194,12 @@ def get_output_for_gfa(record, ext, s1, s2, left_scaffold, right_scaffold):
             orient = "rev"
 
         # Get the solution name.
-        sol_name = str(s1) +":"+ str(s2) + "_gf_"+ orient
+        ## Module DBG.
+        if module == "DBG":
+            no_solution = str(record.id).split('_sol_')[1]
+            sol_name = str(s1) +":"+ str(s2) + "_" + orient + "_" + no_solution
+        if module == "IRO":
+            sol_name = str(s1) +":"+ str(s2) + "_" + orient
         solution = sol_name + orient_sign
 
         # Get the position for edges.
@@ -387,7 +394,7 @@ def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfi
 
                         # Update GFA with only the good solutions (the ones having a good quality score).
                         if (len(seq) > 2*ext_size) and (re.match('^.*Quality [AB]$', record.description)):
-                            gfa_output = get_output_for_gfa(record, ext_size, gap.left, gap.right, left_scaffold, right_scaffold)
+                            gfa_output = get_output_for_gfa(record, ext_size, gap.left, gap.right, left_scaffold, right_scaffold, module)
                             output_for_gfa.append(gfa_output)
 
                         # Add the bad solutions to a FASTA file containing all bad solutions.
@@ -435,7 +442,7 @@ def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfi
 
                         #Update GFA with only the good solutions (the ones having a good quality score).
                         if (len(seq) > 2*ext_size) and (re.match('^.*Quality [AB]{2}$', record.description)):
-                            gfa_output = get_output_for_gfa(record, ext_size, gap.left, gap.right, left_scaffold, right_scaffold)
+                            gfa_output = get_output_for_gfa(record, ext_size, gap.left, gap.right, left_scaffold, right_scaffold, module)
                             output_for_gfa.append(gfa_output)
 
                         #Add the bad solutions to a FASTA file containing all bad solutions.

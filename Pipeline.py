@@ -160,7 +160,7 @@ def gapfilling(current_gap):
     try:
         # If at least one solution is found, perform the Qualitative Evaluation step on the gap-filled sequence(s).
         if os.path.getsize(gapfillingFile) > 0:
-            output_for_gfa = qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfillingFile)
+            output_for_gfa = qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfillingFile, main.module)
         
         # If no solution found, set 'output_for_gfa' to empty list.
         else:

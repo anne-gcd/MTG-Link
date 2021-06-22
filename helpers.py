@@ -216,7 +216,6 @@ class Scaffold(Gap):
 #----------------------------------------------------
 # Graph class
 #----------------------------------------------------
-#TODO
 class Graph:
     """The class 'Graph' contains all the attributes, properties and methods to create a Graph object.
 
