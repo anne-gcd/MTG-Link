@@ -345,7 +345,7 @@ def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
         pos_1 = output_for_gfa[4]
         pos_2 = output_for_gfa[5]
         s1 = sol_name.split(':')[0]
-        s2 = (sol_name.split(':')[1]).split('_gf')[0]
+        s2 = (sol_name.split(':')[1]).split('_')[0]
         quality = output_for_gfa[6]
 
         print("Updating the GFA file with the solution: " + sol_name)
