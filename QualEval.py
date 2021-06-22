@@ -221,7 +221,7 @@ def get_output_for_gfa(record, ext, s1, s2, left_scaffold, right_scaffold, modul
 #----------------------------------------------------
 # qual_eval function
 #----------------------------------------------------
-def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfillingFile):
+def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfillingFile, module):
     """
     To perform the Qualitative Evaluation step. 
     This step compares the gap-filled sequence(s) obtained during the local assembly step to the Reference.
@@ -243,6 +243,8 @@ def qual_eval(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, gapfi
             right flanking contig sequence
         - gapfillingFile: file
             file containing the gap-filled sequence(s)
+        - module: str
+            name of the module used for the local assembly step (DBG or IRO)
        
     Return:
         - output_for_gfa: list
