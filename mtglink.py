@@ -180,7 +180,7 @@ try:
                         print("\t* " + gap_name)
 
                     # For all gaps.
-                    orientation = str(record.id).split('_')[-1]
+                    orientation = str(record.id).split('_')[1]
                     length = str(record.description).split('_ len_')[1].split('_qual_')[0]
                     quality = str(record.description).split('_qual_')[1]
                     print("\t\t* " + orientation + "\t" + length + " bp\t" + quality)
