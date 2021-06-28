@@ -163,7 +163,7 @@ try:
         print("The gap {} was not successfully gap-filled".format(gap_end))
 
     nb_gapfill = len(total_gaps) - len(no_gapfill)
-    print("In total, {} gaps were successfully gap-filled:".format(str(nb_gapfill)))
+    print("\nIn total, {} gaps were successfully gap-filled:".format(str(nb_gapfill)))
 
     # Gaps gap-filled.
     if successful_solution == True:

@@ -30,7 +30,7 @@ from __future__ import print_function
 import collections
 import itertools
 import os
-import re
+import regex
 import sys
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -202,18 +202,25 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
 
     Return:
         str, Boolean
-            - the gap-filled sequence (assembly) and a Boolean variable equal to True if a solution is found (e.g. we arrived to STOP kmer)
+            - the gap-filled sequence (assembly) and a Boolean variable equal to True if a solution is found 
+              (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
             - the reason why the gap-filling failed and a Boolean variable equal to False if no solution is found
     """
     try:
         # Base cases.
-        if STOP in assembly[-len_read:]:
-            return assembly, True
 
+        ## Target reached (with at most 2 substitutions).
+        kmer_STOP = "({})".format(STOP)
+        match = regex.findall(str(kmer_STOP)+"{s<=2}", assembly, overlapped=True)
+        if match != []:
+            return assembly, True
+        
+        ## Assembly length superior to max_length specified by the user.
         if len(assembly) > max_length:
             return "|S| > max_length", False
 
+        ## Path already explored.
         if len(assembly) >= 70:
             # Check that we didn't already search for overlapping reads on this region (e.g. on the last 70 bp of the current assembly's sequence).
             if assemblyHash[assembly[-70:]] == 1:
@@ -395,7 +402,7 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
     Return:
         - res: str
             - the assembled sequence from the read containing the k-mer START to the read containing the k-mer STOP (assembly) and a Boolean value equal to True
-              if a solution is found (e.g. we arrived to STOP kmer)
+              if a solution is found (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
             - the reason why the gap-filling failed and a Boolean value equal to False
               if no solution is found
@@ -603,6 +610,11 @@ def iro_assembly(gap_label, gap, left_scaffold, right_scaffold, seq_L, seq_R, ma
             STOP = seq_R[ext_size:(ext_size + 31)]
             input_seqName = "ctg{}_start-ctg{}_stop".format(gap.left, gap.right)
 
+            # Get the target sequence found in the assembly, with at most 2 substitutions.
+            kmer_STOP = "({})".format(STOP)
+            match = regex.findall(str(kmer_STOP)+"{s<=2}", res, overlapped=True)
+            STOP = match[0]
+            
             # Save and pre-process the gap-filled sequence obtained for further qualitative evaluation.
             gapfillingFile = os.path.abspath(insertion_file)
             with open(gapfillingFile, "a") as gapfilling_file:
