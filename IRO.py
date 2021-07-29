@@ -32,6 +32,7 @@ import itertools
 import os
 import regex
 import sys
+import time
 from Bio import SeqIO
 from Bio.Seq import Seq
 from operator import itemgetter
@@ -160,7 +161,7 @@ def find_overlapping_reads(assembly, len_read, readList, seed_size, min_overlap,
 #----------------------------------------------------
 # extend function
 #----------------------------------------------------
-def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog):
+def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, bp_total, startTime, iroLog):
     """
     To extend a read's sequence with overlapping reads.
     This is an iterative function.
@@ -197,6 +198,10 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
         - max_length: int
             maximum assembly length (bp)
+        - bp_total: int
+            number of total bp added to all possible assembled sequences
+        - startTime: time
+            starting time of the exploration for extending the assembly sequence
         - iroLog: file
             the temporary (e.g. incomplete) gap-filled sequences will be saved in this log file
 
@@ -206,6 +211,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
               (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
             - the reason why the gap-filling failed and a Boolean variable equal to False if no solution is found
+        and bp_total: the number of total bp added to all possible assembled sequences
     """
     try:
         # Base cases.
@@ -214,17 +220,25 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
         kmer_STOP = "({})".format(STOP)
         match = regex.findall(str(kmer_STOP)+"{s<=2}", assembly, overlapped=True)
         if match != []:
-            return assembly, True
+            return assembly, True, bp_total
         
         ## Assembly length superior to max_length specified by the user.
         if len(assembly) > max_length:
-            return "|S| > max_length", False
+            return "|S| > max_length", False, bp_total
+
+        ## Number of total bp added to all possible assembled sequences higher than 100*max_length.
+        if bp_total > 10*max_length:
+            return "Too many explorations: No solution", False, bp_total
+
+        ## Exploration takes too much time (> 25% max_length e.g. we allow 0.25 s per bp).
+        if (time.time() - startTime) > 0.25*max_length:
+            return "Exploration takes too much time: No solution", False, bp_total
 
         ## Path already explored.
         if len(assembly) >= 70:
             # Check that we didn't already search for overlapping reads on this region (e.g. on the last 70 bp of the current assembly's sequence).
             if assemblyHash[assembly[-70:]] == 1:
-                return "Path already explored: No solution", False
+                return "Path already explored: No solution", False, bp_total
                 
         # Search for reads overlapping with the current assembly's sequence.
         overlapping_reads = find_overlapping_reads(assembly, len_read, readList, seed_size, min_overlap, dmax, seedDict)
@@ -232,7 +246,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
             with open(iroLog, "a") as log:
                 log.write("\n>" + input_seqName + " _ No_read_overlapping")
                 log.write("\n"+str(assembly)+"\n")
-            return "No overlapping reads", False
+            return "No overlapping reads", False, bp_total
 
         # Group the overlapping reads by their extension.
         extGroup = {}
@@ -334,7 +348,7 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
             with open(iroLog, "a") as log:
                 log.write("\n>" + input_seqName + " _ No_extGroup")
                 log.write("\n"+str(assembly)+"\n")
-            return "No extension", False
+            return "No extension", False, bp_total
 
         # Sort extGroup by the extension whose read has the largest overlap with the current assembly's sequence (smallest i). 
         '''NB: values of extGroup sorted by reads having the larger overlap'''
@@ -356,14 +370,15 @@ def extend(assembly, len_read, input_seqName, STOP, seedDict, assemblyHash, read
                 assemblyHash[(assembly+extension)[-70:]] = 0
             
             # Extend the updated assembly sequence (e.g. assembly+extension sequence).
-            res, success = extend(assembly+extension, len(extGroup_filtered[extension][0][0]), input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog)
+            bp_total = bp_total + len(extension)
+            res, success, bp_total = extend(assembly+extension, len(extGroup_filtered[extension][0][0]), input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, bp_total, startTime, iroLog)
 
             # If we find a complete gap-filled sequence (e.g. we reach the kmer STOP), return the assembly sequence along with True.
             if success:
-                return res, True
+                return res, True, bp_total
 
         # If we don't find a complete gap-filled sequence, return the reason why the gap-filling was not successful along with False.
-        return res, False
+        return res, False, bp_total
 
     except Exception as e:
         print("\nFile 'IRO.py': Something wrong with the function 'extend()'")
@@ -414,6 +429,10 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
         pos_read_in_readList = 0
         assemblyHash = {}
 
+        # Initiate the timeout.
+        bp_total = 0
+        startTime = time.time()
+
         # Initiate the log file.
         iroLog = str(gap_label) + ".iro.log"
 
@@ -463,7 +482,8 @@ def iro_fill(gap_label, readList, fasta_file, seed_size, min_overlap, abundance_
 
             # Extend the assembly sequence (e.g. the current read containing the whole kmer START's sequence).
             assemblyHash[read[-70:]] = 0
-            res, success = extend(read, len(read), input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, iroLog)
+            bp_total = bp_total + len(read)
+            res, success, bp_total = extend(read, len(read), input_seqName, STOP, seedDict, assemblyHash, readList, seed_size, min_overlap, abundance_minList, dmax, max_length, bp_total, startTime, iroLog)
 
             # Case of successful gap-filling.
             break
