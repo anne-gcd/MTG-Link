@@ -52,7 +52,7 @@ class DynamicMatrixOptim:
         
         # These two lines store the edit distances.
         ## First line (prevLine here): gap penalties.
-        self.prevLine = [i - (dmax+1) for i in range(2*self.dmax+3)]
+        self.prevLine = [i - (self.dmax+1) for i in range(2*self.dmax+3)]
         self.nextLine = [0 for i in range(2*self.dmax+3)]
 
         # Set both the first and last cells to MAX value (to stop recurrence at the extremities of the line).
