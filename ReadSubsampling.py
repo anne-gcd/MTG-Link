@@ -174,11 +174,11 @@ def read_subsampling(gap_label, gap, left_scaffold, right_scaffold, chunk_L, chu
         barcodes_occ = {}
         
         # Obtain the left barcodes extracted on the left region (left chunk) and store the barcodes and their occurences in the dict 'barcodes_occ'.
-        left_region = left_scaffold.chunk(chunk_L)
+        left_region = left_scaffold.chunk(chunk_L, left_scaffold.slen)
         extract_barcodes(bamFile, gap_label, left_region, barcodes_occ)
 
         # Obtain the right barcodes extracted on the right region (right chunk) and store the barcodes and their occurences in the dict 'barcodes_occ'.
-        right_region = right_scaffold.chunk(chunk_R)
+        right_region = right_scaffold.chunk(chunk_R, left_scaffold.slen)
         extract_barcodes(bamFile, gap_label, right_region, barcodes_occ)
 
         # Do the union of the barcodes on both left and right regions (e.g. both left and right chunks). 
