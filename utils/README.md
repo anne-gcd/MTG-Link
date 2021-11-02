@@ -21,6 +21,40 @@ optional arguments:
 ```
 
 
+## bed2gfa.py
+
+The **bed2gfa.py** script converts a BED file containing the positions of 'Ns' for each scaffold to a GFA file (GFA 2.0). 
+
+It is possible to filter the 'Ns' regions you want to treat as gaps by:
+* their size (e.g. gap sizes)
+* the flanking contigs' sizes (for example, select only to the 'Ns' regions whose flanking contigs' sizes are long enough to get enough barcodes)
+
+### Usage
+
+```
+./bed2gfa.py --help
+
+usage: bed2gfa.py -bed <bed_file> -fa <fasta_file> -out <output_directory> [options]
+
+Convert a BED file containing the positions of 'Ns' for each scaffold to a GFA file ('Ns' regions are treated as gaps). We can filter the 'Ns' regions by their size (e.g. gap sizes) and by the contigs' sizes on both sides (long enough for ex to get enough barcodes)
+                                
+optional arguments:
+  -h, --help            show this help message and exit
+
+[Main options]:
+  -bed BED              BED file containing the positions of 'Ns' for each scaffold 
+                        (format: 'xxx.bed')
+  -fa FASTA             FASTA file containing the sequences of the scaffolds 
+                        obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')
+  -min MIN              Minimum size of the 'Ns' region to treat/process as a gap
+  -max MAX              Maximum size of the 'Ns' region to treat/process as a gap
+  -contigs CONTIGS_SIZE
+                        Minimum size of the flanking contigs of the 'Ns' region 
+                        to treat/process as a gap
+  -out OUTDIR           Output directory for saving the GFA file
+```
+
+
 ## fasta2gfa.py
 
 The **fasta2gfa.py** script takes as input a FASTA file and treats the 'Ns' regions within the sequences as gaps. It thus transform a FASTA file with 'Ns' regions within sequences to a GFA file (GFA 2.0).  
