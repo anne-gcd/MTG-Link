@@ -1,3 +1,26 @@
+## fasta2bed.py
+
+The **fasta2bed.py** script takes as input a FASTA file and convert it to a BED file containing the positions of 'Ns' for each scaffold.
+
+### Usage
+
+```
+./fasta2bed.py --help
+
+usage: fasta2bed.py -in <fasta_file> -out <output_directory>
+
+Convert a FASTA file to a BED file containing the positions of 'Ns' for each scaffold
+                                
+optional arguments:
+  -h, --help            show this help message and exit
+
+[Main options]:
+  -in INPUT             FASTA file containing the sequences of the scaffolds 
+                        obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')
+  -out OUTDIR           Output directory for saving the BED file
+```
+
+
 ## fasta2gfa.py
 
 The **fasta2gfa.py** script takes as input a FASTA file and treats the 'Ns' regions within the sequences as gaps. It thus transform a FASTA file with 'Ns' regions within sequences to a GFA file (GFA 2.0).  
