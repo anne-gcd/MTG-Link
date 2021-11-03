@@ -40,7 +40,7 @@ parser.add_argument("-out", dest="outDir", action="store", help="Output director
 
 args = parser.parse_args()
 
-if (re.match('^.*.fasta$', args.input) is None) or (re.match('^.*.fa$', args.input) is None):
+if (re.match('^.*.fasta$', args.input) is None) and (re.match('^.*.fa$', args.input) is None):
     parser.error("The suffix of the input FASTA file should be: '.fasta' or '.fa'")
 
 #----------------------------------------------------
