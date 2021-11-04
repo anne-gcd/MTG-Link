@@ -26,6 +26,7 @@ Presently, it is directly compatible with the following linked-reads technologie
 
 * Biopython
 * Pathos
+* Regex
 * Gfapy
 * Samtools
 * Mummer
@@ -34,8 +35,8 @@ Presently, it is directly compatible with the following linked-reads technologie
 * MindTheGap
 
 You can install them via the conda package manager:  
-`conda install -c bioconda samtools gfapy blast`  
-`conda install -c conda-forge biopython pathos`  
+`conda install -c bioconda samtools gfapy blast regex`  
+`conda install -c conda-forge biopython pathos`   
 `conda install -c bioconda/label/cf201901 mummer`     
 `conda install -c bioconda lrez`  
 `conda install -c bioconda mindthegap`  
