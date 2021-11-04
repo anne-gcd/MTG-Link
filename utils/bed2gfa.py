@@ -159,7 +159,7 @@ try:
                             args.max = "."
                         if args.contigs_size is None:
                             args.contigs_size = "."
-                            
+
                         # Output FASTA file containing the flanking sequences of the gap regions of the output GFA file.
                         out_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_flanking_seq_gaps_" + str(args.min) + "-" + str(args.max) + "_contigs_" + str(args.contigs_size) + ".fasta")
                         print("\nOutput FASTA file: " + out_fastaFile)
@@ -197,8 +197,8 @@ try:
                         # Add corresponding lines to the GFA file.
                         with open(gfaFile, "a") as f:
                             gfa = gfapy.Gfa.from_file(gfaFile)
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_length, os.path.join(outDir, out_fastaFile)))
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_length, os.path.join(outDir, out_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_end_index, os.path.join(outDir, out_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_start_index, os.path.join(outDir, out_fastaFile)))
                             gfa.add_line("G\t*\t{}\t{}\t{}\t*".format(left_contig, right_contig, gap_length))
                             gfa.to_file(gfaFile)
 
