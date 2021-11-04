@@ -129,16 +129,16 @@ try:
                         left_start_index = 0 
                         left_end_index = gap_coordinatesList[i][0]
                     else:
-                        left_start_index = gap_coordinatesList[i-1][1] + 1
+                        left_start_index = gap_coordinatesList[i-1][1]
                         left_end_index = gap_coordinatesList[i][0]
                     left_flanking_seq = record.seq[int(left_start_index):int(left_end_index)]
 
                     # Get the right flanking sequence.
                     if i == len(gap_coordinatesList)-1:     #last gap
-                        right_start_index = gap_coordinatesList[i][1] + 1
+                        right_start_index = gap_coordinatesList[i][1]
                         right_end_index = len(record.seq)
                     else:
-                        right_start_index = gap_coordinatesList[i][1] + 1
+                        right_start_index = gap_coordinatesList[i][1]
                         right_end_index = gap_coordinatesList[i+1][0]
                     right_flanking_seq = record.seq[int(right_start_index):int(right_end_index)]
 
@@ -153,6 +153,13 @@ try:
                         #----------------------------------------------------
                         # FASTA files (left/right sequences)
                         #----------------------------------------------------
+                        if args.min is None:
+                            args.min = "."
+                        if args.max is None:
+                            args.max = "."
+                        if args.contigs_size is None:
+                            args.contigs_size = "."
+                            
                         # Output FASTA file containing the flanking sequences of the gap regions of the output GFA file.
                         out_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_flanking_seq_gaps_" + str(args.min) + "-" + str(args.max) + "_contigs_" + str(args.contigs_size) + ".fasta")
                         print("\nOutput FASTA file: " + out_fastaFile)
