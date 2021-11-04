@@ -48,7 +48,7 @@ args = parser.parse_args()
 if re.match('^.*.bed$', args.bed) is None:
     parser.error("The suffix of the input BED file should be: '.bed'")
 
-if (re.match('^.*.fasta$', args.fasta) is None) or (re.match('^.*.fa$', args.fasta) is None):
+if (re.match('^.*.fasta$', args.fasta) is None) and (re.match('^.*.fa$', args.fasta) is None):
     parser.error("The suffix of the input FASTA file should be: '.fasta' or '.fa'")
 
 #----------------------------------------------------
@@ -102,11 +102,14 @@ try:
 
             # If 'min' < gap_size < 'max', append the dictionary 'positions_NsDict' with the 'Ns' regions (e.g. gaps) for each scaffold.
             ## key = scaffold_name ; value = list of positions of gaps
-            if (gap_size >= args.min) and (gap_size <= args.max):
-                if chrom in positions_NsDict:
-                    positions_NsDict[chrom].append([chromStart, chromEnd])
-                else:
-                    positions_NsDict[chrom] = [[chromStart, chromEnd]]
+            if (args.min is not None) and (gap_size < args.min):
+                break
+            if (args.max is not None) and (gap_size > args.max):
+                break
+            if chrom in positions_NsDict:
+                positions_NsDict[chrom].append([chromStart, chromEnd])
+            else:
+                positions_NsDict[chrom] = [[chromStart, chromEnd]]
         
     # For each gap, get the gap's sequence and the left and right flanking sequences.
     with open(fastaFile, "r") as fasta_file:
@@ -128,20 +131,22 @@ try:
                     else:
                         left_start_index = gap_coordinatesList[i-1][1] + 1
                         left_end_index = gap_coordinatesList[i][0]
-                    left_flanking_seq = record.seq[left_start_index:left_end_index]
+                    left_flanking_seq = record.seq[int(left_start_index):int(left_end_index)]
 
                     # Get the right flanking sequence.
-                    if i == len(gap_coordinatesList)-1:
+                    if i == len(gap_coordinatesList)-1:     #last gap
                         right_start_index = gap_coordinatesList[i][1] + 1
                         right_end_index = len(record.seq)
                     else:
                         right_start_index = gap_coordinatesList[i][1] + 1
                         right_end_index = gap_coordinatesList[i+1][0]
-                    right_flanking_seq = record.seq[right_start_index:right_end_index]
+                    right_flanking_seq = record.seq[int(right_start_index):int(right_end_index)]
 
 
                     # If left and right sequences > 'contigs_size', continue (e.g. add the gap to the output GFA file).
-                    if (len(left_flanking_seq) > args.contigs_size) and (len(right_flanking_seq) > args.contigs_size):
+                    if (args.contigs_size is not None) and (len(left_flanking_seq) < args.contigs_size) and (len(right_flanking_seq) < args.contigs_size):
+                        break
+                    else:
                         gap_count += 1
                         os.chdir(outDir)
 
