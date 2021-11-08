@@ -116,7 +116,7 @@ try:
         for record in SeqIO.parse(fasta_file, "fasta"):
             if record.id in positions_NsDict:
 
-                # Iterate over the gaps of 'positions_NsDict' for each scaffold:
+                # Iterate over the gaps of 'positions_NsDict' for each scaffold.
                 gap_coordinatesList = positions_NsDict[record.id]
                 gap_count = 0
                 for i in range(len(gap_coordinatesList)):
@@ -160,32 +160,34 @@ try:
                         if args.contigs_size is None:
                             args.contigs_size = "."
 
-                        # Output FASTA file containing the flanking sequences of the gap regions of the output GFA file.
-                        out_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_flanking_seq_gaps_" + str(args.min) + "-" + str(args.max) + "_contigs_" + str(args.contigs_size) + ".fasta")
-                        print("\nOutput FASTA file: " + out_fastaFile)
-                                    
-                        # Save the left and right sequences to the output FASTA file.
-                        left_name = record.id + "_gap" + str(gap_count) + "-L"
+                        # Left flanking contig.
+                        left_name = str(record.id) + "_gap" + str(gap_count) + "-L"
                         left_contig = left_name + "+"
                         left_length = len(left_flanking_seq)  
 
-                        right_name = record.id + "_gap" + str(gap_count) + "-R"
+                        # Right flanking contig.
+                        right_name = str(record.id) + "_gap" + str(gap_count) + "-R"
                         right_contig = right_name + "+"
                         right_length = len(right_flanking_seq)
 
-                        with open(out_fastaFile, "a") as output:
-                            output.write(">{} _ len {}".format(left_name, left_length))
-                            output.write("\n" + str(left_flanking_seq) + "\n")
-                            output.write(">{} _ len {}".format(right_name, right_length))
-                            output.write("\n" + str(right_flanking_seq) + "\n")
+                        # Output FASTA files containing the flanking sequences of the current gap.
+                        ##Left
+                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) + "_gap" + str(gap_count) + ".g" + str(gap_length) + ".c" + str(args.contigs_size) + ".left.fasta")
+                        with open(left_fastaFile, "w") as left:
+                            left.write(">{} _ len {}".format(left_name, left_length))
+                            left.write("\n" + str(left_flanking_seq) + "\n")
 
+                        ##Right
+                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) + "_gap" + str(gap_count) + ".g" + str(gap_length) + ".c" + str(args.contigs_size) + ".right.fasta")
+                        with open(right_fastaFile, "w") as right:
+                            right.write((">{} _ len {}".format(right_name, right_length)))
+                            right.write("\n" + str(right_flanking_seq) + "\n")
+                        
                         #----------------------------------------------------
                         # GFA file
                         #----------------------------------------------------
                         os.chdir(outDir)
-
                         gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_gaps_" + str(args.min) + "-" + str(args.max) + "_contigs_" + str(args.contigs_size) + ".gfa")
-                        print("\nOutput GFA file: " + gfaFile)
 
                         # Initiate the GFA file.
                         if not os.path.exists(gfaFile):
@@ -197,8 +199,8 @@ try:
                         # Add corresponding lines to the GFA file.
                         with open(gfaFile, "a") as f:
                             gfa = gfapy.Gfa.from_file(gfaFile)
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_end_index, os.path.join(outDir, out_fastaFile)))
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_start_index, os.path.join(outDir, out_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_end_index, os.path.join(outDir, left_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_start_index, os.path.join(outDir, right_fastaFile)))
                             gfa.add_line("G\t*\t{}\t{}\t{}\t*".format(left_contig, right_contig, gap_length))
                             gfa.to_file(gfaFile)
 
@@ -210,4 +212,5 @@ except Exception as e:
 
 
 print("\nThe output GFA file and the corresponding FASTA files are saved in " + outDir)
+print("Output GFA file: " + gfaFile)
 
