@@ -119,7 +119,7 @@ def get_reads(reads, index, gap_label, barcodes, out_reads):
     """
     try:
         # LRez query fastq.
-        command = ["LRez", "query", "fastq", "--fastq", reads, "--index", index, "--list", barcodes]
+        command = ["LRez", "query", "fastq", "--fastq", reads, "--index", index, "--list", barcodes, "--gzip"]
         getreadsLog = str(gap_label) + "_getreads.log"
 
         with open(getreadsLog, "a") as log:
