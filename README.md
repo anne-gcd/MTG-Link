@@ -196,7 +196,7 @@ For example, the *longranger* pipeline outputs an indexed BAM file containing po
 
 #### 3. FASTQ file
 
-The **FASTQ** file is a barcoded Fastq file from linked reads obtained with *longranger basic*.
+The **FASTQ** file is a barcoded Fastq file from linked reads obtained with *longranger basic*.  
 **ATTN:** The FASTQ file must be gzipped. 
 
 
