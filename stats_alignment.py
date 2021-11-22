@@ -491,7 +491,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
         for row in rows[3:]:
             if row["TAG_1"].split("_")[0] in str(qry_id):
                 len_q = row["LEN_Q"]
-                ref = row["TAG_1"].split("_")[0]
+                ref = row["TAG_1"].split("_region")[0]
                 len_r = row["LEN_R"]
                 start_r = row["S1"]
                 end_r = row["E1"]
@@ -514,9 +514,9 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                         strand = "rev"
 
                 # Estimate quality of gap-filled sequence (Query).
-                left = str(qry_id).split('_')[0]
-                left_scaffold = left[:-1]
-                right = str(qry_id).split('_')[1]
+                left = re.split('\+_|\-_', str(qry_id))[0]
+                left_scaffold = left
+                right = re.split('\+_|\-_', str(qry_id))[1]
                 right_scaffold = right[:-1]
                 error_10_perc = int(0.1 * args.ext)
                 error_50_perc = int(0.5 * args.ext)
