@@ -514,8 +514,11 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                         strand = "rev"
 
                 # Estimate quality of gap-filled sequence (Query).
-                left = re.split('\+_|\-_', str(qry_id))[0]
-                left_scaffold = left
+                left_wo_sign = re.split('\+_|\-_', str(qry_id))[0]
+                r1 = re.findall(r"\+_|\-_",str(qry_id))[0]
+                left_sign = re.split("_", str(r1))[0]
+                left = left_wo_sign + left_sign
+                left_scaffold = left[:-1]
                 right = re.split('\+_|\-_', str(qry_id))[1]
                 right_scaffold = right[:-1]
                 error_10_perc = int(0.1 * args.ext)
