@@ -347,7 +347,10 @@ def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
         pos_1 = output_for_gfa[4]
         pos_2 = output_for_gfa[5]
         s1 = sol_name.split(':')[0]
-        s2 = (sol_name.split(':')[1]).split('_')[0]
+        s2_orientsol = sol_name.split(':')[1]
+        s2_wo_sign = re.split('\+_|\-_', str(s2_orientsol))[0]
+        s2_sign = re.findall(r"\+_|\-_",str(s2_orientsol))[0].split('_')[0]
+        s2 = s2_wo_sign + s2_sign
         quality = output_for_gfa[6]
 
         print("Updating the GFA file with the solution: " + sol_name)
