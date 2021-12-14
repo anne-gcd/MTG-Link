@@ -317,67 +317,73 @@ class Graph:
 
 
 #----------------------------------------------------
-# update_gfa_with_solution function
+# updateGFAWithSolution function
 #----------------------------------------------------
-# Function to update the GFA when a solution is found for a gap
-def update_gfa_with_solution(outDir, gfa_name, output_for_gfa, gfa_output_file):
+def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
     """
-    To update the GFA when a solution is found for a gap.
+    To update the GFA, when a solution is found for a gap, with this solution.
 
     Args:
         - outDir: dir
             directory where the FASTA file containing all gap-filled sequences is located
         - gfa_name: str
             name of the GFA file
-        - output_for_gfa: list
-            list containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the sequence
-        - gfa_output_file: file
+        - outputGFA: list
+            list containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
+        - outputGFAFile: file
             file of the output GFA (updated with the gap-filled sequence(s))
 
     Return/Output:
-        - gapfillFile: file
-            file containing all the gap-filled sequences found with a good quality score
+        - gapfillSeqFile: file
+            file containing all the gap-filled sequences obtained with a good quality score [AB]
     """
     try:
         # Variables input.
-        sol_name = output_for_gfa[0]
-        length_seq = output_for_gfa[1]
-        seq = output_for_gfa[2]
-        solution = output_for_gfa[3]
-        pos_1 = output_for_gfa[4]
-        pos_2 = output_for_gfa[5]
-        s1 = sol_name.split(':')[0]
-        s2_orientsol = sol_name.split(':')[1]
-        s2_wo_sign = re.split('\+_|\-_', str(s2_orientsol))[0]
-        s2_sign = re.findall(r"\+_|\-_",str(s2_orientsol))[0].split('_')[0]
-        s2 = s2_wo_sign + s2_sign
-        quality = output_for_gfa[6]
+        solutionName = outputGFA[0]
+        seqLength = outputGFA[1]
+        sequence = outputGFA[2]
+        solution = outputGFA[3]
+        pos_1 = outputGFA[4]
+        pos_2 = outputGFA[5]
+        leftName = solutionName.split(':')[0]
+        rightName_w_orientation = solutionName.split(':')[1]
+        rightName_wo_orientationSign = re.split('\+_|\-_', str(rightName_w_orientation))[0]
+        rightOrientationSign = re.findall(r"\+_|\-_",str(rightName_w_orientation))[0].split('_')[0]
+        rightName = rightName_wo_orientationSign + rightOrientationSign
+        quality = outputGFA[6]
 
-        print("Updating the GFA file with the solution: " + sol_name)
+        print("Updating the GFA file with the solution: " + solutionName)
 
         # Save the gap-filled sequence to a file containing all gap-filled sequences.
-        gapfillFile = gfa_name + ".gapfill_seq.fasta"
-        with open(gapfillFile, "a") as seq_fasta:
-            seq_fasta.write(">{} _ len_{}_qual_{} ".format(sol_name, length_seq, quality))
-            seq_fasta.write("\n" + seq + "\n")
+        gapfillSeqFile = str(gfa_name) + ".gapfilled_sequences.fasta"
+        try:
+            with open(gapfillSeqFile, "a") as seqFasta:
+                seqFasta.write(">{} _ len.{}_qual.{} ".format(solutionName, seqLength, quality))
+                seqFasta.write("\n" + sequence + "\n")
+        except IOError as err:
+            print("File 'helpers.py', function 'updateGFAWithSolution()': Unable to open or write to the file {}. \nIOError-{}".format(str(gapfillSeqFile), err))
+            sys.exit(1)
 
-        with open(gfa_output_file, "a") as f:
+        try:
+            with open(outputGFAFile, "a") as f:
+                # Add the gap-filled sequence (query seq) to GFA output ('Sequence' S line).
+                out_gfa = gfapy.Gfa.from_file(outputGFAFile)
+                out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(solutionName, seqLength, os.path.join(outDir, gapfillSeqFile)))
 
-            # Add the found seq (query seq) to GFA output (S line).
-            out_gfa = gfapy.Gfa.from_file(gfa_output_file)
-            out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(sol_name, length_seq, os.path.join(outDir, gapfillFile)))
+                # Write the two corresponding E lines ('Edges' lines) into GFA output.
+                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(leftName, solution, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(solution, rightName, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
 
-            # Write the two corresponding E lines into GFA output.
-            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(s1, solution, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
-            out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(solution, s2, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+                out_gfa.to_file(outputGFAFile)
 
-            out_gfa.to_file(gfa_output_file)
+        except IOError as err:
+            print("File 'helpers.py', function 'updateGFAWithSolution()': Unable to open or write to the file {}. \nIOError-{}".format(str(outputGFAFile), err))
+            sys.exit(1)
 
-            return gapfillFile
+        return gapfillSeqFile
     
     except Exception as e:
-        print("\nFile 'helpers.py': Something wrong with the function 'update_gfa_with_solution()'")
-        print("Exception-")
-        print(e)
+        print("File 'helpers.py': Something wrong with the function 'updateGFAWithSolution()'")
+        print("Exception-{}".format(e))
         sys.exit(1)
 

@@ -58,9 +58,9 @@ parserDBG.add_argument('-f', dest="freq", action="store", type=int, default=2, h
 parserDBG.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default: ./mtglink_results]")
 parserDBG.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any [optional]")
 parserDBG.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
-parserDBG.add_argument('-rbxu', dest="rbxu", action="store", help="File containing the reads of the union of the corresponding gap (if already extracted) [optional]")
 parserDBG.add_argument('-ext', dest="extension", action="store", type=int, default=500, help="Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]")
 parserDBG.add_argument('-l', dest="max_length", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
+parserDBG.add_argument('-t', dest="threads", action="store", type=int, default=1, help="Number of threads to use for the Read Subsampling step [default: 1]")
 parserDBG.add_argument('-k', dest="kmer_size", action="store", type=int, default=[51, 41, 31, 21],  nargs='+', help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
 parserDBG.add_argument('-a', dest="abundance_threshold", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance threshold for solid k-mers [default: [3, 2]]")
 parserDBG.add_argument("--force", action="store_true", help="To force search on all '-k' values provided")
@@ -80,9 +80,9 @@ parserIRO.add_argument('-f', dest="freq", action="store", type=int, default=2, h
 parserIRO.add_argument('-out', dest="outDir", action="store", default="./mtglink_results", help="Output directory [default: ./mtglink_results]")
 parserIRO.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any [optional]")
 parserIRO.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
-parserIRO.add_argument('-rbxu', dest="rbxu", action="store", help="File containing the reads of the union of the corresponding gap (if already extracted) [optional]")
 parserIRO.add_argument('-ext', dest="extension", action="store", type=int, default=500, help="Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]")
 parserIRO.add_argument('-l', dest="max_length", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
+parserDBG.add_argument('-t', dest="threads", action="store", type=int, default=1, help="Number of threads to use for the Read Subsampling step [default: 1]")
 parserIRO.add_argument('-s', dest="seed_size", action="store", type=int, default=10, help="Seed size used for indexing the reads (bp) [default: 10]")
 parserIRO.add_argument('-o', dest="min_overlap", action="store", type=int, default=20, help="Minimum overlapping size (bp) [default: 20]")
 parserIRO.add_argument('-a', dest="abundance_min", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance(s) of reads used for gapfilling ; extension's groups having less than this number of reads are discarded from the graph [default: [3, 2]]")
@@ -134,15 +134,6 @@ if args.refDir is not None:
 else:
     refDir = ""
 
-# File containing the reads of the union of the corresponding gap (if already extracted).
-if args.rbxu is not None:
-    rbxuFile = os.path.abspath(args.rbxu)
-    if not os.path.exists(rbxuFile):
-        parser.error("\nWarning: The path of the file containing the reads of the union of the corresponding gap (already extracted) doesn't exist")
-    print("File containing the reads of the union of the corresponding gap (already extracted): " + rbxuFile)
-else:
-    rbxuFile = ""
-
 # Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input).
 if args.line is not None:
     line_gfa = args.line
@@ -189,25 +180,26 @@ os.mkdir(evalDir)
 #----------------------------------------------------
 try:
     module = args.MTGLink_module
-    chunk_size = args.chunk
-    barcodes_min_freq = args.freq
-    ext_size = args.extension
-    max_length = args.max_length
+    chunkSize = args.chunk
+    barcodesMinFreq = args.freq
+    extSize = args.extension
+    maxLength = args.max_length
+    threads = args.threads
 
     # Module DBG.
     if module == "DBG":
-        kmer_sizeList = args.kmer_size
-        abundance_thresholdList = args.abundance_threshold
-        max_nodes = args.max_nodes
-        nb_cores = args.nb_cores
-        max_memory = args.max_memory
+        kmerSizeList = args.kmer_size
+        abundanceThresholdList = args.abundance_threshold
+        maxNodes = args.max_nodes
+        nbCores = args.nb_cores
+        maxMemory = args.max_memory
         verbosity = args.verbosity
 
     # Module IRO.
     if module == "IRO":
-        seed_size = args.seed_size
-        min_overlap = args.min_overlap
-        abundance_minList = args.abundance_min
+        seedSize = args.seed_size
+        minOverlapSize = args.min_overlap
+        abundanceMinList = args.abundance_min
         dmax = args.max_score
 
 except Exception as e:
