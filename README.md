@@ -169,16 +169,16 @@ The `<dist>` field gives the expected distance between the first and second segm
 Example:
 ```
 H	VN:Z:2.0
-S	8-L	3152098	*	UR:Z:8.1000.5000.left.fasta
-S	8-R	3152097	*	UR:Z:8.1000.5000.right.fasta
-G	*	8-L+	8-R+	1000	*
+S	8_gap1-L	3152098	*	UR:Z:8_gap1.1000.5000.left.fasta
+S	8_gap1-R	3152097	*	UR:Z:8_gap1.1000.5000.right.fasta
+G	*	8_gap1-L+	8_gap1-R+	1000	*
 ```
 The **FASTA** files containing the segment sequences (indicating after `UR:Z:` in the GFA file) should have record ID that contains the ID of the corresponding segment (`<sid>`). 
 
 Example:
 ```
-grep '>' 8.1000.5000.left.fasta
->>> >8-L_1000_5000_len_3152098
+grep '>' 8_gap1.g1000.c5000.left.fasta
+>>> >8_gap1-L_1000_5000_len_3152098
 ```
 
 How to obtain a GFA file:
@@ -255,6 +255,7 @@ The parameters for the **DBG module** of MTG-Link are obtained with:
       -rbxu RBXU            File containing the reads of the union of the corresponding gap (if already extracted) [optional]
       -ext EXTENSION        Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]
       -l MAX_LENGTH         Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]
+      -t THREADS            Number of threads to use for the Read Subsampling step [default: 1]
       -k KMER_SIZE [KMER_SIZE ...]
                             k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]
       -a ABUNDANCE_THRESHOLD [ABUNDANCE_THRESHOLD ...]
@@ -287,6 +288,7 @@ The parameters for the **IRO module** of MTG-Link are obtained with:
       -rbxu RBXU            File containing the reads of the union of the corresponding gap (if already extracted) [optional]
       -ext EXTENSION        Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]
       -l MAX_LENGTH         Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]
+      -t THREADS            Number of threads to use for the Read Subsampling step [default: 1]
       -s SEED_SIZE          Seed size used for indexing the reads (bp) [default: 10]
       -o MIN_OVERLAP        Minimum overlapping size (bp) [default: 20]
       -a ABUNDANCE_MIN [ABUNDANCE_MIN ...]
