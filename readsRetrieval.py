@@ -56,7 +56,7 @@ def retrieveReadsWithLRezQueryFastq(gfa_name, reads, index, allBarcodesLists, th
     """
     try:
         # LRez query fastq.
-        command = ["LRez", "query", "fastq", "--fastq", reads, "--index", index, "--collectionOfLists", allBarcodesLists, "--threads", threads, "--gzip"]
+        command = ["LRez", "query", "fastq", "--fastq", reads, "--index", index, "--collectionOfLists", allBarcodesLists, "--threads", str(threads), "--gzip"]
         queryFastqLog = str(gfa_name) + "_LRezQueryFastq.log"
 
         try:
