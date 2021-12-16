@@ -75,7 +75,7 @@ As MTG-Link has **two local assembly modules (DBG and IRO)**, it is better to te
 ```
 # If mtglink.py is in your PATH 
 cd test/
-mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq -index barcoded.shelve -out results_MTGLink_DBG
+mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -out results_MTGLink_DBG
 ```
 The installation is successful if you find a file named `test_mtglink.gfa` in the output directory (`results_MTGLink_DBG/`), and it should contain 4 S-lines (2 for both flanking contigs sequences, and 2 for both gap-filled sequences) and 4 E-lines.  
 The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 gap-filled sequences (one forward and one reverse, both of length 2000 bp).
@@ -84,7 +84,7 @@ The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 2 
 ```
 # If mtglink.py is in your PATH 
 cd test/
-mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq -index barcoded.shelve -out results_MTGLink_IRO
+mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -out results_MTGLink_IRO
 ```
 The installation is successful if you find a file named `test_mtglink.gfa` in the output directory (`results_MTGLink_IRO/`), and it should contain 3 S-lines (2 for both flanking contigs sequences, and 1 for the gap-filled sequence) and 2 E-lines.  
 The set of gap-filled sequences (`test.gfa.gapfill_seq.fasta`) should contain 1 gap-filled sequence (one forward of length 2000 bp).
