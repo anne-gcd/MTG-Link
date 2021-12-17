@@ -46,7 +46,7 @@ from helpers import updateGFAWithSolution
 # GFA Pre-Processing
 #----------------------------------------------------
 try:
-    print("\nSTEP 1: GFA Pre-Processing")
+    print("\nSTEP 1/3: GFA Pre-Processing")
 
     # Open the input GFA file.
     gfa = gfapy.Gfa.from_file(main.gfaFile)
@@ -121,7 +121,7 @@ except Exception as e:
 # Read Subsampling
 #----------------------------------------------------
 try:
-    print("\nSTEP 2: Read Subsampling")
+    print("\nSTEP 2/3: Read Subsampling")
 
     # Go in the 'subsamplingDir' directory.
     try:
@@ -221,7 +221,7 @@ except Exception as e:
 # Gap-filling (Local Assembly and Qualitative Evaluation steps)
 #--------------------------------------------------------------
 try:
-    print("\nSTEP 3: Gap-filling (Local Assembly and Qualitative Evaluation steps)")
+    print("\nSTEP 3/3: Gap-filling (Local Assembly and Qualitative Evaluation steps)")
 
     # Start multiprocessing.
     p = Pool()
@@ -264,7 +264,7 @@ print("The results from the 'Read Subsampling' step are saved in " + main.subsam
 print("The results from the 'Local Assembly' step are saved in " + main.assemblyDir)
 print("The results from the 'Qualitative Evaluation' step are saved in " + main.evalDir)
 
-print("\nSummary of the union: " + main.outDir +"/"+ main.subsamplingDir +"/"+ readSubsamplingSummaryFile)
+print("\nSummary of the union: " + main.subsamplingDir +"/"+ readSubsamplingSummaryFile)
 print("GFA output file: " + outputGFAFile)
 if gapfillSeqFileExist:
     print("Corresponding file containing all gap-filled sequences: " + gapfillSeqFile + "\n")

@@ -710,7 +710,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             sys.exit(1)
         abundanceMinString = '-'.join(map(str, abundanceMinList))
         
-        print("\nGap-filling of {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
+        print("\nGAP-FILLING OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
 
         # Determine the maximum assembly length (bp) if the gap length is known.
         ## NB: if the gap length is unknown, it is set to 0.
