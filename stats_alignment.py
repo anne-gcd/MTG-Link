@@ -186,7 +186,7 @@ if not re.match('^.*.contigs.fasta$', args.reference):
     #----------------------------------------------------
     try:
         # Output stats file of NUCmer alignment (Query vs Ref).
-        ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats.unsorted"
+        ref_qry_output = outDir + "/" + args.prefix + ".nucmerAlignments.stats.unsorted"
 
         ## Local assembly performed with the DBG algorithm
         if ".k" in qry_file.split('/')[-1]:
@@ -271,8 +271,8 @@ if not re.match('^.*.contigs.fasta$', args.reference):
                     output.write('\t'.join(j for j in stats_legend))
                     output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
-        # Sort the 'xxx.alignment.stats.unsorted' file for further analysis.
-        ref_qry_sorted = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
+        # Sort the 'xxx.nucmerAlignments.stats.unsorted' file for further analysis.
+        ref_qry_sorted = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
         order_command = ["sort", "-k6,7", "-k11,12n", "-r", ref_qry_output]
         with open(ref_qry_sorted, "w") as r_sorted:
             subprocess.run(order_command, stdout=r_sorted)
@@ -469,7 +469,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
     #----------------------------------------------------
     try:
         # Output stats file of NUCmer alignment (Query vs Ref).
-        ref_qry_output = outDir + "/" + args.prefix + ".ref_qry.alignment.stats"
+        ref_qry_output = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
 
         ## Local assembly performed with the DBG algorithm
         if ".k" in qry_file.split('/')[-1]:
