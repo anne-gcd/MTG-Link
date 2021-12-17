@@ -288,7 +288,6 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                     sys.exit(1)
 
         # Get some information on the current gap we are working on.
-        gap.info()
         gapLabel = gap.label()
 
         # Create two objects ('leftScaffold' and 'rightScaffold') from the class 'Scaffold'.
@@ -322,7 +321,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
     #--------------------------------------------------------- 
     try:
         # Qualitative evaluation with the reference sequence ('refDir' provided by the user).
-        if main.refDir is not None:
+        if main.refDir != "":
             for current_file in os.listdir(main.refDir):
                 if str(gapLabel) in current_file:
                     referenceFile = main.refDir +"/"+ str(current_file)
@@ -331,7 +330,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                 referenceFile = ""
 
         # Qualitative evalution with the gap flanking contigs' sequences.
-        elif (main.refDir is None) or (referenceFile == ""):
+        elif (main.refDir == "") or (referenceFile == ""):
 
             # Merge both left and right flanking contigs sequences into a unique file (referenceFile).
             referenceFile = main.contigDir +"/"+ str(gapLabel) +".g"+ str(gap.length) +".ext"+ str(extSize) + ".contigs.fasta"
