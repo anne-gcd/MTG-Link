@@ -59,8 +59,6 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     # Local Assembly
     #----------------------------------------------------  
     try:
-        print("\nSTEP 3a: Local Assembly for " + str(current_gap))
-
         # Perform the local assembly with the DBG (De Bruijn Graph) algorithm or the IRO (Iterative Read Overlap) algorithm. 
         ## DBG algorithm.
         if main.module == "DBG":
@@ -80,8 +78,6 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     # Qualitative Evaluation
     #----------------------------------------------------
     try:
-        print("\nSTEP 3b: Qualitative Evaluation for " + str(current_gap))
-
         # If at least one solution is found, perform the Qualitative Evaluation step on the gap-filled sequence(s).
         if os.path.getsize(gapfillingFile) > 0:
             outputGFAList = qualitativeEvaluationOfTheAssembly(current_gap, main.gfaFile, main.extSize, gapfillingFile, main.module)

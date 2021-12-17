@@ -608,7 +608,6 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                     sys.exit(1)
 
         # Get some information on the current gap we are working on.
-        gap.info()
         gapLabel = gap.label()
 
         # Create two objects ('leftScaffold' and 'rightScaffold') from the class 'Scaffold'.

@@ -124,8 +124,6 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
     # Pre-Processing
     #----------------------------------------------------
     try:
-        print("\nBarcodes Extraction for " + str(current_gap))
-
         # Open the input GFA file.
         gfa = gfapy.Gfa.from_file(gfaFile)
         if not gfa:
