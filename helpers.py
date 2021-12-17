@@ -355,7 +355,7 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
         print("Updating the GFA file with the solution: " + solutionName)
 
         # Save the gap-filled sequence to a file containing all gap-filled sequences.
-        gapfillSeqFile = str(gfa_name) + ".gapfilled_sequences.fasta"
+        gapfillSeqFile = str(outDir) + "/" + str(gfa_name).split('.gfa')[0] + ".gapfilled_sequences.fasta"
         try:
             with open(gapfillSeqFile, "a") as seqFasta:
                 seqFasta.write(">{} _ len.{}_qual.{} ".format(solutionName, seqLength, quality))

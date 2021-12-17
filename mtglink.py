@@ -62,7 +62,7 @@ try:
         sys.exit(1)
     
     # Create the output GFA file.
-    outputGFAFile = str(main.gfa_name).split('.gfa')[0] + "_mtglink.gfa"
+    outputGFAFile = main.outDir + "/" + str(main.gfa_name).split('.gfa')[0] + "_mtglink.gfa"
 
     # Case no gap in the input GFA: if no gap, rewrite all the lines into GFA output.
     if len(gfa.gaps) == 0:
@@ -132,7 +132,7 @@ try:
 
     # For each gap, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk regions) and append the file containing all the lists obtained for all gaps ('allBarcodesFile').
     print("\nSTEP 2a: Barcodes Extraction")
-    allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.bxu".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
+    allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.bx".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
     for gap in gaps:
         unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinFreq)
         try:
@@ -264,10 +264,10 @@ print("The results from the 'Read Subsampling' step are saved in " + main.subsam
 print("The results from the 'Local Assembly' step are saved in " + main.assemblyDir)
 print("The results from the 'Qualitative Evaluation' step are saved in " + main.evalDir)
 
-print("\nSummary of the union: " + main.outDir +"/"+ readSubsamplingSummaryFile)
-print("GFA output file: " + main.outDir +"/"+ outputGFAFile)
+print("\nSummary of the union: " + main.outDir +"/"+ main.subsamplingDir +"/"+ readSubsamplingSummaryFile)
+print("GFA output file: " + outputGFAFile)
 if gapfillSeqFileExist:
-    print("Corresponding file containing all gap-filled sequences: " + main.outDir +"/"+ gapfillSeqFile + "\n")
+    print("Corresponding file containing all gap-filled sequences: " + gapfillSeqFile + "\n")
 
 
 #----------------------------------------------------
@@ -278,7 +278,14 @@ try:
     print("MTG-Link " + main.module)
     print("------------")
 
-    gfa_output = gfapy.Gfa.from_file(main.outDir +"/"+ str(outputGFAFile))
+    # Go in the 'outDir' directory.
+    try:
+        os.chdir(main.outDir)
+    except OSError as err:
+        print("File 'mtglink.py': Something wrong with specified directory 'outDir'. \nOSError-{}".format(err))
+        sys.exit(1)
+
+    gfa_output = gfapy.Gfa.from_file(str(outputGFAFile))
 
     # Total initials gaps.
     totalGapsList = []
@@ -300,11 +307,10 @@ try:
 
     # Gaps gap-filled.
     if gapfillSeqFileExist:
-        outputFASTAFile = main.outDir +"/"+ gapfillSeqFile
         gapsNamesList = []
-        if (outputFASTAFile) is not None:
+        if (gapfillSeqFile) is not None:
             try:
-                with open(outputFASTAFile, "r") as gapfilled:
+                with open(gapfillSeqFile, "r") as gapfilled:
                     for record in SeqIO.parse(gapfilled, "fasta"):
                         gapName_wo_rightSign = re.split('\+_|\-_', str(record.id))[0]
                         r2 = re.findall(r"\+_|\-_", str(record.id))[0]
@@ -323,7 +329,7 @@ try:
                         print("\t\t* " + orientation + "\t" + length + " bp\t" + quality)
             
             except IOError as err:
-                print("File 'mtglink.py', step 'Summary Output': Unable to open the file {}. \nIOError-{}".format(str(outputFASTAFile), err))
+                print("File 'mtglink.py', step 'Summary Output': Unable to open the file {}. \nIOError-{}".format(str(gapfillSeqFile), err))
                 sys.exit(1)
             
     print("\n")
