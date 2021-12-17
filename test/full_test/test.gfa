@@ -1,12 +1,12 @@
 H	VN:Z:2.0
-S	95_gap1-L	762906	*	UR:Z:95_gap1.1000.5000.left-.fasta
-S	95_gap1-R	762905	*	UR:Z:95_gap1.1000.5000.right-.fasta
-S	68_gap1-L	222132	*	UR:Z:68_gap1.1000.5000.left.fasta
-S	68_gap1-R	222133	*	UR:Z:68_gap1.1000.5000.right.fasta
-S	26939_gap1-L	464805	*	UR:Z:26939_gap1.1000.5000.left.fasta
-S	26939_gap1-R	464805	*	UR:Z:26939_gap1.1000.5000.right.fasta
-S	27292_gap1-L	183358	*	UR:Z:27292_gap1.1000.5000.left.fasta
-S	27292_gap1-R	183357	*	UR:Z:27292_gap1.1000.5000.right.fasta
+S	95_gap1-L	762906	*	UR:Z:95_gap1.g1000.c5000.left-.fasta
+S	95_gap1-R	762905	*	UR:Z:95_gap1.g1000.c5000.right-.fasta
+S	68_gap1-L	222132	*	UR:Z:68_gap1.g1000.c5000.left.fasta
+S	68_gap1-R	222133	*	UR:Z:68_gap1.g1000.c5000.right.fasta
+S	26939_gap1-L	464805	*	UR:Z:26939_gap1.g1000.c5000.left.fasta
+S	26939_gap1-R	464805	*	UR:Z:26939_gap1.g1000.c5000.right.fasta
+S	27292_gap1-L	183358	*	UR:Z:27292_gap1.g1000.c5000.left.fasta
+S	27292_gap1-R	183357	*	UR:Z:27292_gap1.g1000.c5000.right.fasta
 G	*	95_gap1-L-	95_gap1-R-	1000	*
 G	*	68_gap1-L+	68_gap1-R+	1000	*
 G	*	26939_gap1-L+	26939_gap1-R+	1000	*
