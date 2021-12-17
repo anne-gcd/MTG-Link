@@ -91,7 +91,7 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
             outputGFAList.append([str(current_gap)])
 
     except Exception as e:
-        print("\nFile 'gapFilling.py': Something wrong with the 'Qualitative Evaluation' step of the function 'fillGapByLocalAssemblyAndQualitativeEvaluation()'")
+        print("File 'gapFilling.py': Something wrong with the 'Qualitative Evaluation' step of the function 'fillGapByLocalAssemblyAndQualitativeEvaluation()'")
         print("Exception-")
         print(e)
         sys.exit(1)

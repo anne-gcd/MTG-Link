@@ -96,9 +96,9 @@ class Gap:
     def info(self):
         '''Method to get some information on the gap'''
         if self.identity == "*":
-            print("\nWORKING ON GAP: between contigs {} & {}; length {}\n".format(self.left, self.right, self.length))
+            print("WORKING ON GAP: between contigs {} & {}; length {}".format(self.left, self.right, self.length))
         else:
-            print("\nWORKING ON GAP: {}; length {}\n".format(self.identity, self.length))
+            print("WORKING ON GAP: {}; length {}".format(self.identity, self.length))
 
     #Method "__repr__"
     def __repr__(self):

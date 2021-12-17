@@ -272,7 +272,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         for a in abundanceThresholdList:
 
             try:
-                print("\nGAP-FILLING OF: {} for k={} and a={} (union)".format(str(gapLabel), k, a))
+                print("GAP-FILLING OF: {} for k={} and a={} (union)".format(str(gapLabel), k, a))
                 
                 # Input reads file containing the subsample of reads extracted during the 'Read Subsampling' step.
                 try:
@@ -317,7 +317,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of unsuccessful gap-filling.
         if not success:
-            print("\n{}: {}".format(gapLabel, res))
+            print("{}: {}".format(gapLabel, res))
             try:
                 gapfillingFile = os.path.abspath(insertionsFile)
             except FileNotFoundError as err:
@@ -326,7 +326,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of successful gap-filling.
         if success:
-            print("\n{}: Successful Gap-filling !". format(gapLabel))
+            print("{}: Successful Gap-filling !". format(gapLabel))
 
             # Save and pre-process the file containing the gap-filled sequence(s) for further qualitative evaluation.
             ## Modify the 'insertionFile' and save it to a new file ('gapfillingFile') so that the 'solution x/y' part appears in record.id (and not just in record.description)

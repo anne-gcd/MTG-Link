@@ -131,7 +131,7 @@ try:
         sys.exit(1)
 
     # For each gap, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk regions) and append the file containing all the lists obtained for all gaps ('allBarcodesFile').
-    print("\nSTEP 2a: Barcodes Extraction")
+    print("\nSTEP 2a: Barcodes Extraction\n")
     allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.bx".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
     for gap in gaps:
         unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinFreq)
@@ -221,7 +221,7 @@ except Exception as e:
 # Gap-filling (Local Assembly and Qualitative Evaluation steps)
 #--------------------------------------------------------------
 try:
-    print("\nSTEP 3/3: Gap-filling (Local Assembly and Qualitative Evaluation steps)")
+    print("\nSTEP 3/3: Gap-filling (Local Assembly and Qualitative Evaluation steps)\n")
 
     # Start multiprocessing.
     p = Pool()
@@ -259,7 +259,7 @@ except Exception as e:
 #----------------------------------------------------
 # Files Locations
 #----------------------------------------------------
-print("\nThe results from MTG-Link are saved in: " + main.outDir)
+print("\n\nThe results from MTG-Link are saved in: " + main.outDir)
 print("The results from the 'Read Subsampling' step are saved in " + main.subsamplingDir)
 print("The results from the 'Local Assembly' step are saved in " + main.assemblyDir)
 print("The results from the 'Qualitative Evaluation' step are saved in " + main.evalDir)

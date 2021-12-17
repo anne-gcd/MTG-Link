@@ -71,7 +71,7 @@ def retrieveReadsWithLRezQueryFastq(gfa_name, reads, index, allBarcodesLists, th
             subprocess.run(["rm", queryFastqLog])
 
     except Exception as e:
-        print("\nFile 'readsRetrieval.py': Something wrong with the function 'retrieveReadsWithLRezQueryFastq()'")
+        print("File 'readsRetrieval.py': Something wrong with the function 'retrieveReadsWithLRezQueryFastq()'")
         print("Exception-{}".format(e))
         sys.exit(1)
 

@@ -710,7 +710,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             sys.exit(1)
         abundanceMinString = '-'.join(map(str, abundanceMinList))
         
-        print("\nGAP-FILLING OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
+        print("GAP-FILLING OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
 
         # Determine the maximum assembly length (bp) if the gap length is known.
         ## NB: if the gap length is unknown, it is set to 0.
@@ -736,7 +736,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of unsuccessful gap-filling.
         if not success:
-            print("\n{}: {}".format(gapLabel, res))
+            print("{}: {}".format(gapLabel, res))
             try:
                 gapfillingFile = os.path.abspath(insertionsFile)
             except FileNotFoundError as err:
@@ -762,7 +762,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of successful gap-filling.
         if success:
-            print("\n{}: Successful Gap-filling !". format(gapLabel))
+            print("{}: Successful Gap-filling !". format(gapLabel))
 
             # Get the k-mers gap flanking sequences (kmers START and STOP).
             START = leftFlankingSeq[(leftScaffold.slen - extSize - 31):(leftScaffold.slen - extSize)]
