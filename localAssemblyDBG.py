@@ -317,7 +317,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of unsuccessful gap-filling.
         if not success:
-            print("{}: {}".format(gapLabel, res))
+            print("\n{}: {}\n".format(gapLabel, res))
             try:
                 gapfillingFile = os.path.abspath(insertionsFile)
             except FileNotFoundError as err:
@@ -326,7 +326,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of successful gap-filling.
         if success:
-            print("{}: Successful Gap-filling !". format(gapLabel))
+            print("\n{}: Successful Gap-filling !\n". format(gapLabel))
 
             # Save and pre-process the file containing the gap-filled sequence(s) for further qualitative evaluation.
             ## Modify the 'insertionFile' and save it to a new file ('gapfillingFile') so that the 'solution x/y' part appears in record.id (and not just in record.description)

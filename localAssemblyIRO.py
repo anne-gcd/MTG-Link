@@ -736,7 +736,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of unsuccessful gap-filling.
         if not success:
-            print("{}: {}".format(gapLabel, res))
+            print("\n{}: {}\n".format(gapLabel, res))
             try:
                 gapfillingFile = os.path.abspath(insertionsFile)
             except FileNotFoundError as err:
@@ -762,7 +762,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Case of successful gap-filling.
         if success:
-            print("{}: Successful Gap-filling !". format(gapLabel))
+            print("\n{}: Successful Gap-filling !\n". format(gapLabel))
 
             # Get the k-mers gap flanking sequences (kmers START and STOP).
             START = leftFlankingSeq[(leftScaffold.slen - extSize - 31):(leftScaffold.slen - extSize)]
