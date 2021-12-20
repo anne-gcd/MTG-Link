@@ -136,7 +136,7 @@ try:
     for gap in gaps:
         unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinFreq)
         try:
-            with open(allBarcodesFile, "w") as barcFile:
+            with open(allBarcodesFile, "a") as barcFile:
                 barcFile.write(str(unionBarcodesFile) + "\n")
         except IOError as err:
             print("File 'mtglink.py': Unable to open or write to the output file containing all the lists of barcodes {}. \nIOError-{}".format(str(allBarcodesFile), err))
