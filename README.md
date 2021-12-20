@@ -140,7 +140,7 @@ MTG-Link assigns a **quality score** to each gap-filled sequence obtained during
     * X<sub>1</sub>: alignment to the entire reference sequence
 * Using the **gap flanking contigs** information (**`-ext`**): 2-letters score X<sub>1</sub>X<sub>2</sub> with X = [A, B, C, D]
     * X<sub>1</sub>: alignment to the left flanking sequence (left 'ext' sequence)
-    * X<sub>2</sub>: alignment to the right flanking sequence (right 'ext' sequence )
+    * X<sub>2</sub>: alignment to the right flanking sequence (right 'ext' sequence)
 
 MTG-Link selects the gap-filled sequences with a score **[AB]** (reference sequence provided) or with a score **[AB]{2}** (using the flanking contigs information).  
 To have a good quality score, when comparing to the flanking contigs, the gap-filled sequence must be larger than twice `-ext` bp, and it must align on at least 90% of the lengths of the gap flanking sequences.  
@@ -215,7 +215,8 @@ With `<barcoded.shelve>` being the output indexed file.
 MTG-Link takes as input a GFA file (GFA 2.0) with gap coordinates, a set of linked reads, an indexed BAM file obtained after mapping the linked reads onto the draft assembly and an indexed FASTQ file.  
 It outputs the results in a GFA file (GFA 2.0), containing the original contigs and the obtained gap-filled sequences of each gap, together with their overlapping relationships. It also returns the set of gap-filled sequences in a FASTA file. 
 
-The qualitative evaluation of MTG-Link can be performed either with the corresponding reference sequences of the gaps (`-refDir`) or with the flanking contigs sequences.
+The qualitative evaluation of MTG-Link can be performed either with the corresponding reference sequences of the gaps (`-refDir`) or with the flanking contigs sequences.  
+**NB:** The files contained in `-refDir` should be formatted so that they contain the gap label. Thus, the prefix of these files should be for ex: "[scaffoldName]_gap[i]-L(+/-)_[scaffoldName]_gap[i]-R(+/-)".
 
 The MTG-Link command line interface is composed of multiple parameters:
 ```

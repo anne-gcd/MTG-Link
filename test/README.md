@@ -8,8 +8,8 @@ Simulated run with default values:
 Results:  
 For this run, you should get the following:  
 * gap '8_gap1-L+:8_gap1-R+': 2 solutions
-    * 1 forward of length 2000 bp (Quality A)  
-    * 1 reverse of length 2000 bp (Quality A)
+    * 1 forward of length 2000 bp (Quality AA)  
+    * 1 reverse of length 2000 bp (Quality AA)
 
 ### Module IRO
 
@@ -19,4 +19,4 @@ Simulated run with default values:
 Results:  
 For this run, you should get the following:  
 * gap '8_gap1-L+:8_gap1-R+': 1 solution
-    * 1 forward of length 2000 bp (Quality A)
+    * 1 forward of length 2000 bp (Quality AA)
