@@ -452,7 +452,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                         #-------------------------------------------------------------------
                         # Ref = Reference Sequence (ex: reference sequence of simulated gap)
                         #-------------------------------------------------------------------
-                        if main.refDir is not None:
+                        if main.refDir != "":
                             try:
                                 # Get the list of quality scores for each alignment of one gap-filled sequence against the reference.
                                 qualityScoresList = []
