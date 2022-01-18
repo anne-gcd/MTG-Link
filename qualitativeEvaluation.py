@@ -408,14 +408,14 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
             # Local assembly performed with the DBG algorithm.
             if module == "DBG":
                 statsReader = csv.DictReader(refQryOutput, \
-                                                fieldnames=("Gap", "Gap.Len", "Chunk", "Kmer.Size", "Min.Abundance.Threshold", "Strand", "Solution", "Qry.Len", "Ref", "Ref.Len", \
+                                                fieldnames=("Gap", "Gap.Len", "Chunk", "Barc.Freq", "Kmer.Size", "Min.Abundance.Threshold", "Strand", "Solution", "Qry.Len", "Ref", "Ref.Len", \
                                                             "Start.Ref", "End.Ref", "Start.Qry", "End.Qry", "AlignR.Len", "AlignQ.Len", "%.Id", "%.CovR", "%.CovQ", "Frame.R", "Frame.Q", "Quality"), \
                                                 delimiter='\t')
 
             # Local assembly performed with the IRO algorithm.
             if module == "IRO":
                 statsReader = csv.DictReader(refQryOutput, \
-                                                fieldnames=("Gap", "Gap.Len", "Chunk", "Seed.Size", "Min.Overlap.Size", "Min.Abundance.Threshold", "dmax", "Qry.Len", "Ref", "Ref.Len", \
+                                                fieldnames=("Gap", "Gap.Len", "Chunk", "Barc.Freq", "Seed.Size", "Min.Overlap.Size", "Min.Abundance.Threshold", "dmax", "Qry.Len", "Ref", "Ref.Len", \
                                                             "Start.Ref", "End.Ref", "Start.Qry", "End.Qry", "AlignR.Len", "AlignQ.Len", "%.Id", "%.CovR", "%.CovQ", "Frame.R", "Frame.Q", "Quality"), \
                                                 delimiter='\t')
 
