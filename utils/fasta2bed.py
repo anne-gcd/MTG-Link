@@ -46,11 +46,11 @@ if (re.match('^.*.fasta$', args.input) is None) and (re.match('^.*.fa$', args.in
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
-fasta_file = os.path.abspath(args.input)
+fastaFile = os.path.abspath(args.input)
 if not os.path.exists(args.input):
     parser.error("The path of the input FASTA file doesn't exist")
-fasta_name = fasta_file.split('/')[-1]
-print("\nInput FASTA file: " + fasta_file)
+fasta_name = fastaFile.split('/')[-1]
+print("\nInput FASTA file: " + fastaFile)
 
 #----------------------------------------------------
 # Directory for saving results
@@ -65,7 +65,7 @@ except:
     print("Restoring the path")
     os.chdir(cwd)
 outDir = os.getcwd()
-print("The results are saved in " + outDir)
+print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
 # FASTA to BED
@@ -75,7 +75,7 @@ try:
     bedFile = fasta_name.split('.fa')[0] + "_positions_Ns.bed"
 
     # Iterate over the scaffolds (records) in the FASTA file.
-    with open(fasta_file, "r") as in_fasta:
+    with open(fastaFile, "r") as in_fasta:
         for record in SeqIO.parse(in_fasta, "fasta"):
             scaffold_name = record.id
             seq = record.seq

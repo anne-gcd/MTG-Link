@@ -142,7 +142,6 @@ try:
                         right_end_index = gap_coordinatesList[i+1][0]
                     right_flanking_seq = record.seq[int(right_start_index):int(right_end_index)]
 
-
                     # If left and right sequences > 'contigs_size', continue (e.g. add the gap to the output GFA file).
                     if (args.contigs_size is not None) and (len(left_flanking_seq) < args.contigs_size) and (len(right_flanking_seq) < args.contigs_size):
                         break
@@ -199,8 +198,8 @@ try:
                         # Add corresponding lines to the GFA file.
                         with open(gfaFile, "a") as f:
                             gfa = gfapy.Gfa.from_file(gfaFile)
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_end_index, os.path.join(outDir, left_fastaFile)))
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_start_index, os.path.join(outDir, right_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_length, os.path.join(outDir, left_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_length, os.path.join(outDir, right_fastaFile)))
                             gfa.add_line("G\t*\t{}\t{}\t{}\t*".format(left_contig, right_contig, gap_length))
                             gfa.to_file(gfaFile)
 
