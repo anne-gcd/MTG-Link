@@ -38,7 +38,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from operator import itemgetter, pos
 import main
-from helpers import Gap, Scaffold
+from helpers import Gap, Scaffold, getMostRepresentedKmer
 from ProgDynOptim import DynamicMatrixOptim
 
 
@@ -630,6 +630,30 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the right flanking sequence.", file=sys.stderr)
             sys.exit(1)
 
+        # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
+        ## Left chunk
+        if chunkSize > leftScaffold.slen:
+            chunk_L = leftScaffold.slen
+        else:
+            chunk_L = chunkSize
+        ## Right chunk
+        if chunkSize > rightScaffold.slen:
+            chunk_R = rightScaffold.slen
+        else:
+            chunk_R = chunkSize
+
+        # Obtain the left and right regions for further getting the most represented flanking k-mers.
+        ## Left region
+        leftRegion = leftScaffold.chunk(chunk_L, leftScaffold.slen)
+        if not leftRegion:
+            print("File 'localAssemblyIRO.py': Unable to obtain the left region (left chunk).", file=sys.stderr)
+            sys.exit(1)
+        ## Right region
+        rightRegion = rightScaffold.chunk(chunk_R, leftScaffold.slen)
+        if not rightRegion:
+            print("File 'localAssemblyIRO.py': Unable to obtain the right region (right chunk).", file=sys.stderr)
+            sys.exit(1)
+
     except Exception as e:
         print("File 'localAssemblyIRO.py': Something wrong with the 'Pre-Processing' step of the function 'localAssemblyWithIROAlgorithm()'")
         print("Exception-{}".format(e))
@@ -647,6 +671,22 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         sys.exit(1)
 
     try:
+        # Left kmer.
+        leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - 31
+        leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
+        leftKmerRegion = str(leftRegion).split(":")[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
+        leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, 31)
+        if not leftKmer:
+            print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the left kmer for {}.".format(str(leftRegion).split(':')[0]), file=sys.stderr)
+
+        # Right kmer.
+        rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
+        rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + 31
+        rightKmerRegion = str(rightRegion).split(":")[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
+        rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, 31)
+        if not rightKmer:
+            print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
+
         # Get a breakpoint file containing the input sequences for the local assembly with the IRO algorithm (start and stop kmers).
         gfa_name = gfaFile.split('/')[-1]
         bkptFile = "{}.{}.g{}.c{}.kmersStartStop.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize)
@@ -655,11 +695,11 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
                 # Start sequence (left kmer).
                 line1 = ">ctg{}_START left_kmer_len.31\n".format(leftScaffold.scaffold)
-                line2 = leftFlankingSeq[(leftScaffold.slen - extSize - 31):(leftScaffold.slen - extSize)]
+                line2 = leftKmer
                 
                 # Stop sequence (right kmer).
                 line3 = "\n>ctg{}_STOP right_kmer_len.31\n".format(rightScaffold.scaffold)
-                line4 = rightFlankingSeq[extSize:(extSize + 31)]
+                line4 = rightKmer
 
                 bkpt.writelines([line1, line2, line3, line4])
 

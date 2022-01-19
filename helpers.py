@@ -30,6 +30,7 @@ import sys
 import re
 import subprocess
 import gfapy
+import pysam
 from gfapy.sequence import rc
 from Bio import SeqIO
 #from datetime import datetime
@@ -314,6 +315,67 @@ class Graph:
         return "Nodes graph: {}".format(self.graph)
 
 
+
+
+#----------------------------------------------------
+# getMostRepresentedKmer function
+#----------------------------------------------------
+def getMostRepresentedKmer(bamFile, region, kmerSize):
+    """
+    To get the most represented k-mer in a specific region of a BAM file. 
+
+    Args:
+        - bamFile: file
+            BAM file of linked reads mapped onto the draft genome assembly
+        - region: str
+            region on the draft genome assembly from which to search for all alignments
+            (format: "chr:posBeg-posEnd")
+        - kmerSize: int
+            k-mer size value
+
+    Return/Output:
+        - mostRepresentedKmer: str
+            most represented k-mer's sequence
+    """
+    try:
+        # Create a dictionary 'alignmentsOccurrencesDict' containing the number of occurrences of each alignment.
+        alignmentsOccurrencesDict = {}
+
+        # Region coordinates.
+        chrID = region.split(':')[0]
+        region_start = int(region.split(':')[1].split('-')[0])
+        region_end = int(region.split('-')[-1])
+
+        # Iterate over the alignments and update the 'alignmentsOccurrencesDict' dictionary.
+        alignmentsFile = pysam.AlignmentFile(bamFile, "rb")
+        for read in alignmentsFile.fetch(chrID, region_start, region_end):
+
+            # Get the putative k-mer sequence.
+            readSeq = str(read).split('\t')[9].split('array')[0]
+            mappingPosition = int(str(read).split('\t')[3])
+            putativeKmer = str(readSeq)[(region_start - mappingPosition +1):(region_start - mappingPosition + kmerSize +1)]
+
+            # Update the 'alignmentsOccurrencesDict' dictionary.
+            if putativeKmer in alignmentsOccurrencesDict:
+                alignmentsOccurrencesDict[putativeKmer] += 1
+            else:
+                alignmentsOccurrencesDict[putativeKmer] = 1
+
+        alignmentsFile.close()
+
+        # Get the most represented k-mer (whose length is 'kmerSize').
+        alignmentsOccurrencesFiltered = {k: v for k, v in alignmentsOccurrencesDict.items() if len(k) == kmerSize}
+        if len(alignmentsOccurrencesFiltered) > 0:
+            mostRepresentedKmer = max(alignmentsOccurrencesFiltered, key=alignmentsOccurrencesDict.get)
+        else:
+            mostRepresentedKmer = ""
+
+        return mostRepresentedKmer
+
+    except Exception as e:
+        print("File 'helpers.py': Something wrong with the function 'getMostRepresentedKmer()'")
+        print("Exception-{}".format(e))
+        sys.exit(1)
 
 
 #----------------------------------------------------
