@@ -222,12 +222,12 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # Obtain the left and right regions for further getting the most represented flanking k-mers.
         ## Left region
-        leftRegion = leftScaffold.chunk(chunk_L, leftScaffold.slen)
+        leftRegion = leftScaffold.chunk(chunk_L)
         if not leftRegion:
             print("File 'localAssemblyDBG.py': Unable to obtain the left region (left chunk).", file=sys.stderr)
             sys.exit(1)
         ## Right region
-        rightRegion = rightScaffold.chunk(chunk_R, leftScaffold.slen)
+        rightRegion = rightScaffold.chunk(chunk_R)
         if not rightRegion:
             print("File 'localAssemblyDBG.py': Unable to obtain the right region (right chunk).", file=sys.stderr)
             sys.exit(1)

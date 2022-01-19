@@ -182,14 +182,14 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
         barcodesOccurrencesDict = {}
         
         # Obtain the left barcodes extracted on the left region (left chunk) and store the barcodes and their occurences in the dict 'barcodes_occ'.
-        leftRegion = leftScaffold.chunk(chunk_L, leftScaffold.slen)
+        leftRegion = leftScaffold.chunk(chunk_L)
         if not leftRegion:
             print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to obtain the left region (left chunk).", file=sys.stderr)
             sys.exit(1)
         extractBarcodesWithLRezExtract(bamFile, gapLabel, leftRegion, barcodesOccurrencesDict)
 
         # Obtain the right barcodes extracted on the right region (right chunk) and store the barcodes and their occurences in the dict 'barcodes_occ'.
-        rightRegion = rightScaffold.chunk(chunk_R, leftScaffold.slen)
+        rightRegion = rightScaffold.chunk(chunk_R)
         if not rightRegion:
             print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to obtain the right region (right chunk).", file=sys.stderr)
             sys.exit(1)
