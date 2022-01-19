@@ -178,10 +178,10 @@ class Scaffold(Gap):
                     return rc(record.seq)
 
     #Method "chunk"
-    def chunk(self, c, left_slen):
+    def chunk(self, c):
         '''Method to get the region of the chunk'''
         #----------------------------------------------------
-        # For gaps in scaffolds' sequences
+        # For gaps into scaffolds' sequences
         #----------------------------------------------------
         if ('-L' in self.name) or ('-R' in self.name):
             #if left scaffold
@@ -190,8 +190,8 @@ class Scaffold(Gap):
                 end = self.slen
             #if right scaffold
             elif self.scaffold == self.right:
-                start = left_slen + self.length
-                end = left_slen + self.length + c
+                start = self.slen
+                end = self.slen + c
 
             contig_name = str(self.name).split('_gap')[0]
             return str(contig_name) +":"+ str(start) +"-"+ str(end)
