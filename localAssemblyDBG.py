@@ -210,13 +210,13 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
         ## Left chunk
-        if chunkSize > leftScaffold.slen:
-            chunk_L = leftScaffold.slen
+        if chunkSize > len(leftFlankingSeq):
+            chunk_L = len(leftFlankingSeq)
         else:
             chunk_L = chunkSize
         ## Right chunk
-        if chunkSize > rightScaffold.slen:
-            chunk_R = rightScaffold.slen
+        if chunkSize > len(rightFlankingSeq):
+            chunk_R = len(rightFlankingSeq)
         else:
             chunk_R = chunkSize
 
@@ -282,13 +282,13 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                     line2 = leftKmer
                     line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
                     line8 = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
-
+                    
                     # Right kmer and Reverse Left kmer (dependent on the orientation of the right scaffold).
                     line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
                     line4 = rightKmer
                     line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
-                    line6 = str(rc(rightFlankingSeq)[(rightScaffold.slen - extSize - k):(rightScaffold.slen - extSize)])
-
+                    line6 = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+                    
                     bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
 
             except IOError as err:
