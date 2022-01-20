@@ -157,7 +157,8 @@ try:
             # Iterate over the files in 'allBarcodesFile' to get the summary values.
             try:
                 with open(allBarcodesFile, "r") as barcFile:
-                    for current_file in barcFile:
+                    for file in barcFile:
+                        current_file = str(file).split('\n')[0]
 
                         # Get the gap flanking scaffolds name..
                         suffixBarcodesFile = str(current_file).split('/')[-1].split('.gfa.')[1]
