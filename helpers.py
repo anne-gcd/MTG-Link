@@ -184,6 +184,7 @@ class Scaffold(Gap):
         #----------------------------------------------------
         # For gaps into scaffolds' sequences
         #----------------------------------------------------
+        #NB: 'slen' corresponds to the position coordinate of the flanking scaffold.
         if ('-L' in self.name) or ('-R' in self.name):
             #if left scaffold
             if self.scaffold == self.left:
@@ -200,6 +201,7 @@ class Scaffold(Gap):
         #----------------------------------------------------
         # For gaps between scaffolds' sequences
         #----------------------------------------------------
+        #NB: 'slen' corresponds to the length of the flanking scaffold.
         else:
             #if left_fwd or right_rev
             if (self.orient == "+" and self.scaffold == self.left) or (self.orient == "-" and self.scaffold == self.right):
