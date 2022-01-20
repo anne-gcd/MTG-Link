@@ -183,11 +183,11 @@ try:
                         minFreqBarcodesValue = suffixParametersValues[0].split('.f')[1].split('.bxu')[0]
 
                         # Get the number of barcodes.
-                        barcodesFile = current_file
+                        barcodesFile = os.path.abspath(current_file)
                         bxu = sum(1 for line in open(barcodesFile, "r"))
 
                         # Get the number of reads.
-                        readsFile = current_file + ".fastq"
+                        readsFile = os.path.abspath(current_file) + ".fastq"
                         rbxu = sum(1 for line in open(readsFile, "r"))/4
 
                         # Create a list 'summaryList' containing a list of the corresponding values for one gap.
