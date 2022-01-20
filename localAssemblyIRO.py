@@ -632,13 +632,13 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
         ## Left chunk
-        if chunkSize > leftScaffold.slen:
-            chunk_L = leftScaffold.slen
+        if chunkSize > len(leftFlankingSeq):
+            chunk_L = len(leftFlankingSeq)
         else:
             chunk_L = chunkSize
         ## Right chunk
-        if chunkSize > rightScaffold.slen:
-            chunk_R = rightScaffold.slen
+        if chunkSize > len(rightFlankingSeq):
+            chunk_R = len(rightFlankingSeq)
         else:
             chunk_R = chunkSize
 
@@ -805,7 +805,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             print("\n{}: Successful Gap-filling !\n". format(gapLabel))
 
             # Get the k-mers gap flanking sequences (kmers START and STOP).
-            START = leftFlankingSeq[(leftScaffold.slen - extSize - 31):(leftScaffold.slen - extSize)]
+            START = leftFlankingSeq[(len(leftFlankingSeq) - extSize - 31):(len(leftFlankingSeq) - extSize)]
             STOP = rightFlankingSeq[extSize:(extSize + 31)]
             inputSeqName = "ctg{}_START-ctg{}_STOP".format(gap.left, gap.right)
 
