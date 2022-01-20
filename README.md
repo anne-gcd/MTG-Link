@@ -44,8 +44,10 @@ Alternatively, you can install them via the requirements.txt file.
 To install a list of packages into a specified **conda** environment, do the following:  
 `conda create --name <env> --file requirements.txt`  
 
-For LRez, you have to install the latest source code with **git**:  
+For LRez, you have to install the latest source code with **git** (NB: you will need cmake to install it):  
 `git clone --recursive https://github.com/morispi/LRez`  
+`cd LRez/`  
+`./install.sh`  
 And for pysam, you have to install it using **pip**:  
 `pip install pysam`  
 
