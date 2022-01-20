@@ -61,7 +61,9 @@ def extractBarcodesWithLRezExtract(bam, gapLabel, region, barcodesOccurrencesDic
     try:
         # LRez extract. 
         ## Parameter '-d' to include duplicate barcodes.
-        command = ["LRez", "extract", "--bam", bam, "--region", region, "-d"]
+        file_path = os.path.realpath(__file__)
+        LRez_scriptPath = str(file_path).split("barcodesExtraction.py")[0] + "LRez/bin/LRez"
+        command = [LRez_scriptPath, "extract", "--bam", bam, "--region", region, "-d"]
         extractLog = str(gapLabel) + "_LRezExtract.log"
         tmpBarcodesFile = str(gapLabel) + "_LRezExtract_stdout.txt"
 
