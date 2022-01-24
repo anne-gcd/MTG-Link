@@ -60,7 +60,7 @@ For more information on the LRez and MindTheGap tools:
 
 ```
 # Get a local copy of MTG-Link source code
-git clone --recursive https://github.com/anne-gcd/MTG-Link.git
+git clone -b scale-up --recursive https://github.com/anne-gcd/MTG-Link.git
 ```
 
 
