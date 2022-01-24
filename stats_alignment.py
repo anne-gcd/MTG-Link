@@ -199,7 +199,7 @@ if not re.match('^.*.contigs.fasta$', args.reference):
 
         ## Local assembly performed with the IRO algorithm
         if ".dmax" in qry_file.split('/')[-1]:
-            stats_legend = ["Gap", "Len_gap", "Chunk", "Barc_freq", "Seed_size", "Min_overlap", "Len_Q", "Ref", "Len_R", \
+            stats_legend = ["Gap", "Len_gap", "Chunk", "Barc_freq", "s", "o", "a", "dmax", "Len_Q", "Ref", "Len_R", \
                             "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
         # Get output values from NUCmer.
@@ -487,7 +487,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
 
         ## Local assembly performed with the IRO algorithm
         if ".dmax" in qry_file.split('/')[-1]:
-            stats_legend = ["Gap", "Len_gap", "Chunk", "Barc_freq", "Seed_size", "Min_overlap", "Len_Q", "Ref", "Len_R", \
+            stats_legend = ["Gap", "Len_gap", "Chunk", "Barc_freq", "s", "o", "a", "dmax", "Len_Q", "Ref", "Len_R", \
                             "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
         
