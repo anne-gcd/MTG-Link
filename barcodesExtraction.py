@@ -158,15 +158,15 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
 
         # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
         ## Left chunk
-        if chunkSize > len(leftScaffold.sequence()):
+        if chunkSize > leftScaffold.slen:
             print("Warning for {}: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
-            chunk_L = len(leftScaffold.sequence())
+            chunk_L = leftScaffold.slen
         else:
             chunk_L = chunkSize
         ## Right chunk
-        if chunkSize > len(rightScaffold.sequence()):
+        if chunkSize > rightScaffold.slen:
             print("Warning for {}: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
-            chunk_R = len(rightScaffold.sequence())
+            chunk_R = rightScaffold.slen
         else:
             chunk_R = chunkSize
 

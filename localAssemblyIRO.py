@@ -632,13 +632,13 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
         ## Left chunk
-        if chunkSize > len(leftFlankingSeq):
-            chunk_L = len(leftFlankingSeq)
+        if chunkSize > leftScaffold.slen:
+            chunk_L = leftScaffold.slen
         else:
             chunk_L = chunkSize
         ## Right chunk
-        if chunkSize > len(rightFlankingSeq):
-            chunk_R = len(rightFlankingSeq)
+        if chunkSize > rightScaffold.slen:
+            chunk_R = rightScaffold.slen
         else:
             chunk_R = chunkSize
 
