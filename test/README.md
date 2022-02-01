@@ -3,7 +3,7 @@
 ### Module DBG
 
 Simulated run with default values:  
-`mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -out results_MTGLink_DBG`
+`../mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -out results_MTGLink_DBG`
 
 Results:  
 For this run, you should get the following:  
@@ -14,7 +14,7 @@ For this run, you should get the following:
 ### Module IRO
 
 Simulated run with default values:  
-`mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -out results_MTGLink_IRO`
+`../mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -out results_MTGLink_IRO`
 
 Results:  
 For this run, you should get the following:  
