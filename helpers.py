@@ -185,20 +185,20 @@ class Scaffold(Gap):
         # For gaps into scaffolds' sequences
         #----------------------------------------------------
         if ('-L' in self.name) or ('-R' in self.name):
-            coordsOnScaffold = re.findall(r'[0-9]+:[0-9]+', str(self.name))[0]
+            coordsOnScaffold = re.findall(r'[0-9]+-[0-9]+', str(self.name))[0]
 
             #if left scaffold
             if self.scaffold == self.left:
-                start = str(coordsOnScaffold).split(':')[1] - c
-                end = str(coordsOnScaffold).split(':')[1]
+                start = int(str(coordsOnScaffold).split('-')[1]) - c
+                end = int(str(coordsOnScaffold).split('-')[1])
 
             #if right scaffold
             elif self.scaffold == self.right:
-                start = str(coordsOnScaffold).split(':')[0]
-                end = str(coordsOnScaffold).split(':')[0] + c
+                start = int(str(coordsOnScaffold).split('-')[0])
+                end = int(str(coordsOnScaffold).split('-')[0]) + c
 
             #NB: The 'contig_name' should match the contig name on the BAM file
-            contig_name = re.split(r'_[0-9]+:[0-9]+', str(self.name))[0]
+            contig_name = re.split(r'_[0-9]+-[0-9]+', str(self.name))[0]
             return str(contig_name) +":"+ str(start) +"-"+ str(end)
 
         #----------------------------------------------------
