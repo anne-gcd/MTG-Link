@@ -31,6 +31,7 @@ import os
 import re
 import subprocess
 import sys
+from turtle import right
 import gfapy
 from gfapy.sequence import rc
 from Bio import SeqIO
@@ -257,20 +258,44 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
         try:
             # Left kmer.
-            leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - k
-            leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
+            if leftScaffold.orient == "+":
+                leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - k
+                leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
+
+            if leftScaffold.orient == "-":
+                    leftKmerRegion_start = int(leftScaffold.slen) - extSize - k
+                    leftKmerRegion_end = int(leftScaffold.slen) - extSize
+
             leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
-            leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, k)
+            leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, leftScaffold.orient, k)
             if not leftKmer:
                 print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the left kmer for {}.".format(str(leftRegion).split(':')[0]), file=sys.stderr)
 
             # Right kmer.
-            rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
-            rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + k
+            if rightScaffold.orient == "+":
+                rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
+                rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + k
+
+            if rightScaffold.orient == "-":
+                rightKmerRegion_start = extSize
+                rightKmerRegion_end = extSize + k
+
             rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
-            rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, k)
+            rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, rightScaffold.orient, k)
             if not rightKmer:
                 print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
+
+            # Reverse Left kmer.
+            if rightScaffold.orient == "+":
+                revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+            if rightScaffold.orient == "-":
+                revLeftKmer = str(rc(rightFlankingSeq)[extSize:(extSize + k)][::-1])
+
+            # Reverse Right kmer.
+            if leftScaffold.orient == "+":
+                revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
+            if leftScaffold.orient == "-":
+                revRightKmer = str(rc(leftFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)][::-1])
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]
@@ -281,13 +306,13 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                     line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
                     line2 = leftKmer
                     line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
-                    line8 = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
+                    line8 = revRightKmer
                     
                     # Right kmer and Reverse Left kmer (dependent on the orientation of the right scaffold).
                     line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
                     line4 = rightKmer
                     line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
-                    line6 = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+                    line6 = revLeftKmer
                     
                     bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
 

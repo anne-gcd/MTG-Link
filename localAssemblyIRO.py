@@ -486,15 +486,15 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
 
         if not START:
             print("File 'localAssemblyIRO.py, function 'fillGapWithIROAlgo()': Error with the creation of the START k-mer.", file=sys.stderr)
-            sys.exit(1)
+            return "No kmer START", False
         if not STOP:
             print("File 'localAssemblyIRO.py, function 'fillGapWithIROAlgo()': Error with the creation of the STOP k-mer.", file=sys.stderr)
-            sys.exit(1)
+            return "No kmer STOP", False
 
         # Iterate over the reads of 'readsList' to obtain the 'seedDict' dictionary and the 'readsWithStartList' list.
         if len(readsList) == 0:
             print("File 'localAssemblyIRO.py, function 'fillGapWithIROAlgo()': Error with the input 'readsList' {}: empty list.".format(str(readsList)), file=sys.stderr)
-            sys.exit(1)
+            return "List 'readsList' is empty", False
         for read in readsList:
 
             # Get the reverse complement of the current read.
@@ -532,7 +532,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
             bpTotal = bpTotal + len(read)
             if len(abundanceMinList) == 0:
                 print("File 'localAssemblyIRO.py, function 'fillGapWithIROAlgo()': Error with the input 'abundanceMinList' {}: empty list.".format(str(abundanceMinList)), file=sys.stderr)
-                sys.exit(1)
+                return "List 'abundanceMinList' is empty", False
             res, success, bpTotal = extendReadWithOverlappingReads(read, len(read), inputSeqName, STOP, seedDict, assemblyHash, readsList, seedSize, minOverlapSize, abundanceMinList, dmax, maxLength, bpTotal, startTime, iroLog)
 
             # Case of successful gap-filling.
@@ -672,18 +672,30 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
     try:
         # Left kmer.
-        leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - 31
-        leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
-        leftKmerRegion = str(leftRegion).split(":")[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
-        leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, 31)
+        if leftScaffold.orient == "+":
+            leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - 31
+            leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
+
+        if leftScaffold.orient == "-":
+                leftKmerRegion_start = int(leftScaffold.slen) - extSize - 31
+                leftKmerRegion_end = int(leftScaffold.slen) - extSize
+
+        leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
+        leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, leftScaffold.orient, 31)
         if not leftKmer:
             print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the left kmer for {}.".format(str(leftRegion).split(':')[0]), file=sys.stderr)
 
         # Right kmer.
-        rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
-        rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + 31
-        rightKmerRegion = str(rightRegion).split(":")[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
-        rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, 31)
+        if rightScaffold.orient == "+":
+            rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
+            rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + 31
+
+        if rightScaffold.orient == "-":
+            rightKmerRegion_start = extSize
+            rightKmerRegion_end = extSize + 31
+
+        rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
+        rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, rightScaffold.orient, 31)
         if not rightKmer:
             print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
 

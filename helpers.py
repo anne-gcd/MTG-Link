@@ -324,7 +324,7 @@ class Graph:
 #----------------------------------------------------
 # getMostRepresentedKmer function
 #----------------------------------------------------
-def getMostRepresentedKmer(bamFile, region, kmerSize):
+def getMostRepresentedKmer(bamFile, region, orientation, kmerSize):
     """
     To get the most represented k-mer in a specific region of a BAM file. 
 
@@ -334,6 +334,8 @@ def getMostRepresentedKmer(bamFile, region, kmerSize):
         - region: str
             region on the draft genome assembly from which to search for all alignments
             (format: "chr:posBeg-posEnd")
+        - orientation: str
+            orientation of the scaffold ('+' or '-')
         - kmerSize: int
             k-mer size value
 
@@ -358,12 +360,17 @@ def getMostRepresentedKmer(bamFile, region, kmerSize):
             readSeq = str(read).split('\t')[9].split('array')[0]
             mappingPosition = int(str(read).split('\t')[3])
             putativeKmer = str(readSeq)[(region_start - mappingPosition +1):(region_start - mappingPosition + kmerSize +1)]
+            if orientation == "+":
+                finalPutativeKmer = putativeKmer
+            if orientation == "-":
+                putativeKmer_reversed = putativeKmer[::-1]
+                finalPutativeKmer = str(rc(putativeKmer_reversed))
 
             # Update the 'alignmentsOccurrencesDict' dictionary.
-            if putativeKmer in alignmentsOccurrencesDict:
-                alignmentsOccurrencesDict[putativeKmer] += 1
+            if finalPutativeKmer in alignmentsOccurrencesDict:
+                alignmentsOccurrencesDict[finalPutativeKmer] += 1
             else:
-                alignmentsOccurrencesDict[putativeKmer] = 1
+                alignmentsOccurrencesDict[finalPutativeKmer] = 1
 
         alignmentsFile.close()
 
