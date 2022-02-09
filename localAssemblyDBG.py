@@ -263,8 +263,8 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
 
             if leftScaffold.orient == "-":
-                    leftKmerRegion_start = int(leftScaffold.slen) - extSize - k
-                    leftKmerRegion_end = int(leftScaffold.slen) - extSize
+                    leftKmerRegion_start = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize
+                    leftKmerRegion_end = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize + k
 
             leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
             leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, leftScaffold.orient, k)
@@ -277,8 +277,8 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + k
 
             if rightScaffold.orient == "-":
-                rightKmerRegion_start = extSize
-                rightKmerRegion_end = extSize + k
+                rightKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - k
+                rightKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
 
             rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
             rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, rightScaffold.orient, k)
@@ -295,7 +295,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             if leftScaffold.orient == "+":
                 revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
             if leftScaffold.orient == "-":
-                revRightKmer = str(rc(leftFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)][::-1])
+                revRightKmer = str(rc(leftFlankingSeq)[(len(leftFlankingSeq) - extSize - k):(len(leftFlankingSeq) - extSize)][::-1])
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]

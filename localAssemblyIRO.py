@@ -677,8 +677,8 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
 
         if leftScaffold.orient == "-":
-                leftKmerRegion_start = int(leftScaffold.slen) - extSize - 31
-                leftKmerRegion_end = int(leftScaffold.slen) - extSize
+                leftKmerRegion_start = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize
+                leftKmerRegion_end = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize + 31
 
         leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
         leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, leftScaffold.orient, 31)
@@ -691,8 +691,8 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + 31
 
         if rightScaffold.orient == "-":
-            rightKmerRegion_start = extSize
-            rightKmerRegion_end = extSize + 31
+            rightKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - 31
+            rightKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
 
         rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
         rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, rightScaffold.orient, 31)

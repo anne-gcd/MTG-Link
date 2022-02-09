@@ -363,8 +363,7 @@ def getMostRepresentedKmer(bamFile, region, orientation, kmerSize):
             if orientation == "+":
                 finalPutativeKmer = putativeKmer
             if orientation == "-":
-                putativeKmer_reversed = putativeKmer[::-1]
-                finalPutativeKmer = str(rc(putativeKmer_reversed))
+                finalPutativeKmer = putativeKmer[::-1]
 
             # Update the 'alignmentsOccurrencesDict' dictionary.
             if finalPutativeKmer in alignmentsOccurrencesDict:
