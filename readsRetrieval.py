@@ -56,9 +56,7 @@ def retrieveReadsWithLRezQueryFastq(gfa_name, reads, index, allBarcodesLists, th
     """
     try:
         # LRez query fastq.
-        file_path = os.path.realpath(__file__)
-        LRez_scriptPath = str(file_path).split("readsRetrieval.py")[0] + "LRez/bin/LRez"
-        command = [LRez_scriptPath, "query", "fastq", "--fastq", reads, "--index", index, "--collectionOfLists", allBarcodesLists, "--threads", str(threads), "--gzip"]
+        command = ["LRez", "query", "fastq", "--fastq", reads, "--index", index, "--collectionOfLists", allBarcodesLists, "--threads", str(threads), "--gzip"]
         queryFastqLog = str(gfa_name) + "_LRezQueryFastq.log"
 
         try:
