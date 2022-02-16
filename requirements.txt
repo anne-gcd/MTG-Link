@@ -4,7 +4,7 @@
 biopython=1.79
 blast=2.5.0
 gfapy=1.2.0
-#lrez=2.2.2
+lrez=2.2.3
 mindthegap=2.2.3
 mummer=3.23
 pathos=0.2.8
