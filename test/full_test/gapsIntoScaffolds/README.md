@@ -10,7 +10,7 @@ To test MTG-Link DBG for multiple features:
 #### Simulated dataset without reference sequence
 
 Simulated run with solutions obtained for different values of `-k` and `-a`, the qualitative evaluation being performed with the flanking contigs information:  
-`../../mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -k 61 51 41 31 21 -t 4 -out results_MTGLink_DBG`  
+`../../mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -k 61 51 41 31 21 -t 3 -out results_MTGLink_DBG`  
 
 Results:  
 For this run, you should get the following:  
@@ -25,7 +25,7 @@ For this run, you should get the following:
 #### Simulated dataset with reference sequences
 
 Simulated run with solutions obtained for different values of `-k` and `-a`, the qualitative evaluation being performed with the reference sequence:  
-`../../mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -k 61 51 41 31 21 -t 4 -refDir . -out results_MTGLink_DBG_withref`  
+`../../mtglink.py DBG -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -k 61 51 41 31 21 -t 3 -refDir . -out results_MTGLink_DBG_withref`  
 
 Results:  
 For this run, you should get the following:  
@@ -46,7 +46,7 @@ To test MTG-Link IRO for multiple features:
 #### Simulated dataset without reference sequence
 
 Simulated run with user value for `-s` (s = 20), the qualitative evaluation being performed with the flanking contigs information:  
-`../../mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -s 20 -t 4 -out results_MTGLink_IRO`  
+`../../mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -s 20 -t 3 -out results_MTGLink_IRO`  
 
 Results:  
 For this run, you should get the following:  
@@ -59,7 +59,7 @@ For this run, you should get the following:
 #### Simulated dataset with reference sequences
 
 Simulated run with user value for `-s` (s = 20), the qualitative evaluation being performed with the reference sequence:  
-`../../mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -s 20 -t 4 -refDir . -out results_MTGLink_IRO_withref`  
+`../../mtglink.py IRO -gfa test.gfa -bam test.bam -fastq reads.sorted.fastq.gz -index barcoded.shelve -s 20 -t 3 -refDir . -out results_MTGLink_IRO_withref`  
 
 Results:  
 For this run, you should get the following:  
