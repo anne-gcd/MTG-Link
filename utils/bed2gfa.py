@@ -118,7 +118,6 @@ try:
 
                 # Iterate over the gaps of 'positions_NsDict' for each scaffold.
                 gap_coordinatesList = positions_NsDict[record.id]
-                gap_count = 0
                 for i in range(len(gap_coordinatesList)):
 
                     # Get the length of the gap.
@@ -146,7 +145,6 @@ try:
                     if (args.contigs_size is not None) and (len(left_flanking_seq) < args.contigs_size) and (len(right_flanking_seq) < args.contigs_size):
                         break
                     else:
-                        gap_count += 1
                         os.chdir(outDir)
 
                         #----------------------------------------------------
@@ -160,26 +158,26 @@ try:
                             args.contigs_size = "."
 
                         # Left flanking contig.
-                        left_name = str(record.id) + "_gap" + str(gap_count) + "-L"
+                        left_name = str(record.id) +"_"+ str(left_start_index) +"-"+ str(left_end_index) +"-L"
                         left_contig = left_name + "+"
-                        left_length = len(left_flanking_seq)  
+                        left_length = len(left_flanking_seq)
 
                         # Right flanking contig.
-                        right_name = str(record.id) + "_gap" + str(gap_count) + "-R"
+                        right_name = str(record.id) +"_"+ str(right_start_index) +"-"+ str(right_end_index) +"-R"
                         right_contig = right_name + "+"
                         right_length = len(right_flanking_seq)
 
                         # Output FASTA files containing the flanking sequences of the current gap.
                         ##Left
-                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) + "_gap" + str(gap_count) + ".g" + str(gap_length) + ".c" + str(args.contigs_size) + ".left.fasta")
+                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(left_start_index) +"-"+ str(left_end_index) +".g"+ str(gap_length) +".c"+ str(args.contigs_size) + ".left.fasta")
                         with open(left_fastaFile, "w") as left:
-                            left.write(">{} _ len {}".format(left_name, left_length))
+                            left.write(">{} _ len {}".format(left_name, str(left_length)))
                             left.write("\n" + str(left_flanking_seq) + "\n")
 
                         ##Right
-                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) + "_gap" + str(gap_count) + ".g" + str(gap_length) + ".c" + str(args.contigs_size) + ".right.fasta")
+                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(right_start_index) +"-"+ str(right_end_index) +".g"+ str(gap_length) +".c"+ str(args.contigs_size) + ".right.fasta")
                         with open(right_fastaFile, "w") as right:
-                            right.write((">{} _ len {}".format(right_name, right_length)))
+                            right.write((">{} _ len {}".format(right_name, str(right_length))))
                             right.write("\n" + str(right_flanking_seq) + "\n")
                         
                         #----------------------------------------------------
@@ -198,8 +196,8 @@ try:
                         # Add corresponding lines to the GFA file.
                         with open(gfaFile, "a") as f:
                             gfa = gfapy.Gfa.from_file(gfaFile)
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_end_index, os.path.join(outDir, left_fastaFile)))
-                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_start_index, os.path.join(outDir, right_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_length, os.path.join(outDir, left_fastaFile)))
+                            gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_length, os.path.join(outDir, right_fastaFile)))
                             gfa.add_line("G\t*\t{}\t{}\t{}\t*".format(left_contig, right_contig, gap_length))
                             gfa.to_file(gfaFile)
 
