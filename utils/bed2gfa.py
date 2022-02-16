@@ -66,7 +66,7 @@ fastaFile = os.path.abspath(args.fasta)
 if not os.path.exists(args.fasta):
     parser.error("The path of the input FASTA file doesn't exist")
 fasta_name = fastaFile.split('/')[-1]
-print("\nInput FASTA file: " + fastaFile)
+print("Input FASTA file: " + fastaFile)
 
 #----------------------------------------------------
 # Directory for saving results
@@ -81,7 +81,7 @@ except:
     print("Restoring the path")
     os.chdir(cwd)
 outDir = os.getcwd()
-print("The results are saved in " + outDir)
+print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
 # BED to GFA
@@ -128,16 +128,16 @@ try:
                         left_start_index = 0 
                         left_end_index = gap_coordinatesList[i][0]
                     else:
-                        left_start_index = gap_coordinatesList[i-1][1]
+                        left_start_index = gap_coordinatesList[i-1][1].split('\n')[0]
                         left_end_index = gap_coordinatesList[i][0]
                     left_flanking_seq = record.seq[int(left_start_index):int(left_end_index)]
 
                     # Get the right flanking sequence.
                     if i == len(gap_coordinatesList)-1:     #last gap
-                        right_start_index = gap_coordinatesList[i][1]
+                        right_start_index = gap_coordinatesList[i][1].split('\n')[0]
                         right_end_index = len(record.seq)
                     else:
-                        right_start_index = gap_coordinatesList[i][1]
+                        right_start_index = gap_coordinatesList[i][1].split('\n')[0]
                         right_end_index = gap_coordinatesList[i+1][0]
                     right_flanking_seq = record.seq[int(right_start_index):int(right_end_index)]
 
