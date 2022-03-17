@@ -42,7 +42,7 @@ For more information on the LRez and MindTheGap tools:
 
 Clone the MTG-Link repository with:
 ```
-git clone -b scale-up --recursive https://github.com/anne-gcd/MTG-Link.git
+git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 ```
 
 You can install the external dependencies via the **conda** package manager:  
