@@ -396,7 +396,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
         if not os.path.exists(refQryFile):
             print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': The file containing the Nucmer alignments' statistics {} doesn't exist.".format(str(refQryFile)), file=sys.stderr)
-            sys.exit(1)
+            outputGFAList = []
 
         else:
             try:
@@ -567,8 +567,8 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
             # Remove the 'gapfillingFile' once done with it.
             subprocess.run(["rm", gapfillingFile])
 
-        # Close the 'refQryOutput' object (which opened the 'refQryFile' file).
-        refQryOutput.close()
+            # Close the 'refQryOutput' object (which opened the 'refQryFile' file).
+            refQryOutput.close()
 
     except Exception as e:
         print("File 'qualitativeEvaluation.py': Something wrong with the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
