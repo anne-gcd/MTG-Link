@@ -123,87 +123,101 @@ except Exception as e:
 try:
     print("\nSTEP 2/3: Read Subsampling")
 
-    # Go in the 'subsamplingDir' directory.
-    try:
-        os.chdir(main.subsamplingDir)
-    except OSError as err:
-        print("File 'mtglink.py': Something wrong with specified directory 'subsamplingDir'. \nOSError-{}".format(err))
-        sys.exit(1)
+    # Read subsampling step already performed on this dataset.
+    if main.bxuDir != "":
+        print("The Read Subsampling step has already been performed on this dataset (see: {})".format(main.bxuDir))
 
-    # For each gap, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk regions) and append the file containing all the lists obtained for all gaps ('allBarcodesFile').
-    print("\nSTEP 2a: Barcodes Extraction\n")
-    allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
-    for gap in gaps:
-        unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinFreq)
+        # Copy the corresponding files to the 'subsamplingDir' directory.
+        inputDir = str(main.bxuDir) + "/*"
+        outputDir = str(main.subsamplingDir) + "/."
+        command = ["cp", inputDir, outputDir]
+        subprocess.run(command)
+        print("The corresponding files are copied to: " + main.subsamplingDir)
+
+    # Read subsampling step not already performed on this dataset.
+    else:
+
+        # Go in the 'subsamplingDir' directory.
         try:
-            with open(allBarcodesFile, "a") as barcFile:
-                barcFile.write(str(unionBarcodesFile) + "\n")
-        except IOError as err:
-            print("File 'mtglink.py': Unable to open or write to the output file containing all the lists of barcodes {}. \nIOError-{}".format(str(allBarcodesFile), err))
+            os.chdir(main.subsamplingDir)
+        except OSError as err:
+            print("File 'mtglink.py': Something wrong with specified directory 'subsamplingDir'. \nOSError-{}".format(err))
             sys.exit(1)
 
-    # For each gap, query the barcodes index and the FASTQ file to retrieve all reads whose barcode is present in the list of barcodes of potential interest.
-    print("\nSTEP 2b: Reads Retrieval")
-    retrieveReadsWithLRezQueryFastq(main.gfa_name, main.readsFile, main.indexFile, allBarcodesFile, main.threads)
-
-    # For each gap, generate a summary of the number of barcodes and reads extracted from the union of both gap flanking regions.
-    print("\nSTEP 2c: Read Subsampling Summary")
-    readSubsamplingSummaryFile = "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
-    try:
-        with open(readSubsamplingSummaryFile, "w") as summaryFile:
-            legend = ["Left_Scaffold", "Right_Scaffold", "Gap_Size", "Chunk_Size", "MinFreq_Barcodes", "Nb_Barcodes", "Nb_Reads"]
-            summaryFile.write('\t'.join(j for j in legend))
-
-            # Iterate over the files in 'allBarcodesFile' to get the summary values.
+        # For each gap, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk regions) and append the file containing all the lists obtained for all gaps ('allBarcodesFile').
+        print("\nSTEP 2a: Barcodes Extraction\n")
+        allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
+        for gap in gaps:
+            unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinFreq)
             try:
-                with open(allBarcodesFile, "r") as barcFile:
-                    for file in barcFile:
-                        current_file = str(file).split('\n')[0]
-
-                        # Get the gap flanking scaffolds name..
-                        suffixBarcodesFile = str(current_file).split('/')[-1].split('.gfa.')[1]
-                        FlankingScaffold = re.split('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))[0]
-
-                        ## Get the name of the left flanking scaffold.
-                        LeftFlankingScaffold_wo_sign = re.split('\+_|\-_', str(suffixBarcodesFile))[0]
-                        r1 = re.findall(r"\+_|\-_",str(suffixBarcodesFile))[0]
-                        LeftFlankingScaffold_sign = re.split("_", str(r1))[0]
-                        LeftFlankingScaffold = LeftFlankingScaffold_wo_sign + LeftFlankingScaffold_sign
-
-                        ## Get the name of the right flanking scaffold.
-                        RightFlankingScaffold_suffix = re.split('\+_|\-_', str(suffixBarcodesFile))[1]
-                        RightFlankingScaffold_wo_sign = re.split('\+\.|\-\.', str(RightFlankingScaffold_suffix))[0]
-                        r2 = re.findall(r"\+\.|\-\.",str(suffixBarcodesFile))[0]
-                        RightFlankingScaffold_sign = re.split("\.", str(r2))[0]
-                        RightFlankingScaffold = RightFlankingScaffold_wo_sign + RightFlankingScaffold_sign
-
-                        # Get the parameters values ('gapSizeValue', 'chunkSizeValue', 'minFreqBarcodesValue').
-                        suffixParametersValues = re.findall('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))
-                        gapSizeValue = suffixParametersValues[0].split('.g')[1].split('.c')[0]
-                        chunkSizeValue = suffixParametersValues[0].split('.c')[1].split('.f')[0]
-                        minFreqBarcodesValue = suffixParametersValues[0].split('.f')[1].split('.bxu')[0]
-
-                        # Get the number of barcodes.
-                        barcodesFile = os.path.abspath(current_file)
-                        bxu = sum(1 for line in open(barcodesFile, "r"))
-
-                        # Get the number of reads.
-                        readsFile = os.path.abspath(current_file) + ".fastq"
-                        rbxu = sum(1 for line in open(readsFile, "r"))/4
-
-                        # Create a list 'summaryList' containing a list of the corresponding values for one gap.
-                        summaryList = [LeftFlankingScaffold, RightFlankingScaffold, gapSizeValue, chunkSizeValue, minFreqBarcodesValue, bxu, rbxu]
-
-                        # Update the 'summaryFile' with the corresponding values for each gap.
-                        summaryFile.write("\n" + '\t'.join(str(i) for i in summaryList))  
-
+                with open(allBarcodesFile, "a") as barcFile:
+                    barcFile.write(str(unionBarcodesFile) + "\n")
             except IOError as err:
-                print("File 'mtglink.py': Unable to read the file containing all the lists of barcodes {}. \nIOError-{}".format(str(allBarcodesFile), err))
+                print("File 'mtglink.py': Unable to open or write to the output file containing all the lists of barcodes {}. \nIOError-{}".format(str(allBarcodesFile), err))
                 sys.exit(1)
 
-    except IOError as err:
-        print("File 'mtglink.py': Unable to open or write to the output summary file of the 'Read Subsampling' step {}. \nIOError-{}".format(str(readSubsamplingSummaryFile), err))
-        sys.exit(1)
+        # For each gap, query the barcodes index and the FASTQ file to retrieve all reads whose barcode is present in the list of barcodes of potential interest.
+        print("\nSTEP 2b: Reads Retrieval")
+        retrieveReadsWithLRezQueryFastq(main.gfa_name, main.readsFile, main.indexFile, allBarcodesFile, main.threads)
+
+        # For each gap, generate a summary of the number of barcodes and reads extracted from the union of both gap flanking regions.
+        print("\nSTEP 2c: Read Subsampling Summary")
+        readSubsamplingSummaryFile = "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
+        try:
+            with open(readSubsamplingSummaryFile, "w") as summaryFile:
+                legend = ["Left_Scaffold", "Right_Scaffold", "Gap_Size", "Chunk_Size", "MinFreq_Barcodes", "Nb_Barcodes", "Nb_Reads"]
+                summaryFile.write('\t'.join(j for j in legend))
+
+                # Iterate over the files in 'allBarcodesFile' to get the summary values.
+                try:
+                    with open(allBarcodesFile, "r") as barcFile:
+                        for file in barcFile:
+                            current_file = str(file).split('\n')[0]
+
+                            # Get the gap flanking scaffolds name..
+                            suffixBarcodesFile = str(current_file).split('/')[-1].split('.gfa.')[1]
+                            FlankingScaffold = re.split('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))[0]
+
+                            ## Get the name of the left flanking scaffold.
+                            LeftFlankingScaffold_wo_sign = re.split('\+_|\-_', str(suffixBarcodesFile))[0]
+                            r1 = re.findall(r"\+_|\-_",str(suffixBarcodesFile))[0]
+                            LeftFlankingScaffold_sign = re.split("_", str(r1))[0]
+                            LeftFlankingScaffold = LeftFlankingScaffold_wo_sign + LeftFlankingScaffold_sign
+
+                            ## Get the name of the right flanking scaffold.
+                            RightFlankingScaffold_suffix = re.split('\+_|\-_', str(suffixBarcodesFile))[1]
+                            RightFlankingScaffold_wo_sign = re.split('\+\.|\-\.', str(RightFlankingScaffold_suffix))[0]
+                            r2 = re.findall(r"\+\.|\-\.",str(suffixBarcodesFile))[0]
+                            RightFlankingScaffold_sign = re.split("\.", str(r2))[0]
+                            RightFlankingScaffold = RightFlankingScaffold_wo_sign + RightFlankingScaffold_sign
+
+                            # Get the parameters values ('gapSizeValue', 'chunkSizeValue', 'minFreqBarcodesValue').
+                            suffixParametersValues = re.findall('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))
+                            gapSizeValue = suffixParametersValues[0].split('.g')[1].split('.c')[0]
+                            chunkSizeValue = suffixParametersValues[0].split('.c')[1].split('.f')[0]
+                            minFreqBarcodesValue = suffixParametersValues[0].split('.f')[1].split('.bxu')[0]
+
+                            # Get the number of barcodes.
+                            barcodesFile = os.path.abspath(current_file)
+                            bxu = sum(1 for line in open(barcodesFile, "r"))
+
+                            # Get the number of reads.
+                            readsFile = os.path.abspath(current_file) + ".fastq"
+                            rbxu = sum(1 for line in open(readsFile, "r"))/4
+
+                            # Create a list 'summaryList' containing a list of the corresponding values for one gap.
+                            summaryList = [LeftFlankingScaffold, RightFlankingScaffold, gapSizeValue, chunkSizeValue, minFreqBarcodesValue, bxu, rbxu]
+
+                            # Update the 'summaryFile' with the corresponding values for each gap.
+                            summaryFile.write("\n" + '\t'.join(str(i) for i in summaryList))  
+
+                except IOError as err:
+                    print("File 'mtglink.py': Unable to read the file containing all the lists of barcodes {}. \nIOError-{}".format(str(allBarcodesFile), err))
+                    sys.exit(1)
+
+        except IOError as err:
+            print("File 'mtglink.py': Unable to open or write to the output summary file of the 'Read Subsampling' step {}. \nIOError-{}".format(str(readSubsamplingSummaryFile), err))
+            sys.exit(1)
 
 except Exception as e:
     print("File 'mtglink.py': Something wrong with the 'Read Subsampling' step.")
