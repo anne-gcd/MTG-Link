@@ -119,8 +119,9 @@ if not re.match('^.*.contigs.fasta$', args.reference):
         delta_file = prefix + ".delta"
         coords_file = prefix + ".coords.unsorted" 
 
+        # Keep only alignments with >90% Id. ('-I90'). 
         nucmer_command = ["nucmer", "--maxmatch", "-p", prefix, ref_file, qry_file]
-        coords_command = ["show-coords", "-rcdlT", delta_file]
+        coords_command = ["show-coords", "-rcdlT", "-I90", delta_file]
 
         with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
             subprocess.run(nucmer_command, stderr=log)
@@ -411,14 +412,21 @@ elif re.match('^.*.contigs.fasta$', args.reference):
 
         nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
         delta_file = prefix + ".delta"
-        coords_file = prefix + ".coords"
+        coords_file = prefix + ".coords.unsorted"
 
+        # Keep only alignments with >90% Id. ('-I90'). 
         nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
-        coords_command = ["show-coords", "-rcdlT", delta_file]
+        coords_command = ["show-coords", "-rcdlT", "-I90", delta_file]
 
         with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
             subprocess.run(nucmer_command, stderr=log)
             subprocess.run(coords_command, stdout=coords, stderr=log)
+
+        # Sort the 'xxx.coords.unsorted' file for further analysis.
+        coords_sorted_file = prefix + ".coords"
+        sort_command = ["sort", "-n", coords_file]
+        with open(coords_sorted_file, "w") as coords_sorted:
+            subprocess.run(sort_command, stdout=coords_sorted)
 
     except Exception as e:
         print("\nFile 'stats_alignment.py': Something wrong with the NUCmer alignments, when ref = flanking contigs' sequences")
@@ -477,7 +485,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
     #----------------------------------------------------
     try:
         # Output stats file of NUCmer alignment (Query vs Ref).
-        ref_qry_output = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
+        ref_qry_output = outDir + "/" + args.prefix + ".nucmerAlignments.stats.unsorted"
 
         ## Local assembly performed with the DBG algorithm
         if ".k" in qry_file.split('/')[-1]:
@@ -497,7 +505,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
 
         rows = list(reader)
         for row in rows[3:]:
-            if row["TAG_1"].split("_")[0] in str(qry_id):
+            if row["TAG_1"].split("TargetID.")[1].split("_TargetLen")[0] in str(qry_id):
                 len_q = row["LEN_Q"]
                 ref = row["TAG_1"].split("_region")[0]
                 len_r = row["LEN_R"]
@@ -626,8 +634,118 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                         output.write('\t'.join(j for j in stats_legend))
                         output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
+        # Sort the 'xxx.nucmerAlignments.stats.unsorted' file for further analysis.
+        ref_qry_sorted = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
+        order_command = ["sort", "-k7,8", "-k10", "-k12,13n", "-r", ref_qry_output]
+        with open(ref_qry_sorted, "w") as r_sorted:
+            subprocess.run(order_command, stdout=r_sorted)
+
     except Exception as e:
         print("\nFile 'stats_alignment.py': Something wrong with the quality estimation, when ref = flanking contigs' sequences")
+        print("Exception-")
+        print(e)
+        sys.exit(1)
+
+    #----------------------------------------------------
+    # Alignment in multiple chunks/flanks (for DBG)
+    #----------------------------------------------------
+    try:      
+        # If alignment in multiple chunks/flanks, calculate the appropriate quality score.
+        ## Local assembly performed with the DBG algorithm
+        if ".k" in qry_file.split('/')[-1]:
+            with open(ref_qry_sorted, "r") as r:
+                r.seek(0)
+                reader = csv.DictReader(r, fieldnames=("Target", "Len_target", "Flank", "Barc_occ", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+                                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+                                        delimiter='\t')
+
+                rows = list(reader)
+                for i in range(1, len(rows)):
+                    if ("fwd" in rows[i]["Strand"]) or ("rev" in rows[i]["Strand"]):
+                        qry_id = rows[i]["Target"]
+                        g = rows[i]["Len_target"]
+                        c = rows[i]["Flank"]
+                        f = rows[i]["Barc_occ"]
+                        k = rows[i]["k"]
+                        a = rows[i]["a"]
+                        strand = rows[i]["Strand"]
+                        solution = rows[i]["Solution"]
+                        len_q = rows[i]["Len_Q"]
+                        ref = rows[i]["Ref"]
+                        len_r = rows[i]["Len_R"]
+                        frame_r = rows[i]["Frame_R"]
+                        frame_q = rows[i]["Frame_Q"]
+                        ref_len = int(len_r)
+                        qry_len = int(len_q) - 2*args.ext
+
+                        if (strand != rows[i-1]["Strand"] or solution != rows[i-1]["Solution"] or ref != rows[i-1]["Ref"]):
+                            lack_ref = 0
+                            lack_qry = 0
+                            end_r = int(rows[i]["End_ref"])
+                            lack_ref += ref_len - end_r
+                            if frame_q == "1":
+                                end_q = int(rows[i]["End_qry"])
+                                lack_qry += qry_len - (end_q - args.ext)
+                            elif frame_q == "-1":
+                                start_q = int(rows[i]["End_qry"])
+                                lack_qry += start_q - (args.ext+1)
+
+                        if (strand == rows[i-1]["Strand"] and solution == rows[i-1]["Solution"] and ref == rows[i-1]["Ref"]):
+                            if int(rows[i]["End_ref"]) < int(rows[i-1]["Start_ref"]):
+                                lack_ref += (int(rows[i-1]["Start_ref"]) - int(rows[i]["End_ref"]))
+                            if frame_q == "1":
+                                if int(rows[i]["End_qry"]) < int(rows[i-1]["Start_qry"]):
+                                    lack_qry += (int(rows[i-1]["Start_qry"]) - int(rows[i]["End_qry"]))
+                            elif frame_q == "-1":
+                                if int(rows[i]["End_qry"]) > int(rows[i-1]["Start_qry"]):
+                                    lack_qry += (int(rows[i]["End_qry"]) - int(rows[i-1]["Start_qry"]))
+
+                        if (i == len(rows)-1) or (strand != rows[i+1]["Strand"] or solution != rows[i+1]["Solution"] or ref != rows[i+1]["Ref"]):
+                            start_r = int(rows[i]["Start_ref"])
+                            lack_ref += start_r - 1
+                            if frame_q == "1":
+                                start_q = int(rows[i]["Start_qry"])
+                                lack_qry += start_q - (args.ext+1)
+                            elif frame_q == "-1":
+                                end_q = int(rows[i]["Start_qry"])
+                                lack_qry += qry_len - (end_q - args.ext)
+
+                            len_align_r = ref_len - lack_ref
+                            len_align_q = qry_len - lack_qry
+
+                            identity = "/"
+                            cov_r = "/"
+                            cov_q = "/"
+
+                            # Assign a quality score.
+                            ## The assembled seq matches to the whole ref seq
+                            if int(len_align_q) == ref_len:
+                                quality_rq = 'A'
+                            ## The assembled seq matches to the ref seq +-10% of ref length
+                            elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+                                quality_rq = 'B'
+                            ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
+                            elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
+                                quality_rq = 'C'
+                            else:
+                                quality_rq = 'D'
+
+                            # Write stats results in output file.
+                            ## Local assembly performed with the DBG algorithm
+                            if ".k" in qry_file.split('/')[-1]:
+                                stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
+                                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+
+                            ## Local assembly performed with the IRO algorithm
+                            if ".dmax" in qry_file.split('/')[-1]:
+                                stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
+                                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+
+                            with open(ref_qry_sorted, "a") as output_ref:
+                                output_ref.write('\n' + '\t'.join(str(i) for i in stats))
+
+    except Exception as e:
+        print("\nFile 'stats_alignment.py': Something wrong with the quality estimation for alignment in multiple chunks/flanks (DBG), when ref = reference sequence")
         print("Exception-")
         print(e)
         sys.exit(1)
@@ -640,6 +758,5 @@ elif re.match('^.*.contigs.fasta$', args.reference):
 subprocess.run(["rm", nucmerLog])
 subprocess.run(["rm", delta_file])
 subprocess.run(["rm", coords_file])
-if not re.match('^.*.contigs.fasta$', args.reference):
-    subprocess.run(["rm", coords_sorted_file])  #only when refDir
+subprocess.run(["rm", coords_sorted_file])
 
