@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,7 +21,7 @@
 
 """Module 'barcodesExtraction.py': Barcodes Extraction
 
-The module 'barcodesExtraction.py' enables to extract the barcodes observed in chunk regions surrounding the gap.
+The module 'barcodesExtraction.py' enables to extract the barcodes observed in chunk/flank regions surrounding the gap/target.
 """
 
 from __future__ import print_function
@@ -39,23 +38,23 @@ from helpers import Gap, Scaffold
 #----------------------------------------------------
 def extractBarcodesWithLRezExtract(bam, gapLabel, region, barcodesOccurrencesDict):
     """
-    To extract the barcodes of reads mapping on chunk regions, with `LRez extract`. 
+    To extract the barcodes of reads mapping on chunk/flank regions, with `LRez extract`. 
     `LRez extract` enables to extract the list of barcodes from a given region of a BAM file.
 
     Args:
         - bam: file
             indexed BAM file obtained after mapping the linked reads onto the draft assembly
         - gapLabel: str
-            label of the gap
+            label of the gap/target
         - region: str
-            chunk region on which to extract the barcodes
+            chunk/flank region on which to extract the barcodes
         - barcodesOccurrencesDict: dict
             this function will output a dictionary 'barcodesOccurrencesDict' containing the occurences of each barcode
             key = barcode sequence ; value = number of occurences
 
     Return/Output:
         - barcodesOccurrencesDict: dict
-            dictionary 'barcodesOccurrencesDict' containing the occurences for each barcode extracted on the chunk region
+            dictionary 'barcodesOccurrencesDict' containing the occurences for each barcode extracted on the chunk/flank region
             key = barcode sequence ; value = number of occurences
     """
     try:
@@ -100,25 +99,25 @@ def extractBarcodesWithLRezExtract(bam, gapLabel, region, barcodesOccurrencesDic
 #----------------------------------------------------
 # extractBarcodesFromChunkRegions function
 #----------------------------------------------------
-def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, barcodesMinFreq):
+def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, barcodesMinOcc):
     """
-    To extract the barcodes of reads mapping on chunk regions. 
+    To extract the barcodes of reads mapping on chunk/flank regions. 
 
     Args:
         - current_gap: str
-            current gap identification
+            current gap/target identification
         - gfaFile: file
             GFA file containing the gaps' coordinates
         - bamFile: file
             indexed BAM file obtained after mapping the linked reads onto the draft assembly
         - chunkSize: int
-            size of the chunk region
-        - barcodesMinFreq: int
-            minimal frequence of barcodes observed in the union set from the two flanking gap sequences
+            size of the chunk/flank region
+        - barcodesMinOcc: int
+            minimal occurrence of barcodes observed in the union set from the two flanking gap/target sequences
 
     Return:
         - unionBarcodesFile: file
-            file containing the extracted barcodes of the union of both left and right gap flanking sequences
+            file containing the extracted barcodes of the union of both left and right gap/target flanking sequences
     """
     #----------------------------------------------------
     # Pre-Processing
@@ -140,7 +139,7 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
                     print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to create the object 'gap' from the class 'Gap'.", file=sys.stderr)
                     sys.exit(1)
 
-        # Get some information on the current gap we are working on.
+        # Get some information on the current gap/target we are working on.
         gap.info()
         gapLabel = gap.label()
 
@@ -154,16 +153,16 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
             print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to create the object 'rightScaffold' from the class 'Scaffold'.", file=sys.stderr)
             sys.exit(1)
 
-        # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
-        ## Left chunk
+        # If chunk/flank size larger than length of scaffold(s), set the chunk/flank size to the minimal scaffold length.
+        ## Left chunk/flank
         if chunkSize > leftScaffold.slen:
-            print("Warning for {}: The chunk size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
+            print("Warning for {}: The flank size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
             chunk_L = leftScaffold.slen
         else:
             chunk_L = chunkSize
-        ## Right chunk
+        ## Right chunk/flank
         if chunkSize > rightScaffold.slen:
-            print("Warning for {}: The chunk size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
+            print("Warning for {}: The flank size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
             chunk_R = rightScaffold.slen
         else:
             chunk_R = chunkSize
@@ -178,20 +177,20 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
     # Extract Barcodes
     #----------------------------------------------------    
     try:
-        # Initiate a dictionary to count the occurences of each barcode extracted on the chunk regions.
+        # Initiate a dictionary to count the occurences of each barcode extracted on the chunk/flank regions.
         barcodesOccurrencesDict = {}
         
-        # Obtain the left barcodes extracted on the left region (left chunk) and store the barcodes and their occurences in the dict 'barcodes_occ'.
+        # Obtain the left barcodes extracted on the left region (left chunk/flank) and store the barcodes and their occurences in the dict 'barcodes_occ'.
         leftRegion = leftScaffold.chunk(chunk_L)
         if not leftRegion:
-            print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to obtain the left region (left chunk).", file=sys.stderr)
+            print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to obtain the left region (left flank).", file=sys.stderr)
             sys.exit(1)
         extractBarcodesWithLRezExtract(bamFile, gapLabel, leftRegion, barcodesOccurrencesDict)
 
-        # Obtain the right barcodes extracted on the right region (right chunk) and store the barcodes and their occurences in the dict 'barcodes_occ'.
+        # Obtain the right barcodes extracted on the right region (right chunk/flank) and store the barcodes and their occurences in the dict 'barcodes_occ'.
         rightRegion = rightScaffold.chunk(chunk_R)
         if not rightRegion:
-            print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to obtain the right region (right chunk).", file=sys.stderr)
+            print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to obtain the right region (right flank).", file=sys.stderr)
             sys.exit(1)
         extractBarcodesWithLRezExtract(bamFile, gapLabel, rightRegion, barcodesOccurrencesDict)
 
@@ -199,14 +198,14 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
             print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Error while extracting the barcodes with `LRez extract`.", file=sys.stderr)
             sys.exit(1)
 
-        # Do the union of the barcodes on both left and right regions (e.g. both left and right chunks). 
+        # Do the union of the barcodes on both left and right regions (e.g. both left and right chunks/flanks). 
         gfa_name = gfaFile.split('/')[-1]
-        unionBarcodesFile = "{}.{}.g{}.c{}.f{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, barcodesMinFreq)
+        unionBarcodesFile = "{}.{}.g{}.c{}.f{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, barcodesMinOcc)
         try:
             with open(unionBarcodesFile, "w") as unionBarcFile:
-                ## Filter barcodes by the minimal frequence of barcodes observed in the union set from the two flanking gap sequences ('barcodesMinFreq')
+                ## Filter barcodes by the minimal occurrence of barcodes observed in the union set from the two flanking gap/target sequences ('barcodesMinOcc')
                 for (barcode, occurrence) in barcodesOccurrencesDict.items():
-                    if occurrence >= barcodesMinFreq:
+                    if occurrence >= barcodesMinOcc:
                         unionBarcFile.write(barcode + "\n")
         except IOError as err:
             print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to open or write to the output 'unionBarcodesFile' {}. \nIOError-{}".format(str(unionBarcodesFile), err))

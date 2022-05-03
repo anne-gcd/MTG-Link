@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -20,10 +19,10 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*****************************************************************************
 
-"""Module 'mtglink.py': Gap-filling Pipeline MTG-Link
+"""Module 'mtglink.py': Targeted Assembly Pipeline MTG-Link
 
 The module 'mtglink.py' enables to process the input and output GFA files, and to process all gaps in a multi-threading way.
-It output as well a summary of the gap-filling results.
+It output as well a summary of the targeted assembly results.
 """
 
 from __future__ import print_function
@@ -64,7 +63,7 @@ try:
     # Create the output GFA file.
     outputGFAFile = main.outDir + "/" + str(main.gfa_name).split('.gfa')[0] + "_mtglink.gfa"
 
-    # Case no gap in the input GFA: if no gap, rewrite all the lines into GFA output.
+    # Case no gap/target in the input GFA: if no gap/target, rewrite all the lines into GFA output.
     if len(gfa.gaps) == 0:
         try: 
             with open(outputGFAFile, "w") as f:
@@ -76,10 +75,10 @@ try:
             print("File 'mtglink.py': Unable to open or write to the output GFA File {}. \nIOError-{}".format(str(outputGFAFile), err))
             sys.exit(1)
 
-    # Case gaps to fill in the input GFA
+    # Case gaps/targets to fill in the input GFA
     gaps = []
 
-    ## If gap and analysis hasn't started, rewrite the H and S lines into GFA output.
+    ## If gap/target and analysis hasn't started, rewrite the H and S lines into GFA output.
     if main.line_gfa == "":
         try:
             with open(outputGFAFile, "w") as f:
@@ -99,7 +98,7 @@ try:
             print("File 'mtglink.py': Error while converting the Gfapy gap line to a string and appending the 'gaps' list.", file=sys.stderr)
             sys.exit(1)
         
-    ## If gap and analysis has started (e.g. '-line' argument provided), start analysis from this line in GFA file input.
+    ## If gap/target and analysis has started (e.g. '-line' argument provided), start analysis from this line in GFA file input.
     if main.line_gfa != "":
         for _gap_ in gfa.gaps[(main.line_gfa - (len(gfa.segments)+2)):]:
             _gap_ = str(_gap_)
@@ -144,11 +143,11 @@ try:
             print("File 'mtglink.py': Something wrong with specified directory 'subsamplingDir'. \nOSError-{}".format(err))
             sys.exit(1)
 
-        # For each gap, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk regions) and append the file containing all the lists obtained for all gaps ('allBarcodesFile').
+        # For each gap/target, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk/flank regions) and append the file containing all the lists obtained for all gaps/targets ('allBarcodesFile').
         print("\nSTEP 2a: Barcodes Extraction\n")
-        allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
+        allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
         for gap in gaps:
-            unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinFreq)
+            unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinOcc)
             try:
                 with open(allBarcodesFile, "a") as barcFile:
                     barcFile.write(str(unionBarcodesFile) + "\n")
@@ -156,16 +155,16 @@ try:
                 print("File 'mtglink.py': Unable to open or write to the output file containing all the lists of barcodes {}. \nIOError-{}".format(str(allBarcodesFile), err))
                 sys.exit(1)
 
-        # For each gap, query the barcodes index and the FASTQ file to retrieve all reads whose barcode is present in the list of barcodes of potential interest.
+        # For each gap/target, query the barcodes index and the FASTQ file to retrieve all reads whose barcode is present in the list of barcodes of potential interest.
         print("\nSTEP 2b: Reads Retrieval")
         retrieveReadsWithLRezQueryFastq(main.gfa_name, main.readsFile, main.indexFile, allBarcodesFile, main.threads)
 
-        # For each gap, generate a summary of the number of barcodes and reads extracted from the union of both gap flanking regions.
+        # For each gap/target, generate a summary of the number of barcodes and reads extracted from the union of both gap/target flanking regions.
         print("\nSTEP 2c: Read Subsampling Summary")
-        readSubsamplingSummaryFile = "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinFreq)
+        readSubsamplingSummaryFile = "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
         try:
             with open(readSubsamplingSummaryFile, "w") as summaryFile:
-                legend = ["Left_Scaffold", "Right_Scaffold", "Gap_Size", "Chunk_Size", "MinFreq_Barcodes", "Nb_Barcodes", "Nb_Reads"]
+                legend = ["Left_Scaffold", "Right_Scaffold", "Target_Size", "Flank_Size", "MinOcc_Barcodes", "Nb_Barcodes", "Nb_Reads"]
                 summaryFile.write('\t'.join(j for j in legend))
 
                 # Iterate over the files in 'allBarcodesFile' to get the summary values.
@@ -174,7 +173,7 @@ try:
                         for file in barcFile:
                             current_file = str(file).split('\n')[0]
 
-                            # Get the gap flanking scaffolds name..
+                            # Get the gap/target flanking scaffolds name..
                             suffixBarcodesFile = str(current_file).split('/')[-1].split('.gfa.')[1]
                             FlankingScaffold = re.split('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))[0]
 
@@ -191,11 +190,11 @@ try:
                             RightFlankingScaffold_sign = re.split("\.", str(r2))[0]
                             RightFlankingScaffold = RightFlankingScaffold_wo_sign + RightFlankingScaffold_sign
 
-                            # Get the parameters values ('gapSizeValue', 'chunkSizeValue', 'minFreqBarcodesValue').
+                            # Get the parameters values ('gapSizeValue', 'chunkSizeValue', 'minOccBarcodesValue').
                             suffixParametersValues = re.findall('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))
                             gapSizeValue = suffixParametersValues[0].split('.g')[1].split('.c')[0]
                             chunkSizeValue = suffixParametersValues[0].split('.c')[1].split('.f')[0]
-                            minFreqBarcodesValue = suffixParametersValues[0].split('.f')[1].split('.bxu')[0]
+                            minOccBarcodesValue = suffixParametersValues[0].split('.f')[1].split('.bxu')[0]
 
                             # Get the number of barcodes.
                             barcodesFile = os.path.abspath(current_file)
@@ -205,10 +204,10 @@ try:
                             readsFile = os.path.abspath(current_file) + ".fastq"
                             rbxu = sum(1 for line in open(readsFile, "r"))/4
 
-                            # Create a list 'summaryList' containing a list of the corresponding values for one gap.
-                            summaryList = [LeftFlankingScaffold, RightFlankingScaffold, gapSizeValue, chunkSizeValue, minFreqBarcodesValue, bxu, rbxu]
+                            # Create a list 'summaryList' containing a list of the corresponding values for one gap/target.
+                            summaryList = [LeftFlankingScaffold, RightFlankingScaffold, gapSizeValue, chunkSizeValue, minOccBarcodesValue, bxu, rbxu]
 
-                            # Update the 'summaryFile' with the corresponding values for each gap.
+                            # Update the 'summaryFile' with the corresponding values for each gap/target.
                             summaryFile.write("\n" + '\t'.join(str(i) for i in summaryList))  
 
                 except IOError as err:
@@ -229,10 +228,10 @@ except Exception as e:
 
 
 #--------------------------------------------------------------
-# Gap-filling (Local Assembly and Qualitative Evaluation steps)
+# Targeted Assembly (Local Assembly and Qualitative Evaluation steps)
 #--------------------------------------------------------------
 try:
-    print("\nSTEP 3/3: Gap-filling (Local Assembly and Qualitative Evaluation steps)\n")
+    print("\nSTEP 3/3: Targeted Assembly (Local Assembly and Qualitative Evaluation steps)\n")
 
     # Start multiprocessing.
     p = Pool()
@@ -241,16 +240,16 @@ try:
     gapfillSeqFileExist = False
 
     for outputGFAList in p.map(fillGapByLocalAssemblyAndQualitativeEvaluation, gaps):
-        # Output the 'outputGFAList' results (obtained for each gap) from the function 'fillGapByLocalAssemblyAndQualitativeEvaluation' in the output GFA file.
+        # Output the 'outputGFAList' results (obtained for each gap/target) from the function 'fillGapByLocalAssemblyAndQualitativeEvaluation' in the output GFA file.
         print("\nCreating the output GFA file...")
 
-        ## Solution found for the current gap.
+        ## Solution found for the current gap/target.
         if len(outputGFAList[0]) > 1:          
             for outputGFA in outputGFAList:
                 gapfillSeqFile = updateGFAWithSolution(main.outDir, main.gfa_name, outputGFA, outputGFAFile)
                 gapfillSeqFileExist = True
 
-        ## No solution found for the current gap.
+        ## No solution found for the current gap/target.
         else:                                   
             out_gfa = gfapy.Gfa.from_file(outputGFAFile)
             out_gfa.add_line(outputGFAList[0][0])
@@ -259,7 +258,7 @@ try:
     p.close()
 
 except Exception as e:
-    print("File 'mtglink.py': Something wrong with the 'Gap-filling' step.")
+    print("File 'mtglink.py': Something wrong with the 'Targeted Assembly' step.")
     print("Exception-{}".format(e))
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -278,7 +277,7 @@ print("The results from the 'Qualitative Evaluation' step are saved in " + main.
 print("\nSummary of the union: " + main.subsamplingDir +"/"+ readSubsamplingSummaryFile)
 print("GFA output file: " + outputGFAFile)
 if gapfillSeqFileExist:
-    print("Corresponding file containing all gap-filled sequences: " + gapfillSeqFile + "\n")
+    print("Corresponding file containing all assembled sequences: " + gapfillSeqFile + "\n")
 
 
 #----------------------------------------------------
@@ -298,25 +297,25 @@ try:
 
     gfa_output = gfapy.Gfa.from_file(str(outputGFAFile))
 
-    # Total initials gaps.
+    # Total initials gaps/targets.
     totalGapsList = []
     for g_line in gfa.gaps:
         gap_start = str(g_line.sid1) +"_"+ str(g_line.sid2) 
         totalGapsList.append(gap_start)
     totalGapsNumber = len(totalGapsList)
-    print("\nAttempt to gap-fill {} gaps \n".format(totalGapsNumber))
+    print("\nAttempt to assemble {} targets \n".format(totalGapsNumber))
 
-    # Gap(s) not gap-filled.
+    # Gap(s)/Target(s) not assembled.
     gapsNotFilledList = []
     for g_line in gfa_output.gaps:
         gap_end = str(g_line.sid1) +"_"+ str(g_line.sid2) 
         gapsNotFilledList.append(gap_end)
-        print("The gap {} was not successfully gap-filled".format(gap_end))
+        print("The target {} was not successfully assembled".format(gap_end))
 
     gapsFilledNumber = len(totalGapsList) - len(gapsNotFilledList)
-    print("\nIn total, {} gaps were successfully gap-filled:".format(str(gapsFilledNumber)))
+    print("\nIn total, {} targets were successfully assembled:".format(str(gapsFilledNumber)))
 
-    # Gaps gap-filled.
+    # Gaps/Targets assembled.
     if gapfillSeqFileExist:
         gapsNamesList = []
         if (gapfillSeqFile) is not None:
@@ -328,12 +327,12 @@ try:
                         gapName_rightSign = re.split("_", str(r2))[0]
                         gapName = gapName_wo_rightSign + gapName_rightSign
 
-                        # For a new gap.
+                        # For a new gap/target.
                         if gapName not in gapsNamesList:
                             gapsNamesList.append(gapName)
                             print("\t* " + gapName)
 
-                        # For all gaps.
+                        # For all gaps/targets.
                         orientation = (re.split('\+_|\-_', str(record.id))[1]).split("_")[0]
                         length = str(record.description).split(' len.')[1].split('_qual.')[0]
                         quality = str(record.description).split('_qual.')[1]

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,7 +21,7 @@
 
 """Module 'localAssemblyDBG.py': Local Assembly With the DBG (De Bruijn Graph) algorithm
 
-The module 'localAssemblyDBG.py' enables to perform the local assembly step of the MTG-Link gap-filling pipeline, using a DBG (De Bruijn Graph) algorithm. 
+The module 'localAssemblyDBG.py' enables to perform the local assembly step of the MTG-Link targeted assembly pipeline, using a DBG (De Bruijn Graph) algorithm. 
 The DBG algorithm is performed with the 'fill' module of the software MindTheGap, using the subsample of linked reads obtained during the 'Read Subsampling' step of the MTG-Link pipeline.
 """
 
@@ -45,11 +44,11 @@ from helpers import Gap, Scaffold, getMostRepresentedKmer
 def fillGapWithMTGFill(gapLabel, readsFile, bkptFile, k, a, maxLength, maxNodes, nbCores, maxMemory, verbosity, outputPrefix):
     """
     To execute the MindTheGap fill module, that relies on a De Bruijn graph data structure to represent the input read sequences.
-    The local assembly step is performed between the sequences surrounding the extended gap (e.g. the kmers of the breakpoint file), in both orientations.
+    The local assembly step is performed between the sequences surrounding the extended gap/target (e.g. the kmers of the breakpoint file), in both orientations.
 
     Args:
         - gapLabel: str
-            label of the gap
+            label of the gap/target
         - readsFile: file
             reads file used for the local assembly step with `MindTheGap fill`
         - bkptFile: file
@@ -77,7 +76,7 @@ def fillGapWithMTGFill(gapLabel, readsFile, bkptFile, k, a, maxLength, maxNodes,
             - the file containing the assembled sequence(s) (and so the Boolean value equal to True)
               if a solution is found (e.g. we arrived to stop kmer)
             OR
-            - the sentence "Gap-filling not completed..." (and so the Boolean value equal to False)
+            - the sentence "Targeted Assembly not completed..." (and so the Boolean value equal to False)
               if no solution is found
         - True/False: boolean
     """
@@ -106,14 +105,14 @@ def fillGapWithMTGFill(gapLabel, readsFile, bkptFile, k, a, maxLength, maxNodes,
         if os.path.getsize(mtgFillLog) <= 0:
             subprocess.run(["rm", mtgFillLog])
 
-        # If we find a complete gap-filled sequence (e.g. we reach the kmer stop), return the assembly sequence along with True.
+        # If we find a complete assembled sequence (e.g. we reach the kmer stop), return the assembly sequence along with True.
         if (os.path.getsize(main.assemblyDir +"/"+ outputPrefix + ".insertions.fasta") > 0):
             res = os.path.abspath(main.assemblyDir +"/"+ outputPrefix + ".insertions.fasta")
             return res, True
 
-        # If we don't find a complete gap-filled sequence, return "Gap-filling not completed..." along with False.
+        # If we don't find a complete assembled sequence, return "Targeted Assembly not completed..." along with False.
         else:
-            res = "Gap-filling not completed..."
+            res = "Targeted Assembly not completed..."
             return res, False
 
     except Exception as e:
@@ -129,17 +128,17 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     """
     To perform the Local Assembly step using a DBG (De Bruijn Graph) algorithm.
     The DBG algorithm is performed with the 'fill' module of the software MindTheGap. This module is executed on the subsample of reads retrieved during the 'Read Subsampling' step, in breakpoint mode.
-    This consists of four main steps: Pre-processing of the current gap, getting the Breakpoint File, Local Assembly performed with `MindTheGap fill` and Post-Processing of the gap-filled sequences' file obtained.
+    This consists of four main steps: Pre-processing of the current gap/target, getting the Breakpoint File, Local Assembly performed with `MindTheGap fill` and Post-Processing of the assembled sequences' file obtained.
 
     Args:
         - current_gap: str
-            current gap identification
+            current gap/target identification
         - gfaFile: file
             GFA file containing the gaps' coordinates
         - chunkSize: int
-            size of the chunk region
+            size of the chunk/flank region
         - extSize: int
-            size of the gap extension on both sides (bp); determine start/end of the local assembly
+            size of the gap/target extension on both sides (bp); determine start/end of the local assembly
         - maxLength: int
             maximum assembly length (bp)
         - kmerSizeList: list
@@ -157,7 +156,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
     Return:
         - gapfillingFile: file
-            file containing the obtained gap-filled sequence(s)
+            file containing the obtained assembled sequence(s)
     """
     #----------------------------------------------------
     # Pre-Processing
@@ -186,7 +185,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                     print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to create the object 'gap' from the class 'Gap'.", file=sys.stderr)
                     sys.exit(1)
 
-        # Get some information on the current gap we are working on.
+        # Get some information on the current gap/target we are working on.
         gapLabel = gap.label()
 
         # Create two objects ('leftScaffold' and 'rightScaffold') from the class 'Scaffold'.
@@ -199,7 +198,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to create the object 'rightScaffold' from the class 'Scaffold'.", file=sys.stderr)
             sys.exit(1)
 
-        # Get the gap flanking sequences (e.g. the flanking contigs sequences).
+        # Get the gap/target flanking sequences (e.g. the flanking contigs sequences).
         leftFlankingSeq = str(leftScaffold.sequence())
         if not leftFlankingSeq:
             print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the left flanking sequence.", file=sys.stderr)
@@ -209,13 +208,13 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the right flanking sequence.", file=sys.stderr)
             sys.exit(1)
 
-        # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
-        ## Left chunk
+        # If chunk/flank size larger than length of scaffold(s), set the chunk/flank size to the minimal scaffold length.
+        ## Left chunk/flank
         if chunkSize > leftScaffold.slen:
             chunk_L = leftScaffold.slen
         else:
             chunk_L = chunkSize
-        ## Right chunk
+        ## Right chunk/flank
         if chunkSize > rightScaffold.slen:
             chunk_R = rightScaffold.slen
         else:
@@ -225,12 +224,12 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         ## Left region
         leftRegion = leftScaffold.chunk(chunk_L)
         if not leftRegion:
-            print("File 'localAssemblyDBG.py': Unable to obtain the left region (left chunk).", file=sys.stderr)
+            print("File 'localAssemblyDBG.py': Unable to obtain the left region (left flank).", file=sys.stderr)
             sys.exit(1)
         ## Right region
         rightRegion = rightScaffold.chunk(chunk_R)
         if not rightRegion:
-            print("File 'localAssemblyDBG.py': Unable to obtain the right region (right chunk).", file=sys.stderr)
+            print("File 'localAssemblyDBG.py': Unable to obtain the right region (right flank).", file=sys.stderr)
             sys.exit(1)
 
     except Exception as e:
@@ -303,15 +302,15 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             try:
                 with open(bkptFile, "w") as bkpt:
                     # Left kmer and Reverse Right kmer (dependent on the orientation of the left scaffold).
-                    line1 = ">bkpt1_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
+                    line1 = ">bkpt1_TargetID.{}_TargetLen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
                     line2 = leftKmer
-                    line7 = "\n>bkpt2_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
+                    line7 = "\n>bkpt2_TargetID.{}_TargetLen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
                     line8 = revRightKmer
                     
                     # Right kmer and Reverse Left kmer (dependent on the orientation of the right scaffold).
-                    line3 = "\n>bkpt1_GapID.{}_Gaplen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
+                    line3 = "\n>bkpt1_TargetID.{}_TargetLen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
                     line4 = rightKmer
-                    line5 = "\n>bkpt2_GapID.{}_Gaplen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
+                    line5 = "\n>bkpt2_TargetID.{}_TargetLen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
                     line6 = revLeftKmer
                     
                     bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
@@ -337,22 +336,22 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         for a in abundanceThresholdList:
 
             try:
-                print("GAP-FILLING OF: {} for k={} and a={} (union)".format(str(gapLabel), k, a))
+                print("TARGETED ASSEMBLY OF: {} for k={} and a={} (union)".format(str(gapLabel), k, a))
                 
                 # Input reads file containing the subsample of reads extracted during the 'Read Subsampling' step.
                 try:
-                    unionReadsFile = "{}.{}.g{}.c{}.f{}.bxu.fastq".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinFreq)
+                    unionReadsFile = "{}.{}.g{}.c{}.f{}.bxu.fastq".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc)
                     subReadsFile = os.path.join(main.subsamplingDir, unionReadsFile)
                 except FileNotFoundError as err:
                     print("File 'localAssemblyDBG.py': The input reads file {} doesn't exist. \nFileNotFoundError-{}".format(subReadsFile, err))
                     sys.exit(1)
                 
                 # Prefix of the output files containing the results obtained from `MindTheGap fill`. 
-                outputPrefix = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinFreq, k, a)
+                outputPrefix = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
 
-                # Determine the maximum assembly length (bp) if the gap length is known.
-                ## NB: if the gap length is unknown, it is set to 0.
-                ## Add twice the extension size to the gap length (extension on both sides of the gap) and twice the length of reads (e.g. 2x 150 bp) to be large
+                # Determine the maximum assembly length (bp) if the gap/target length is known.
+                ## NB: if the gap/target length is unknown, it is set to 0.
+                ## Add twice the extension size to the gap/target length (extension on both sides of the gap/target) and twice the length of reads (e.g. 2x 150 bp) to be large
                 if gap.length >= maxLength:
                     maxLength = gap.length + 2*extSize + 2*150
 
@@ -364,11 +363,11 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("Exception-{}".format(e))
                 sys.exit(1)
             
-            # Case of successful gap-filling, break the loop on 'a'.
+            # Case of successful targeted assembly, break the loop on 'a'.
             if success:
                 break
 
-        # Case of successful gap-filling, break the loop on 'k'.
+        # Case of successful targeted assembly, break the loop on 'k'.
         if success:
             break
 
@@ -377,10 +376,10 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     # Post-Processing
     #----------------------------------------------------
     try:
-        # Output file containing the gap-filled sequence(s).
-        insertionsFile = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu.insertions.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinFreq, k, a)
+        # Output file containing the assembled sequence(s).
+        insertionsFile = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu.insertions.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
 
-        # Case of unsuccessful gap-filling.
+        # Case of unsuccessful targeted assembly.
         if not success:
             print("\n{}: {}\n".format(gapLabel, res))
             try:
@@ -389,11 +388,11 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyDBG.py': The output 'gapfillingFile' {} doesn't exist. \nFileNotFoundError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
 
-        # Case of successful gap-filling.
+        # Case of successful targeted assembly.
         if success:
-            print("\n{}: Successful Gap-filling !\n". format(gapLabel))
+            print("\n{}: Successful Targeted Assembly !\n". format(gapLabel))
 
-            # Save and pre-process the file containing the gap-filled sequence(s) for further qualitative evaluation.
+            # Save and pre-process the file containing the assembled sequence(s) for further qualitative evaluation.
             ## Modify the 'insertionFile' and save it to a new file ('gapfillingFile') so that the 'solution x/y' part appears in record.id (and not just in record.description)
             try:
                 gapfillingFile = os.path.abspath(main.assemblyDir +"/"+ outputPrefix + "..insertions.fasta")

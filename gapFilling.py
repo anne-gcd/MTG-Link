@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -20,9 +19,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*****************************************************************************
 
-"""Module 'gapFilling.py': Gap Filling
+"""Module 'gapFilling.py': Targeted Assembly
 
-The module 'gapFilling.py' enables to perform two out of the three main steps of the MTG-Link gap-filling pipeline: Local Assembly and Qualitative Evaluation.
+The module 'gapFilling.py' enables to perform two out of the three main steps of the MTG-Link targeted assembly pipeline: Local Assembly and Qualitative Evaluation.
 (The Read Subsampling step was performed before). 
 """
 
@@ -43,17 +42,17 @@ from qualitativeEvaluation import qualitativeEvaluationOfTheAssembly
 #----------------------------------------------------
 def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     """
-    To perform the gap-filling on a specific gap. 
+    To perform the targeted assembly on a specific gap/target. 
     This consists of two main steps: Local Assembly and Qualitative Evaluation. 
     NB: The Read Subsampling step was performed before. 
 
     Arg:
         - current_gap: str
-            current gap identification
+            current gap/target identification
     
     Return/Outputs:
         - outputGFAList: list of lists
-            list of lists, each list containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
+            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
     """
     #----------------------------------------------------
     # Local Assembly
@@ -78,7 +77,7 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     # Qualitative Evaluation
     #----------------------------------------------------
     try:
-        # If at least one solution is found, perform the Qualitative Evaluation step on the gap-filled sequence(s).
+        # If at least one solution is found, perform the Qualitative Evaluation step on the assembled sequence(s).
         if os.path.getsize(gapfillingFile) > 0:
             outputGFAList = qualitativeEvaluationOfTheAssembly(current_gap, main.gfaFile, main.extSize, gapfillingFile, main.module)
         

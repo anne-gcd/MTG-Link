@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,7 +21,7 @@
 
 """Module 'helpers.py': Classes and general functions
 
-The module 'helpers.py' contains the classes and general functions used in the gap-filling pipeline MTG-Link.
+The module 'helpers.py' contains the classes and general functions used in the targeted assembly pipeline MTG-Link.
 """
 
 import os
@@ -41,7 +40,7 @@ from Bio import SeqIO
 #----------------------------------------------------
 class Gap:
     """
-    Class defining a gap characterized by:
+    Class defining a gap/target characterized by:
     - its ID
     - its length
     - its left flanking sequence's name
@@ -87,7 +86,7 @@ class Gap:
     
     #Method "label"
     def label(self):
-        '''Method to label the gap'''
+        '''Method to label the gap/target'''
         if self._identity == "*":
             return str(self.left) +"_"+ str(self.right)
         else:
@@ -95,15 +94,15 @@ class Gap:
 
     #Method "info"
     def info(self):
-        '''Method to get some information on the gap'''
+        '''Method to get some information on the gap/target'''
         if self.identity == "*":
-            print("WORKING ON GAP: between contigs {} & {}; length {}".format(self.left, self.right, self.length))
+            print("WORKING ON TARGET: between contigs {} & {}; length {}".format(self.left, self.right, self.length))
         else:
-            print("WORKING ON GAP: {}; length {}".format(self.identity, self.length))
+            print("WORKING ON TARGET: {}; length {}".format(self.identity, self.length))
 
     #Method "__repr__"
     def __repr__(self):
-        return "Gap: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self.identity, self.length, self.left, self.right)
+        return "Target: id ({}), length ({}), left flanking seq ({}), right flanking seq ({})".format(self.identity, self.length, self.left, self.right)
 
 
 #----------------------------------------------------
@@ -112,7 +111,7 @@ class Gap:
 class Scaffold(Gap):
     """
     Class defining a scaffold characterized by:
-    - the gap it is linked to
+    - the gap/target it is linked to
     - its name
     - its orientation
     - its length
@@ -180,9 +179,9 @@ class Scaffold(Gap):
 
     #Method "chunk"
     def chunk(self, c):
-        '''Method to get the region of the chunk'''
+        '''Method to get the region of the chunk/flank'''
         #----------------------------------------------------
-        # For gaps into scaffolds' sequences
+        # For gaps/targets into scaffolds' sequences
         #----------------------------------------------------
         if ('-L' in self.name) or ('-R' in self.name):
             coordsOnScaffold = re.findall(r'[0-9]+-[0-9]+', str(self.name))[0]
@@ -202,7 +201,7 @@ class Scaffold(Gap):
             return str(contig_name) +":"+ str(start) +"-"+ str(end)
 
         #----------------------------------------------------
-        # For gaps between scaffolds' sequences
+        # For gaps/targets between scaffolds' sequences
         #----------------------------------------------------
         else:
             #if left_fwd or right_rev
@@ -393,21 +392,21 @@ def getMostRepresentedKmer(bamFile, region, orientation, kmerSize):
 #----------------------------------------------------
 def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
     """
-    To update the GFA, when a solution is found for a gap, with this solution.
+    To update the GFA, when a solution is found for a gap/target, with this solution.
 
     Args:
         - outDir: dir
-            directory where the FASTA file containing all gap-filled sequences is located
+            directory where the FASTA file containing all assembled sequences is located
         - gfa_name: str
             name of the GFA file
         - outputGFA: list
-            list containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
+            list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
         - outputGFAFile: file
-            file of the output GFA (updated with the gap-filled sequence(s))
+            file of the output GFA (updated with the assembled sequence(s))
 
     Return/Output:
         - gapfillSeqFile: file
-            file containing all the gap-filled sequences obtained with a good quality score [AB]
+            file containing all the assembled sequences obtained with a good quality score [AB]
     """
     try:
         # Variables input.
@@ -426,8 +425,8 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
 
         print("Updating the GFA file with the solution: " + solutionName)
 
-        # Save the gap-filled sequence to a file containing all gap-filled sequences.
-        gapfillSeqFile = str(outDir) + "/" + str(gfa_name).split('.gfa')[0] + ".gapfilled_sequences.fasta"
+        # Save the assembled sequence to a file containing all assembled sequences.
+        gapfillSeqFile = str(outDir) + "/" + str(gfa_name).split('.gfa')[0] + ".assembled_sequences.fasta"
         try:
             with open(gapfillSeqFile, "a") as seqFasta:
                 seqFasta.write(">{} _ len.{}_qual.{} ".format(solutionName, seqLength, quality))
@@ -438,7 +437,7 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
 
         try:
             with open(outputGFAFile, "a") as f:
-                # Add the gap-filled sequence (query seq) to GFA output ('Sequence' S line).
+                # Add the assembled sequence (query seq) to GFA output ('Sequence' S line).
                 out_gfa = gfapy.Gfa.from_file(outputGFAFile)
                 out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(solutionName, seqLength, os.path.join(outDir, gapfillSeqFile)))
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,8 +21,8 @@
 
 """Module 'qualitativeEvaluation.py': Qualitative Evaluation
 
-The module 'qualitativeEvaluation.py' enables to perform a qualitative evaluation of the gap-filled sequence(s) obtained during the Local Assembly step.
-NUCmer alignments are performed between the gap-filled sequence(s) and a Reference, and a quality score is calculated based on this alignment.
+The module 'qualitativeEvaluation.py' enables to perform a qualitative evaluation of the assembled sequence(s) obtained during the Local Assembly step.
+NUCmer alignments are performed between the assembled sequence(s) and a Reference, and a quality score is calculated based on this alignment.
 """
 
 from __future__ import print_function
@@ -45,18 +44,18 @@ from helpers import Gap, Scaffold
 def statsNucmerAlignments(gapLabel, queryFile, referenceFile, extSize, prefix, outputDir):
     """
     To perform statistics on the Nucmer alignment(s) obtained between Reference sequence(s) and Query sequence(s).
-    The query sequence(s) are the gap-filled sequence(s).
-    The Reference can be either the reference sequence or the gap flanking contigs' sequences.
+    The query sequence(s) are the assembled sequence(s).
+    The Reference can be either the reference sequence or the gap/target flanking contigs' sequences.
 
     Args:
         - gapLabel: str
-            label of the gap
+            label of the gap/target
         - queryFile: file
-            file containing the gap-filled sequence(s) (Query)
+            file containing the assembled sequence(s) (Query)
         - referenceFile: file
             file containing the reference sequence(s) (Reference)
         - extSize: int
-            size of the gap extension on both sides (bp); determine start/end of the local assembly
+            size of the gap/target extension on both sides (bp); determine start/end of the local assembly
         - prefix: str
             prefix of the output files
         - outputDir: str
@@ -106,7 +105,7 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
         - length2: int
             length of second sequence
         - extSize: int
-            size of the gap extension on both sides (bp); determine start/end of the local assembly
+            size of the gap/target extension on both sides (bp); determine start/end of the local assembly
 
     Return:
         - positions: list
@@ -167,13 +166,13 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
 #----------------------------------------------------
 def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightScaffold, module):
     """
-    To get the ouput variables for updating the GFA when a solution is found for a gap.
+    To get the ouput variables for updating the GFA when a solution is found for a gap/target.
 
     Args:
         - record: object
-            Record object of one sequence from the file containing the gap-filled sequence(s)
+            Record object of one sequence from the file containing the assembled sequence(s)
         - extSize: int
-            size of the gap extension on both sides (bp); determine start/end of the local assembly
+            size of the gap/target extension on both sides (bp); determine start/end of the local assembly
         - leftName: str
             name of the left scaffold
         - rightName: str
@@ -187,7 +186,7 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
 
     Return:
         - outputGFA: list
-            list containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
+            list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
     """
     try:
         # Get the information about the sequence.
@@ -240,25 +239,25 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
 def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfillingFile, module):
     """
     To perform the Qualitative Evaluation step. 
-    This step compares the gap-filled sequence(s) obtained during the Local Assembly step to the Reference.
-    The Reference can be either the reference sequence or the gap flanking contigs' sequences.
-    This consists of four main steps: Pre-processing of the current gap, getting the Reference File, obtaining the Nucmer Statistics of the alignments, Quality Estimation of gap-filled sequence(s).
+    This step compares the assembled sequence(s) obtained during the Local Assembly step to the Reference.
+    The Reference can be either the reference sequence or the gap/target flanking contigs' sequences.
+    This consists of four main steps: Pre-processing of the current gap/target, getting the Reference File, obtaining the Nucmer Statistics of the alignments, Quality Estimation of assembled sequence(s).
 
     Args:
         - current_gap: str
-            current gap identification
+            current gap/target identification
         - gfaFile: file
             GFA file containing the gaps' coordinates
         - extSize: int
-            size of the gap extension on both sides (bp); determine start/end of the local assembly
+            size of the gap/target extension on both sides (bp); determine start/end of the local assembly
         - gapfillingFile: file
-            file containing the gap-filled sequence(s)
+            file containing the assembled sequence(s)
         - module: str
             name of the module used for the local assembly step (DBG or IRO)
        
     Return:
         - outputGFAList: list of lists
-            list of lists, each list containing the gap-filled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
+            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
     """
     #----------------------------------------------------
     # Pre-Processing
@@ -287,7 +286,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                     print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to create the object 'gap' from the class 'Gap'.", file=sys.stderr)
                     sys.exit(1)
 
-        # Get some information on the current gap we are working on.
+        # Get some information on the current gap/target we are working on.
         gapLabel = gap.label()
 
         # Create two objects ('leftScaffold' and 'rightScaffold') from the class 'Scaffold'.
@@ -300,7 +299,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
             print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to create the object 'rightScaffold' from the class 'Scaffold'.", file=sys.stderr)
             sys.exit(1)
 
-        # Get the gap flanking sequences (e.g. the flanking contigs sequences).
+        # Get the gap/target flanking sequences (e.g. the flanking contigs sequences).
         leftFlankingSeq = str(leftScaffold.sequence())
         if not leftFlankingSeq:
             print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to get the left flanking sequence.", file=sys.stderr)
@@ -326,10 +325,10 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                 if str(gapLabel) in current_file:
                     referenceFile = main.refDir +"/"+ str(current_file)
             if not os.path.isfile(referenceFile):
-                print("\nWarning: No reference file was found for this gap. The Qualitative Evaluation step will be performed with the gap flanking contigs' sequences.")
+                print("\nWarning: No reference file was found for this gap/target. The Qualitative Evaluation step will be performed with the gap/target flanking contigs' sequences.")
                 referenceFile = ""
 
-        # Qualitative evalution with the gap flanking contigs' sequences.
+        # Qualitative evalution with the gap/target flanking contigs' sequences.
         elif (main.refDir == "") or (referenceFile == ""):
 
             # Merge both left and right flanking contigs sequences into a unique file (referenceFile).
@@ -373,7 +372,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
     # Nucmer Statistics: Query vs Reference
     #----------------------------------------------------       
     try:
-        # Perform statistics on the Nucmer alignments obtained between the gap-filled sequence(s) (Query) and the reference sequence(s) (Reference). 
+        # Perform statistics on the Nucmer alignments obtained between the assembled sequence(s) (Query) and the reference sequence(s) (Reference). 
         if "/" in gapfillingFile:
             prefix = gapfillingFile.split('/')[-1].split('.bxu')[0]
         else:
@@ -388,7 +387,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
 
     #----------------------------------------------------
-    # Quality Estimatation of gap-filled sequence(s)
+    # Quality Estimatation of assembled sequence(s)
     #----------------------------------------------------
     try:
         # Reader for the Nucmer alignments' statistics file.
@@ -408,14 +407,14 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
             # Local assembly performed with the DBG algorithm.
             if module == "DBG":
                 statsReader = csv.DictReader(refQryOutput, \
-                                                fieldnames=("Gap", "Gap.Len", "Chunk", "Barc.Freq", "Kmer.Size", "Min.Abundance.Threshold", "Strand", "Solution", "Qry.Len", "Ref", "Ref.Len", \
+                                                fieldnames=("Target", "Target.Len", "Flank", "Barc.Occ", "Kmer.Size", "Min.Abundance.Threshold", "Strand", "Solution", "Qry.Len", "Ref", "Ref.Len", \
                                                             "Start.Ref", "End.Ref", "Start.Qry", "End.Qry", "AlignR.Len", "AlignQ.Len", "%.Id", "%.CovR", "%.CovQ", "Frame.R", "Frame.Q", "Quality"), \
                                                 delimiter='\t')
 
             # Local assembly performed with the IRO algorithm.
             if module == "IRO":
                 statsReader = csv.DictReader(refQryOutput, \
-                                                fieldnames=("Gap", "Gap.Len", "Chunk", "Barc.Freq", "Seed.Size", "Min.Overlap.Size", "Min.Abundance.Threshold", "dmax", "Qry.Len", "Ref", "Ref.Len", \
+                                                fieldnames=("Target", "Target.Len", "Flank", "Barc.Occ", "Seed.Size", "Min.Overlap.Size", "Min.Abundance.Threshold", "dmax", "Qry.Len", "Ref", "Ref.Len", \
                                                             "Start.Ref", "End.Ref", "Start.Qry", "End.Qry", "AlignR.Len", "AlignQ.Len", "%.Id", "%.CovR", "%.CovQ", "Frame.R", "Frame.Q", "Quality"), \
                                                 delimiter='\t')
 
@@ -423,7 +422,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                 print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to create the reader 'statsReader'.", file=sys.stderr)
                 sys.exit(1)
 
-            # Obtain a quality score for each gap-filled sequence.
+            # Obtain a quality score for each assembled sequence.
             outputGFAList = []
             assemblyWithQualityFile = main.assemblyDir +"/"+ gapfillingFile.split('/')[-1].split('.bxu')[0] + ".bxu.insertions_quality.fasta"
             badSolutionsFile = main.outDir + "/bad_solutions.fasta"
@@ -446,15 +445,15 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                             strand = "fwd"
 
                         if not strand:
-                            print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to get the strand of the gap-filled sequence {}.".format(str(record.id)), file=sys.stderr)
+                            print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to get the strand of the assembled sequence {}.".format(str(record.id)), file=sys.stderr)
                             sys.exit(1)
 
                         #-------------------------------------------------------------------
-                        # Ref = Reference Sequence (ex: reference sequence of simulated gap)
+                        # Ref = Reference Sequence (ex: reference sequence of simulated gap/target)
                         #-------------------------------------------------------------------
                         if main.refDir != "":
                             try:
-                                # Get the list of quality scores for each alignment of one gap-filled sequence against the reference.
+                                # Get the list of quality scores for each alignment of one assembled sequence against the reference.
                                 qualityScoresList = []
                                 for row in statsReader:
 
@@ -465,7 +464,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
                                     ## Local assembly performed with the IRO algorithm.
                                     if module == "IRO":
-                                        if (row["Gap"] == recordLabel):
+                                        if (row["Target"] == recordLabel):
                                             qualityScoresList.append(row["Quality"])
                                 
                                 if qualityScoresList == []:
@@ -501,11 +500,11 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                                 sys.exit(1)
 
                         #----------------------------------------------------
-                        # Ref = Gap Flanking Contigs' Sequences
+                        # Ref = Gap/Target Flanking Contigs' Sequences
                         #----------------------------------------------------
                         else:
                             try:
-                                # Get the list of quality scores for each alignment of one gap-filled sequence against the reference.
+                                # Get the list of quality scores for each alignment of one assembled sequence against the reference.
                                 qualityLeftScoresList = []
                                 qualityRightScoresList = []
                                 for row in statsReader:
@@ -519,9 +518,9 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
                                     ## Local assembly performed with the IRO algorithm.
                                     if module == "IRO":
-                                        if (row["Gap"] == recordLabel) and (row["Ref"] == leftScaffold.name):
+                                        if (row["Target"] == recordLabel) and (row["Ref"] == leftScaffold.name):
                                             qualityLeftScoresList.append(row["Quality"])
-                                        elif (row["Gap"] == recordLabel) and (row["Ref"] == rightScaffold.name):
+                                        elif (row["Target"] == recordLabel) and (row["Ref"] == rightScaffold.name):
                                             qualityRightScoresList.append(row["Quality"])
 
                                 if qualityLeftScoresList == []:
@@ -554,7 +553,7 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                                         sys.exit(1)
 
                             except Exception as e:
-                                print("File 'qualitativeEvaluation.py': Something wrong with the case 'Ref = Gap Flanking Contigs' Sequences' of the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
+                                print("File 'qualitativeEvaluation.py': Something wrong with the case 'Ref = Gap/Target Flanking Contigs' Sequences' of the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
                                 print("Exception-{}".format(e))
                                 sys.exit(1)
 

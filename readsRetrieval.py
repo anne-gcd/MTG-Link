@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,7 +21,7 @@
 
 """Module 'readsRetrieval.py': Reads Retrieval
 
-The module 'readsRetrieval.py' enables to retrieve the reads whose barcode is observed in chunk regions surrounding the gap.
+The module 'readsRetrieval.py' enables to retrieve the reads whose barcode is observed in chunk/flank regions surrounding the gap/target.
 """
 
 from __future__ import print_function
@@ -37,7 +36,7 @@ import sys
 #----------------------------------------------------
 def retrieveReadsWithLRezQueryFastq(gfa_name, reads, index, allBarcodesLists, threads):
     """
-    To retrieve the reads associated to the barcodes extracted on chunk regions, with `LRez query fastq`. 
+    To retrieve the reads associated to the barcodes extracted on chunk/flank regions, with `LRez query fastq`. 
     `LRez query fastq` enables to query a barcodes index and a fastq file to retrieve alignments containing the query barcodes.
 
     Args:
@@ -48,9 +47,9 @@ def retrieveReadsWithLRezQueryFastq(gfa_name, reads, index, allBarcodesLists, th
         - index: file
             index of barcodes
         - gapLabel: str
-            label of the gap
+            label of the gap/target
         - allBarcodesLists: file
-            file containing all the lists of the extracted barcodes (all the lists obtained for all gaps)
+            file containing all the lists of the extracted barcodes (all the lists obtained for all gaps/targets)
         - threads: int
             number of threads to use
     """

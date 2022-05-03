@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,7 +21,7 @@
 
 """Module 'localAssemblyIRO.py': Local Assembly With the IRO (Iterative Read Overlap) algorithm
 
-The module 'localAssemblyIRO.py' enables to perform the local assembly step of the MTG-Link gap-filling pipeline, using an Iterative Read Overlap (IRO) algorithm. 
+The module 'localAssemblyIRO.py' enables to perform the local assembly step of the MTG-Link targeted assembly pipeline, using an Iterative Read Overlap (IRO) algorithm. 
 The IRO algorithm is based on-the-fly computations of read overlaps and iterative extensions of the current assembly sequence, using the subsample of linked reads obtained during the 'Read Subsampling' step of the MTG-Link pipeline.
 """
 
@@ -175,7 +174,7 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
     """
     To extend a read's sequence with overlapping reads.
     This is an iterative function.
-    The Boolean value it returns represents the success of the gap-filling
+    The Boolean value it returns represents the success of the targeted assembly
     NB: extGroup is a dictionary containing the extension's sequence as key, and the reads sharing this extension as value
         (value format: [read's sequence, index of beginning of overlap])
 
@@ -201,7 +200,7 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
         - minOverlapSize: int
             minimum overlapping size
         - abundanceMinList: list
-            list of minimal abundance(s) of reads used for gapfilling
+            list of minimal abundance(s) of reads used for targeted assembly
             extension's groups having less than this number of reads are discarded from the graph
         - dmax: int
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
@@ -212,34 +211,34 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
         - startTime: time
             starting time of the exploration for extending the assembly sequence
         - iroLog: file
-            the temporary (e.g. incomplete) gap-filled sequences will be saved in this log file
+            the temporary (e.g. incomplete) assembled sequences will be saved in this log file
 
     Return:
         - str, Boolean
-            - the gap-filled sequence (assembly) and a Boolean variable equal to True if a solution is found 
+            - the assembled sequence (assembly) and a Boolean variable equal to True if a solution is found 
               (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
-            - the reason why the gap-filling failed and a Boolean variable equal to False if no solution is found
+            - the reason why the targeted assembly failed and a Boolean variable equal to False if no solution is found
         - bpTotal: the number of total bp added to all possible assembled sequences
     """
     try:
         # Base cases.
 
-        ## Target reached (with at most 2 substitutions): Successful gap-filling.
+        ## Target reached (with at most 2 substitutions): Successful targeted assembly.
         kmer_STOP = "({})".format(STOP)
         match = regex.findall(str(kmer_STOP)+"{s<=2}", assembly, overlapped=True)
         if match != []:
             return assembly, True, bpTotal
         
-        ## Assembly length superior to 'maxLength' specified by the user: Gap-filling aborted.
+        ## Assembly length superior to 'maxLength' specified by the user: Targeted Assembly aborted.
         if len(assembly) > maxLength:
             return "|S| > maxLength", False, bpTotal
 
-        ## Number of total bp added to all possible assembled sequences higher than 100*maxLength: Gap-filling aborted.
+        ## Number of total bp added to all possible assembled sequences higher than 100*maxLength: Targeted Assembly aborted.
         if bpTotal > 10*maxLength:
             return "Too many explorations: No solution", False, bpTotal
 
-        ## Exploration takes too much time (> 25% maxLength e.g. we allow 0.25 s per bp): Gap-filling aborted.
+        ## Exploration takes too much time (> 25% maxLength e.g. we allow 0.25 s per bp): Targeted Assembly aborted.
         if (time.time() - startTime) > 0.25*maxLength:
             return "Exploration takes too much time: No solution", False, bpTotal
 
@@ -404,11 +403,11 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
             bpTotal = bpTotal + len(extension)
             res, success, bpTotal = extendReadWithOverlappingReads(assembly+extension, len(extGroupFiltered[extension][0][0]), inputSeqName, STOP, seedDict, assemblyHash, readsList, seedSize, minOverlapSize, abundanceMinList, dmax, maxLength, bpTotal, startTime, iroLog)
 
-            # If we find a complete gap-filled sequence (e.g. we reach the kmer STOP), return the assembly sequence along with True.
+            # If we find a complete assembled sequence (e.g. we reach the kmer STOP), return the assembly sequence along with True.
             if success:
                 return res, True, bpTotal
 
-        # If we don't find a complete gap-filled sequence, return the reason why the gap-filling was not successful along with False.
+        # If we don't find a complete assembled sequence, return the reason why the targeted assembly was not successful along with False.
         return res, False, bpTotal
 
     except Exception as e:
@@ -423,11 +422,11 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
 def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, abundanceMinList, dmax, maxLength):
     """
     To execute the IRO algorithm, that is based on on-the-fly computations of read overlaps and iterative extensions of the current assembly sequence.
-    The local assembly step is performed between the sequences surrounding the extended gap (e.g. the kmers of the breakpoint file), in the forward orientation.
+    The local assembly step is performed between the sequences surrounding the extended gap/target (e.g. the kmers of the breakpoint file), in the forward orientation.
 
     Args:
         - gapLabel: str
-            label of the gap
+            label of the gap/target
         - readsList: list
             reads list used for the local assembly step with the IRO algorithm
         - bkptFile: file
@@ -438,7 +437,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
         - minOverlapSize: int
             minimum overlapping size
         - abundanceMinList: list
-            list of minimal abundance(s) of reads used for gapfilling
+            list of minimal abundance(s) of reads used for targeted assembly
             extension's groups having less than this number of reads are discarded from the graph
         - dmax: int
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
@@ -450,7 +449,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
             - the assembled sequence from the read containing the k-mer START to the read containing the k-mer STOP (assembly) (and so the Boolean value equal to True)
               if a solution is found (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
-            - the reason why the gap-filling failed (and so the Boolean value equal to False)
+            - the reason why the targeted assembly failed (and so the Boolean value equal to False)
               if no solution is found
         - success: boolean
             True/False
@@ -469,7 +468,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
         # Initiate the log file.
         iroLog = str(gapLabel) + "_IROAlgo.log"
 
-        # Get the k-mers gap flanking sequences (kmers START and STOP) (e.g. source and target).
+        # Get the k-mers gap/target flanking sequences (kmers START and STOP) (e.g. source and target).
         try:
             with open(bkptFile, "r") as bkpt:
                 for record in SeqIO.parse(bkpt, "fasta"):
@@ -535,7 +534,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
                 return "List 'abundanceMinList' is empty", False
             res, success, bpTotal = extendReadWithOverlappingReads(read, len(read), inputSeqName, STOP, seedDict, assemblyHash, readsList, seedSize, minOverlapSize, abundanceMinList, dmax, maxLength, bpTotal, startTime, iroLog)
 
-            # Case of successful gap-filling.
+            # Case of successful targeted assembly.
             break
 
         return res, success
@@ -553,17 +552,17 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     """
     To perform the Local Assembly step using a IRO (Iterative Read Overlap) algorithm.  
     The IRO algorithm is based on on-the-fly computations of read overlaps and iterative extensions of the current assembly sequence. This module is executed on the subsample of reads retrieved during the 'Read Subsampling' step.
-    This consists of five main steps: Pre-processing of the current gap, getting the Breakpoint File, getting the 'readList' list, Local Assembly performed with the IRO algorithm and Post-Processing of the gap-filled sequences obtained.
+    This consists of five main steps: Pre-processing of the current gap/target, getting the Breakpoint File, getting the 'readList' list, Local Assembly performed with the IRO algorithm and Post-Processing of the gap-filled sequences obtained.
 
     Args:
         - current_gap: str
-            current gap identification
+            current gap/target identification
         - gfaFile: file
             GFA file containing the gaps' coordinates
         - chunkSize: int
-            size of the chunk region
+            size of the chunk/flank region
         - extSize: int
-            size of the gap extension on both sides (bp); determine start/end of the local assembly
+            size of the gap/target extension on both sides (bp); determine start/end of the local assembly
         - maxLength: int
             maximum assembly length (bp)
         - seedSize: int
@@ -571,14 +570,14 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         - minOverlapSize: int
             minimum overlapping size for reads overlaps
         - abundanceMinList: list
-            list of minimal abundance(s) of reads used for gapfilling
+            list of minimal abundance(s) of reads used for targeted assembly
             extension's groups having less than this number of reads are discarded from the graph
         - dmax: int
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
 
     Return:
         - gapfillingFile: file
-            file containing the obtained gap-filled sequence
+            file containing the obtained assembled sequence
     """
     #----------------------------------------------------
     # Pre-Processing
@@ -607,7 +606,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                     print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to create the object 'gap' from the class 'Gap'.", file=sys.stderr)
                     sys.exit(1)
 
-        # Get some information on the current gap we are working on.
+        # Get some information on the current gap/target we are working on.
         gapLabel = gap.label()
 
         # Create two objects ('leftScaffold' and 'rightScaffold') from the class 'Scaffold'.
@@ -620,7 +619,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to create the object 'rightScaffold' from the class 'Scaffold'.", file=sys.stderr)
             sys.exit(1)
 
-        # Get the gap flanking sequences (e.g. the flanking contigs sequences).
+        # Get the gap/target flanking sequences (e.g. the flanking contigs sequences).
         leftFlankingSeq = str(leftScaffold.sequence())
         if not leftFlankingSeq:
             print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the left flanking sequence.", file=sys.stderr)
@@ -630,13 +629,13 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Unable to get the right flanking sequence.", file=sys.stderr)
             sys.exit(1)
 
-        # If chunk size larger than length of scaffold(s), set the chunk size to the minimal scaffold length.
-        ## Left chunk
+        # If chunk/flank size larger than length of scaffold(s), set the chunk/flank size to the minimal scaffold length.
+        ## Left chunk/flank
         if chunkSize > leftScaffold.slen:
             chunk_L = leftScaffold.slen
         else:
             chunk_L = chunkSize
-        ## Right chunk
+        ## Right chunk/flank
         if chunkSize > rightScaffold.slen:
             chunk_R = rightScaffold.slen
         else:
@@ -646,12 +645,12 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         ## Left region
         leftRegion = leftScaffold.chunk(chunk_L)
         if not leftRegion:
-            print("File 'localAssemblyIRO.py': Unable to obtain the left region (left chunk).", file=sys.stderr)
+            print("File 'localAssemblyIRO.py': Unable to obtain the left region (left flank).", file=sys.stderr)
             sys.exit(1)
         ## Right region
         rightRegion = rightScaffold.chunk(chunk_R)
         if not rightRegion:
-            print("File 'localAssemblyIRO.py': Unable to obtain the right region (right chunk).", file=sys.stderr)
+            print("File 'localAssemblyIRO.py': Unable to obtain the right region (right flank).", file=sys.stderr)
             sys.exit(1)
 
     except Exception as e:
@@ -731,7 +730,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     try:
         # Input reads file containing the subsample of reads extracted during the 'Read Subsampling' step.
         try:
-            unionReadsFile = "{}.{}.g{}.c{}.f{}.bxu.fastq".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinFreq)
+            unionReadsFile = "{}.{}.g{}.c{}.f{}.bxu.fastq".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc)
             subReadsFile = os.path.join(main.subsamplingDir, unionReadsFile)
         except FileNotFoundError as err:
             print("File 'localAssemblyIRO.py': The input reads file {} doesn't exist. \nFileNotFoundError-{}".format(str(subReadsFile), err))
@@ -762,11 +761,11 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             sys.exit(1)
         abundanceMinString = '-'.join(map(str, abundanceMinList))
         
-        print("GAP-FILLING OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
+        print("TARGETED ASSEMBLY OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
 
-        # Determine the maximum assembly length (bp) if the gap length is known.
-        ## NB: if the gap length is unknown, it is set to 0.
-        ## Add twice the extension size to the gap length (extension on both sides of the gap) and twice the length of reads (e.g. 2x 150 bp) to be large
+        # Determine the maximum assembly length (bp) if the gap/target length is known.
+        ## NB: if the gap/target length is unknown, it is set to 0.
+        ## Add twice the extension size to the gap/target length (extension on both sides of the gap/target) and twice the length of reads (e.g. 2x 150 bp) to be large
         if gap.length >= maxLength:
             maxLength = gap.length + 2*extSize + 2*150
 
@@ -783,10 +782,10 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     # Post-Processing
     #----------------------------------------------------
     try:
-        # Output file containing the gap-filled sequence(s).
-        insertionsFile = "{}.{}.g{}.c{}.f{}.s{}.o{}.a{}.dmax{}.bxu.insertions.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinFreq, seedSize, minOverlapSize, abundanceMinString, dmax)
+        # Output file containing the assembled sequence(s).
+        insertionsFile = "{}.{}.g{}.c{}.f{}.s{}.o{}.a{}.dmax{}.bxu.insertions.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, seedSize, minOverlapSize, abundanceMinString, dmax)
 
-        # Case of unsuccessful gap-filling.
+        # Case of unsuccessful targeted assembly.
         if not success:
             print("\n{}: {}\n".format(gapLabel, res))
             try:
@@ -795,7 +794,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyIRO.py': The output 'gapfillingFile' {} doesn't exist. \nFileNotFoundError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
             # Initiate the gapfillingFile.
-            ## Write nothing to it as there is no gap-filled sequence found.
+            ## Write nothing to it as there is no assembled sequence found.
             try:
                 with open(gapfillingFile, "w") as f:
                     pass
@@ -803,7 +802,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyIRO.py', function 'localAssemblyWithIROAlgorithm()': Unable to open or write to the input 'gapfillingFile' {}. \nIOError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
             
-            # Save the reason why there is no complete gap-filling in a log file.
+            # Save the reason why there is no complete targeted assembly in a log file.
             iroLog = str(gapLabel) + "_IROresults.log"
             try:
                 with open(iroLog, "a") as log:
@@ -812,11 +811,11 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyIRO.py', function 'localAssemblyWithIROAlgorithm()': Unable to open or write to the file {}. \nIOError-{}".format(str(iroLog), err))
                 sys.exit(1)
 
-        # Case of successful gap-filling.
+        # Case of successful targeted assembly.
         if success:
-            print("\n{}: Successful Gap-filling !\n". format(gapLabel))
+            print("\n{}: Successful Targeted Assembly !\n". format(gapLabel))
 
-            # Get the k-mers gap flanking sequences (kmers START and STOP).
+            # Get the k-mers gap/target flanking sequences (kmers START and STOP).
             START = leftFlankingSeq[(len(leftFlankingSeq) - extSize - 31):(len(leftFlankingSeq) - extSize)]
             STOP = rightFlankingSeq[extSize:(extSize + 31)]
             inputSeqName = "ctg{}_START-ctg{}_STOP".format(gap.left, gap.right)
@@ -833,7 +832,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyIRO.py, function 'localAssemblyWithIROAlgorithm()': Error with the creation of the final STOP k-mer.", file=sys.stderr)
                 sys.exit(1)
             
-            # Save and pre-process the gap-filled sequence obtained for further qualitative evaluation.
+            # Save and pre-process the assembled sequence obtained for further qualitative evaluation.
             try:
                 gapfillingFile = os.path.abspath(insertionsFile)
             except FileNotFoundError as err:

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Gap-filling tool for draft genome assemblies, dedicated to 
-#  linked read data.
+#  Description: Targeted Assemblies of regions of interest, using linked read data.
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -192,7 +191,7 @@ os.mkdir(evalDir)
 try:
     module = args.MTGLink_module
     chunkSize = args.flank_size
-    barcodesMinFreq = args.occ_barcodes
+    barcodesMinOcc = args.occ_barcodes
     extSize = args.extension
     maxLength = args.max_length
     threads = args.threads
