@@ -208,7 +208,7 @@ if not re.match('^.*.contigs.fasta$', args.reference):
                                     delimiter='\t')
 
         rows = list(reader)
-        for row in rows[3:]:
+        for row in rows[4:]:
             len_q = row["LEN_Q"]
             ref = row["TAG_1"]
             len_r = row["LEN_R"]
@@ -504,7 +504,7 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                                     delimiter='\t')
 
         rows = list(reader)
-        for row in rows[3:]:
+        for row in rows[4:]:
             if row["TAG_1"].split("TargetID.")[1].split("_TargetLen")[0] in str(qry_id):
                 len_q = row["LEN_Q"]
                 ref = row["TAG_1"].split("_region")[0]
