@@ -414,14 +414,19 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
         seqLength = outputGFA[1]
         sequence = outputGFA[2]
         solution = outputGFA[3]
-        pos_1 = outputGFA[4]
-        pos_2 = outputGFA[5]
+        kmerValue = outputGFA[4]
+        pos_1 = outputGFA[5]
+        pos_2 = outputGFA[6]
+        quality = outputGFA[7]
         leftName = solutionName.split(':')[0]
         rightName_w_orientation = solutionName.split(':')[1]
         rightName_wo_orientationSign = re.split('\+_|\-_', str(rightName_w_orientation))[0]
         rightOrientationSign = re.findall(r"\+_|\-_",str(rightName_w_orientation))[0].split('_')[0]
         rightName = rightName_wo_orientationSign + rightOrientationSign
-        quality = outputGFA[6]
+        assemblyName = str(solutionName) + ".k" + str(kmerValue)
+        assemblySolution_wo_orientationSign = re.split('\+|\-', str(solution))[0]
+        assemblyOrientationSign = re.findall(r"\+|\-",str(solution))[0]
+        assemblySolution = assemblySolution_wo_orientationSign + assemblyOrientationSign
 
         print("Updating the GFA file with the solution: " + solutionName)
 
@@ -429,7 +434,7 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
         gapfillSeqFile = str(outDir) + "/" + str(gfa_name).split('.gfa')[0] + ".assembled_sequences.fasta"
         try:
             with open(gapfillSeqFile, "a") as seqFasta:
-                seqFasta.write(">{} _ len.{}_qual.{} ".format(solutionName, seqLength, quality))
+                seqFasta.write(">{} _ len.{}_qual.{} ".format(assemblyName, seqLength, quality))
                 seqFasta.write("\n" + sequence + "\n")
         except IOError as err:
             print("File 'helpers.py', function 'updateGFAWithSolution()': Unable to open or write to the file {}. \nIOError-{}".format(str(gapfillSeqFile), err))
@@ -439,11 +444,11 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
             with open(outputGFAFile, "a") as f:
                 # Add the assembled sequence (query seq) to GFA output ('Sequence' S line).
                 out_gfa = gfapy.Gfa.from_file(outputGFAFile)
-                out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(solutionName, seqLength, os.path.join(outDir, gapfillSeqFile)))
+                out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(assemblyName, seqLength, os.path.join(outDir, gapfillSeqFile)))
 
                 # Write the two corresponding E lines ('Edges' lines) into GFA output.
-                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(leftName, solution, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
-                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(solution, rightName, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(leftName, assemblySolution, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(assemblySolution, rightName, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
 
                 out_gfa.to_file(outputGFAFile)
 

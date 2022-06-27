@@ -164,7 +164,7 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
 #----------------------------------------------------
 # getOutputForGfa function
 #----------------------------------------------------
-def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightScaffold, module):
+def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightScaffold, module, k):
     """
     To get the ouput variables for updating the GFA when a solution is found for a gap/target.
 
@@ -183,6 +183,9 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
             Scaffold object for the right scaffold
         - module: str
             name of the module used for the local assembly step (DBG or IRO)
+        - k: int
+            if "DBG" module: k-mer value used to obtain the current assembled solution being evaluated
+            if "IRO" module: 0 (because no k-mer used for this module)
 
     Return:
         - outputGFA: list
@@ -219,7 +222,7 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
         pos_2 = getPositionForEdgesOfGFA(orientationSign, rightScaffold.orient, seqLength, rightScaffold.slen, extSize)
 
         # Get the list 'output_for_gfa'.
-        outputGFA = [solutionName, seqLength, str(sequence), solution, pos_1, pos_2, quality]
+        outputGFA = [solutionName, seqLength, str(sequence), solution, k, pos_1, pos_2, quality]
 
         if not outputGFA:
             print("File 'qualitativeEvaluation.py, function 'getOutputForGfa()': Unable to create the 'outputGFA' list.", file=sys.stderr)
@@ -236,7 +239,7 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
 #----------------------------------------------------
 # qualitativeEvaluationOfTheAssembly function
 #----------------------------------------------------
-def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfillingFile, module):
+def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfillingFile, module, outputGFAList):
     """
     To perform the Qualitative Evaluation step. 
     This step compares the assembled sequence(s) obtained during the Local Assembly step to the Reference.
@@ -254,6 +257,8 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
             file containing the assembled sequence(s)
         - module: str
             name of the module used for the local assembly step (DBG or IRO)
+        - outputGFAList: list of lists
+            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
        
     Return:
         - outputGFAList: list of lists
@@ -395,7 +400,6 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
         if not os.path.exists(refQryFile):
             print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': The file containing the Nucmer alignments' statistics {} doesn't exist.".format(str(refQryFile)), file=sys.stderr)
-            outputGFAList = []
 
         else:
             try:
@@ -423,9 +427,12 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                 sys.exit(1)
 
             # Obtain a quality score for each assembled sequence.
-            outputGFAList = []
             assemblyWithQualityFile = main.assemblyDir +"/"+ gapfillingFile.split('/')[-1].split('.bxu')[0] + ".bxu.insertions_quality.fasta"
             badSolutionsFile = main.outDir + "/bad_solutions.fasta"
+
+            # If "DBG" module, get the k-mer value of the current solution(s) being evaluated.
+            if module == "DBG":
+                kValue = int(str(assemblyWithQualityFile).split('.bxu.insertions_quality.fasta')[0].split('.a')[-2].split('.k')[-1])
 
             try:
                 with open(gapfillingFile, "r") as query, open(assemblyWithQualityFile, "w") as qualified:
@@ -480,15 +487,20 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
                                 # Update GFA with only the good solutions (the ones having a good quality score).
                                 if (len(sequence) > 2*extSize) and (re.match('^.*Quality [AB]$', record.description)):
-                                    outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module)
+                                    if module == "DBG":
+                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, kValue)
+                                    else:
+                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, 0)
                                     outputGFAList.append(outputGFA)
 
                                 # Add the bad solutions to a FASTA file containing all bad solutions.
                                 else:
-                                    #outputGFAList = []     #Pbm if several solutions output
                                     try:
                                         with open(badSolutionsFile, "a") as badSolFile:
-                                            badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                                            if module == "DBG":
+                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + ".k" + str(kValue) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                                            else:
+                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")       
                                             badSolFile.write(str(sequence))
                                     except IOError as err:
                                         print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
@@ -538,15 +550,20 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
                                 # Update GFA with only the good solutions (the ones having a good quality score).
                                 if (len(sequence) > 2*extSize) and (re.match('^.*Quality [AB]{2}$', record.description)):
-                                    outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module)
+                                    if module == "DBG":
+                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, kValue)
+                                    else:
+                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, 0)
                                     outputGFAList.append(outputGFA)
 
                                 # Add the bad solutions to a FASTA file containing all bad solutions.
                                 else:
-                                    #outputGFAList = []         #Pbm if several solutions output
                                     try:
                                         with open(badSolutionsFile, "a") as badSolFile:
-                                            badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                                            if module == "DBG":
+                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + ".k" + str(kValue) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                                            else:
+                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
                                             badSolFile.write(str(sequence))
                                     except IOError as err:
                                         print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
