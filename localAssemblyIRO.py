@@ -783,7 +783,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     #----------------------------------------------------
     try:
         # Output file containing the assembled sequence(s).
-        insertionsFile = "{}.{}.g{}.c{}.f{}.s{}.o{}.a{}.dmax{}.bxu.insertions.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, seedSize, minOverlapSize, abundanceMinString, dmax)
+        insertionsFile = "{}.{}.g{}.c{}.f{}.s{}.o{}.a{}.dmax{}.bxu.insertions_filtered.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, seedSize, minOverlapSize, abundanceMinString, dmax)
 
         # Case of unsuccessful targeted assembly.
         if not success:
