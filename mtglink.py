@@ -333,7 +333,7 @@ try:
                             print("\t* " + gapName)
 
                         # For all gaps/targets.
-                        orientation = (re.split('\+_|\-_', str(record.id))[1]).split("_")[0]
+                        orientation = (re.split('\+_|\-_', str(record.id))[1]).split(" _ ")[0]
                         length = str(record.description).split(' len.')[1].split('_qual.')[0]
                         quality = str(record.description).split('_qual.')[1]
                         print("\t\t* " + orientation + "\t" + length + " bp\t" + quality)
@@ -370,7 +370,7 @@ try:
         # Remove the raw files.
         subprocess.run("rm -f *.h5", shell=True)
         subprocess.run("rm -f *.vcf", shell=True)
-        subprocess.run("rm -f *.insertions.fasta", shell=True)
+        #subprocess.run("rm -f *.insertions.fasta", shell=True)
 
 except Exception as e:
     print("File 'mtglink.py': Something wrong with removing the raw files from the 'Local Assembly' step.")
