@@ -60,6 +60,7 @@ parserDBG.add_argument('-refDir', dest="refDir", action="store", help="Directory
 parserDBG.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
 parserDBG.add_argument('-ext', dest="extension", action="store", type=int, default=500, help="Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]")
 parserDBG.add_argument('-l', dest="max_length", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
+parserDBG.add_argument('-m', dest="min_length", action="store", type=int, default=1000, help="Minimum assembly length (bp), by default 2*(ext) bp [default: 1000]")
 parserDBG.add_argument('-k', dest="kmer_size", action="store", type=int, default=[51, 41, 31, 21],  nargs='+', help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
 parserDBG.add_argument('-a', dest="abundance_threshold", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance threshold for solid k-mers [default: [3, 2]]")
 parserDBG.add_argument("--force", action="store_true", help="To force search on all '-k' values provided")
@@ -198,6 +199,7 @@ try:
 
     # Module DBG.
     if module == "DBG":
+        minLength = args.min_length
         kmerSizeList = args.kmer_size
         abundanceThresholdList = args.abundance_threshold
         maxNodes = args.max_nodes
