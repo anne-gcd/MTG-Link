@@ -124,7 +124,7 @@ def fillGapWithMTGFill(gapLabel, readsFile, bkptFile, k, a, maxLength, maxNodes,
 #----------------------------------------------------
 # localAssemblyWithDBGAlgorithm function
 #----------------------------------------------------
-def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxLength, kmerSizeList, abundanceThresholdList, maxNodes, nbCores, maxMemory, verbosity):
+def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxLength, minLength, kmerSizeList, abundanceThresholdList, maxNodes, nbCores, maxMemory, verbosity):
     """
     To perform the Local Assembly step using a DBG (De Bruijn Graph) algorithm.
     The DBG algorithm is performed with the 'fill' module of the software MindTheGap. This module is executed on the subsample of reads retrieved during the 'Read Subsampling' step, in breakpoint mode.
@@ -141,6 +141,8 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             size of the gap/target extension on both sides (bp); determine start/end of the local assembly
         - maxLength: int
             maximum assembly length (bp)
+        - minLength : int
+            minimum assembly length (bp)
         - kmerSizeList: list
             list of k-mer sizes values
         - abundanceThresholdList: list
@@ -357,7 +359,30 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
                 # Perform the local assembly step with `MindTheGap fill`.
                 res, success = fillGapWithMTGFill(gapLabel, subReadsFile, bkptFile, k, a, maxLength, maxNodes, nbCores, maxMemory, verbosity, outputPrefix)
-                
+
+                # For each assembled sequence, check that the assembly length is larger than the minimum assembly length required, and if so, add the assembly to the 'assembliesFile'.
+                if success:
+                    success = False
+
+                    # Save the sequences having an assembly length larger than the minimum assembly length required in the file 'assembliesFile'.
+                    try:
+                        try:
+                            assembliesFile = os.path.abspath(main.assemblyDir +"/"+ outputPrefix + ".insertions_filtered.fasta")
+                        except FileNotFoundError as err:
+                            print("File 'localAssemblyDBG.py': The output 'assembliesFile' {} doesn't exist. \nFileNotFoundError-{}".format(str(assembliesFile), err))
+                            sys.exit(1)
+                        with open(res, "r") as mtgOutput, open(assembliesFile, "w") as assemblies:
+                            records = SeqIO.parse(mtgOutput, "fasta")
+                            for record in records:
+                                if len(record.seq) >= minLength:
+                                    SeqIO.write(record, assemblies, "fasta")
+                                    success = True
+                    except IOError as err:
+                        print("File 'localAssemblyDBG.py', function 'localAssemblyWithDBGAlgorithm()': Unable to open the file {} or to open/write to the file {}. \nIOError-{}".format(str(res), str(assembliesFile), err))
+                        sys.exit(1)
+                    if not success:
+                        res = "Targeted Assembly not completed for k{} and lower...".format(str(max(kmerSizeList)))
+
             except Exception as e:
                 print("File 'localAssemblyDBG.py': Something wrong with the 'Local Assembly performed with `MindTheGap fill`' step of the function 'localAssemblyWithDBGAlgorithm()'")
                 print("Exception-{}".format(e))
@@ -377,25 +402,26 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     #----------------------------------------------------
     try:
         # Output file containing the assembled sequence(s).
-        insertionsFile = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu.insertions.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
+        insertionsFile = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu.insertions_filtered.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
 
         # Case of unsuccessful targeted assembly.
         if not success:
             print("\n{}: {}\n".format(gapLabel, res))
             try:
                 gapfillingFile = os.path.abspath(insertionsFile)
+                open(gapfillingFile, 'w').close()
             except FileNotFoundError as err:
                 print("File 'localAssemblyDBG.py': The output 'gapfillingFile' {} doesn't exist. \nFileNotFoundError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
 
         # Case of successful targeted assembly.
         if success:
-            print("\n{}: Successful Targeted Assembly !\n". format(gapLabel))
+            print("\n{}: Successful Targeted Assembly for k{} !\n". format(gapLabel, str(k)))
 
             # Save and pre-process the file containing the assembled sequence(s) for further qualitative evaluation.
             ## Modify the 'insertionFile' and save it to a new file ('gapfillingFile') so that the 'solution x/y' part appears in record.id (and not just in record.description)
             try:
-                gapfillingFile = os.path.abspath(main.assemblyDir +"/"+ outputPrefix + "..insertions.fasta")
+                gapfillingFile = os.path.abspath(main.assemblyDir +"/"+ outputPrefix + "..insertions_filtered.fasta")
             except FileNotFoundError as err:
                 print("File 'localAssemblyDBG.py': The output 'gapfillingFile' {} doesn't exist. \nFileNotFoundError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
