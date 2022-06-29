@@ -103,9 +103,9 @@ try:
             # If 'min' < gap_size < 'max', append the dictionary 'positions_NsDict' with the 'Ns' regions (e.g. gaps) for each scaffold.
             ## key = scaffold_name ; value = list of positions of gaps
             if (args.min is not None) and (gap_size < args.min):
-                break
+                continue
             if (args.max is not None) and (gap_size > args.max):
-                break
+                continue
             if chrom in positions_NsDict:
                 positions_NsDict[chrom].append([chromStart, chromEnd])
             else:
@@ -143,7 +143,7 @@ try:
 
                     # If left and right sequences > 'contigs_size', continue (e.g. add the gap to the output GFA file).
                     if (args.contigs_size is not None) and (len(left_flanking_seq) < args.contigs_size) and (len(right_flanking_seq) < args.contigs_size):
-                        break
+                        continue
                     else:
                         os.chdir(outDir)
 
