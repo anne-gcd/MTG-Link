@@ -427,12 +427,12 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                 sys.exit(1)
 
             # Obtain a quality score for each assembled sequence.
-            assemblyWithQualityFile = main.assemblyDir +"/"+ gapfillingFile.split('/')[-1].split('.bxu')[0] + ".bxu.insertions_quality.fasta"
+            assemblyWithQualityFile = main.assemblyDir +"/"+ gapfillingFile.split('/')[-1].split('.bxu')[0] + ".bxu.insertions_filtered_quality.fasta"
             badSolutionsFile = main.outDir + "/bad_solutions.fasta"
 
             # If "DBG" module, get the k-mer value of the current solution(s) being evaluated.
             if module == "DBG":
-                kValue = int(str(assemblyWithQualityFile).split('.bxu.insertions_quality.fasta')[0].split('.a')[-2].split('.k')[-1])
+                kValue = int(str(assemblyWithQualityFile).split('.bxu.insertions_filtered_quality.fasta')[0].split('.a')[-2].split('.k')[-1])
 
             try:
                 with open(gapfillingFile, "r") as query, open(assemblyWithQualityFile, "w") as qualified:
