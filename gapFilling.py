@@ -64,25 +64,25 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
         # Perform the local assembly with the DBG (De Bruijn Graph) algorithm or the IRO (Iterative Read Overlap) algorithm. 
         ## DBG algorithm.
         if main.module == "DBG":
-            gapfillingFile = localAssemblyWithDBGAlgorithm(current_gap, main.gfaFile, main.chunkSize, main.extSize, main.maxLength, main.kmerSizeList, main.abundanceThresholdList, main.maxNodes, main.nbCores, main.maxMemory, main.verbosity)
+            gapfillingFile = localAssemblyWithDBGAlgorithm(current_gap, main.gfaFile, main.chunkSize, main.extSize, main.maxLength, main.minLength, main.kmerSizeList, main.abundanceThresholdList, main.maxNodes, main.nbCores, main.maxMemory, main.verbosity)
             gapfillingFilesList.append(gapfillingFile)
 
             # If param '--force' set by user, force search on all k-mer values provided. 
             if main.args.force:
 
                 # Get the list of all k-mer values not already tested.
-                prev_kValue = int(str(gapfillingFile).split('.bxu..insertions.fasta')[0].split('.a')[-2].split('.k')[-1])
+                prev_kValue = int(str(gapfillingFile).split('.bxu..insertions_filtered.fasta')[0].split('.a')[-2].split('.k')[-1])
                 updated_kmerSizeList = [k for k in main.kmerSizeList if k < prev_kValue]
             
                 # Continue to search for an assembly sequence for all k-mer values not already tested.
                 while len(updated_kmerSizeList) != 0:
 
                     # Local assembly for the remaining k-mer values.
-                    gapfillingFile = localAssemblyWithDBGAlgorithm(current_gap, main.gfaFile, main.chunkSize, main.extSize, main.maxLength, updated_kmerSizeList, main.abundanceThresholdList, main.maxNodes, main.nbCores, main.maxMemory, main.verbosity)
+                    gapfillingFile = localAssemblyWithDBGAlgorithm(current_gap, main.gfaFile, main.chunkSize, main.extSize, main.maxLength, main.minLength, updated_kmerSizeList, main.abundanceThresholdList, main.maxNodes, main.nbCores, main.maxMemory, main.verbosity)
                     gapfillingFilesList.append(gapfillingFile)
 
                     # Get the list of all k-mer values not already tested.
-                    prev_kValue = int(str(gapfillingFile).split('.bxu..insertions.fasta')[0].split('.a')[-2].split('.k')[-1])
+                    prev_kValue = int(str(gapfillingFile).split('.bxu..insertions_filtered.fasta')[0].split('.a')[-2].split('.k')[-1])
                     updated_kmerSizeList = [k for k in main.kmerSizeList if k < prev_kValue]
 
         ## IRO algorithm.
