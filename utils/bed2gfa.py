@@ -107,9 +107,9 @@ try:
             if (args.max is not None) and (gap_size > args.max):
                 continue
             if chrom in positions_NsDict:
-                positions_NsDict[chrom].append([chromStart, chromEnd])
+                positions_NsDict[chrom].append([int(chromStart), int(chromEnd)])
             else:
-                positions_NsDict[chrom] = [[chromStart, chromEnd]]
+                positions_NsDict[chrom] = [[int(chromStart), int(chromEnd)]]
         
     # For each gap, get the gap's sequence and the left and right flanking sequences.
     with open(fastaFile, "r") as fasta_file:
