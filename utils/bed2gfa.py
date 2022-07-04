@@ -118,6 +118,7 @@ try:
 
                 # Iterate over the gaps of 'positions_NsDict' for each scaffold.
                 gap_coordinatesList = positions_NsDict[record.id]
+                gap_coordinatesList.sort()
                 for i in range(len(gap_coordinatesList)):
 
                     # Get the length of the gap.
