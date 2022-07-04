@@ -95,7 +95,7 @@ try:
         for line in bed_file:
             chrom = line.split('\t')[0]
             chromStart = line.split('\t')[1] 
-            chromEnd = line.split('\t')[2]
+            chromEnd = line.split('\t')[2].split('\n')[0]
 
             # Get the size of the 'Ns' region (e.g. the gap size).
             gap_size = int(chromEnd) - int(chromStart)
@@ -129,16 +129,16 @@ try:
                         left_start_index = 0 
                         left_end_index = gap_coordinatesList[i][0]
                     else:
-                        left_start_index = gap_coordinatesList[i-1][1].split('\n')[0]
+                        left_start_index = gap_coordinatesList[i-1][1]
                         left_end_index = gap_coordinatesList[i][0]
                     left_flanking_seq = record.seq[int(left_start_index):int(left_end_index)]
 
                     # Get the right flanking sequence.
                     if i == len(gap_coordinatesList)-1:     #last gap
-                        right_start_index = gap_coordinatesList[i][1].split('\n')[0]
+                        right_start_index = gap_coordinatesList[i][1]
                         right_end_index = len(record.seq)
                     else:
-                        right_start_index = gap_coordinatesList[i][1].split('\n')[0]
+                        right_start_index = gap_coordinatesList[i][1]
                         right_end_index = gap_coordinatesList[i+1][0]
                     right_flanking_seq = record.seq[int(right_start_index):int(right_end_index)]
 
