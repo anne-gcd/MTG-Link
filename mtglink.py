@@ -19,7 +19,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*****************************************************************************
 
-"""Module 'mtglink.py': Targeted Assembly Pipeline MTG-Link
+"""Module 'mtglink.py': Local Assembly Pipeline MTG-Link
 
 The module 'mtglink.py' enables to process the input and output GFA files, and to process all gaps in a multi-threading way.
 It output as well a summary of the targeted assembly results.
@@ -231,7 +231,7 @@ except Exception as e:
 # Targeted Assembly (Local Assembly and Qualitative Evaluation steps)
 #--------------------------------------------------------------
 try:
-    print("\nSTEP 3/3: Targeted Assembly (Local Assembly and Qualitative Evaluation steps)\n")
+    print("\nSTEP 3/3: Local Assembly (Local Assembly and Qualitative Evaluation steps)\n")
 
     # Start multiprocessing.
     p = Pool()
@@ -245,9 +245,35 @@ try:
 
         ## Solution found for the current gap/target.
         if len(outputGFAList[0]) > 1:          
-            for outputGFA in outputGFAList:
-                gapfillSeqFile = updateGFAWithSolution(main.outDir, main.gfa_name, outputGFA, outputGFAFile)
-                gapfillSeqFileExist = True
+
+            # Check if multiple solutions are obtained and filter them out, except if the '--multiple' parameter is requested by the user. 
+            #TODO: do it also for the IRO module
+            if main.module == "DBG":
+                if main.args.multiple:
+                    for outputGFA in outputGFAList:
+                        gapfillSeqFile = updateGFAWithSolution(main.outDir, main.gfa_name, outputGFA, outputGFAFile)
+                        gapfillSeqFileExist = True
+                else:
+                    nb_fwd = 0
+                    nb_rev = 0
+                    for outputGFA in outputGFAList:
+                        solution = re.split('\+_|\-_', str(outputGFA[0]))[1]
+                        if "fwd" in str(solution):
+                            nb_fwd += 1
+                        elif "rev" in str(solution):
+                            nb_rev += 1
+
+                    # If multiple solutions are returned (>1 fwd and/or >1 rev), we consider that no solution is found for the current gap/target.
+                    if (nb_fwd > 1) or (nb_rev > 1):
+                        out_gfa = gfapy.Gfa.from_file(outputGFAFile)
+                        out_gfa.add_line(outputGFAList[0][0])
+                        out_gfa.to_file(outputGFAFile)
+                    
+                    # If unique solutions are returned, update the output GFA file with this solution. 
+                    else:
+                        for outputGFA in outputGFAList:
+                            gapfillSeqFile = updateGFAWithSolution(main.outDir, main.gfa_name, outputGFA, outputGFAFile)
+                            gapfillSeqFileExist = True
 
         ## No solution found for the current gap/target.
         else:                                   

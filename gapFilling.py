@@ -19,7 +19,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*****************************************************************************
 
-"""Module 'gapFilling.py': Targeted Assembly
+"""Module 'gapFilling.py': Local Assembly
 
 The module 'gapFilling.py' enables to perform two out of the three main steps of the MTG-Link targeted assembly pipeline: Local Assembly and Qualitative Evaluation.
 (The Read Subsampling step was performed before). 
@@ -52,7 +52,7 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     
     Return/Outputs:
         - outputGFAList: list of lists
-            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
+            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the k-mer size used for the DBG assembly, the beginning and ending positions of the overlap and the quality of the assembled sequence
     """
     #----------------------------------------------------
     # Local Assembly
@@ -101,7 +101,7 @@ def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     #----------------------------------------------------
     try:
         # Create an empty list 'outputGFAList'.
-        ## List of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence.
+        ## List of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the k-mer size used for the DBG assembly, the beginning and ending positions of the overlap and the quality of the assembled sequence.
         outputGFAList = []
 
         # Iterate over the 'gapfillingFile' files.

@@ -400,7 +400,7 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
         - gfa_name: str
             name of the GFA file
         - outputGFA: list
-            list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
+            list containing the assembled sequence's name, as well as its length, its sequence, the k-mer size used for the DBG assembly, the beginning and ending positions of the overlap and the quality of the gap-filled sequence
         - outputGFAFile: file
             file of the output GFA (updated with the assembled sequence(s))
 
@@ -413,20 +413,20 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
         solutionName = outputGFA[0]
         seqLength = outputGFA[1]
         sequence = outputGFA[2]
-        solution = outputGFA[3]
-        kmerValue = outputGFA[4]
-        pos_1 = outputGFA[5]
-        pos_2 = outputGFA[6]
-        quality = outputGFA[7]
+        # solution = outputGFA[3]
+        kmerValue = outputGFA[3]
+        pos_1 = outputGFA[4]
+        pos_2 = outputGFA[5]
+        quality = outputGFA[6]
         leftName = solutionName.split(':')[0]
         rightName_w_orientation = solutionName.split(':')[1]
         rightName_wo_orientationSign = re.split('\+_|\-_', str(rightName_w_orientation))[0]
         rightOrientationSign = re.findall(r"\+_|\-_",str(rightName_w_orientation))[0].split('_')[0]
         rightName = rightName_wo_orientationSign + rightOrientationSign
         assemblyName = str(solutionName) + ".k" + str(kmerValue)
-        assemblySolution_wo_orientationSign = re.split('\+|\-', str(solution))[0]
-        assemblyOrientationSign = re.findall(r"\+|\-",str(solution))[0]
-        assemblySolution = assemblySolution_wo_orientationSign + assemblyOrientationSign
+        # assemblySolution_wo_orientationSign = re.split('\+|\-', str(solution))[0]
+        # assemblyOrientationSign = re.findall(r"\+|\-",str(solution))[0]
+        # assemblySolution = assemblySolution_wo_orientationSign + assemblyOrientationSign
 
         print("Updating the GFA file with the solution: " + solutionName)
 
@@ -447,8 +447,8 @@ def updateGFAWithSolution(outDir, gfa_name, outputGFA, outputGFAFile):
                 out_gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(assemblyName, seqLength, os.path.join(outDir, gapfillSeqFile)))
 
                 # Write the two corresponding E lines ('Edges' lines) into GFA output.
-                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(leftName, assemblySolution, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
-                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(assemblySolution, rightName, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
+                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(leftName, assemblyName, pos_1[0], pos_1[1], pos_1[2], pos_1[3]))
+                out_gfa.add_line("E\t*\t{}\t{}\t{}\t{}\t{}\t{}\t*".format(assemblyName, rightName, pos_2[0], pos_2[1], pos_2[2], pos_2[3]))
 
                 out_gfa.to_file(outputGFAFile)
 

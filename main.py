@@ -40,54 +40,55 @@ MTGLINK_VERSION = "2.3.2"
 
 parser = argparse.ArgumentParser(prog="mtglink.py", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=("Targeted assembly with linked read data, using either a De Bruijn Graph (DBG) algorithm or an Iterative Read Overlap (IRO) algorithm"))
+                                description=("Local assembly with linked read data, using either a De Bruijn Graph (DBG) algorithm or an Iterative Read Overlap (IRO) algorithm"))
 
 parser.add_argument('-v', action="version", version='%(prog)s {version}'.format(version=MTGLINK_VERSION))
 
-subparsers = parser.add_subparsers(dest="MTGLink_module", help="MTGLink_module used for the Local Assembly step", required=True)
+subparsers = parser.add_subparsers(dest="MTGLink_module", help="MTGLink module used for the Local Assembly step", required=True)
 
 # DBG module options.
-parserDBG = subparsers.add_parser("DBG", help="Targeted assembly using a De Bruijn Graph (DBG) algorithm")
+parserDBG = subparsers.add_parser("DBG", help="Local assembly using a De Bruijn Graph (DBG) algorithm")
 parserDBG.add_argument('-gfa', dest="gfa", action="store", help="Input GFA file (GFA 2.0) (format: xxx.gfa)", required=True)
-parserDBG.add_argument('-flank', dest="flank_size", action="store", type=int, default=5000, help="Flanking sequences' size (bp) [default: 5000]")
 parserDBG.add_argument('-bam', dest="bam", action="store", help="BAM file: linked reads mapped on current genome assembly (format: xxx.bam)", required=True)
 parserDBG.add_argument('-fastq', dest="reads", action="store", help="File of indexed reads (format: xxx.fastq | xxx.fq)", required=True)
 parserDBG.add_argument('-index', dest="index", action="store", help="Barcodes index file (format: xxx.bci)", required=True)
 parserDBG.add_argument('-bxuDir', dest="bxuDir", action="store", help="Directory where the FASTQ files containing the subsample of reads are located (1 file per target) (format of FASTQ files: xxx.bxu.fastq) [to provide if the read subsampling step has already been done for this dataset]")
-parserDBG.add_argument('-occ', dest="occ_barcodes", action="store", type=int, default=2, help="Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]")
+parserDBG.add_argument('-flank', dest="flankSize", action="store", type=int, default=10000, help="Flanking sequences' size (bp) [default: 10000]")
+parserDBG.add_argument('-occ', dest="minBarcOcc", action="store", type=int, default=2, help="Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]")
 parserDBG.add_argument('-out', dest="outDir", action="store", default="./MTG-Link_results", help="Output directory [default: ./MTG-Link_results]")
 parserDBG.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any [optional]")
 parserDBG.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
-parserDBG.add_argument('-ext', dest="extension", action="store", type=int, default=500, help="Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]")
-parserDBG.add_argument('-l', dest="max_length", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
-parserDBG.add_argument('-m', dest="min_length", action="store", type=int, default=1000, help="Minimum assembly length (bp), by default 2*(ext) bp [default: 1000]")
-parserDBG.add_argument('-k', dest="kmer_size", action="store", type=int, default=[51, 41, 31, 21],  nargs='+', help="k-mer size(s) used for gap-filling [default: [51, 41, 31, 21]]")
-parserDBG.add_argument('-a', dest="abundance_threshold", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance threshold for solid k-mers [default: [3, 2]]")
+parserDBG.add_argument('-ext', dest="extSize", action="store", type=int, default=500, help="Size of the extension of the target on both sides (bp); determine start/end of local assembly [default: 500]")
+parserDBG.add_argument('-l', dest="maxLength", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the target to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
+parserDBG.add_argument('-m', dest="minLength", action="store", type=int, default=1000, help="Minimum assembly length (bp), by default 2*(-ext) bp [default: 1000]")
+parserDBG.add_argument('-k', dest="kmerSize", action="store", type=int, default=[51, 41, 31, 21],  nargs='+', help="K-mer size(s) used for the local assembly [default: [51, 41, 31, 21]]")
+parserDBG.add_argument('-a', dest="abundanceThreshold", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance threshold for solid k-mers [default: [3, 2]]")
 parserDBG.add_argument("--force", action="store_true", help="To force search on all '-k' values provided")
 parserDBG.add_argument('-t', dest="threads", action="store", type=int, default=1, help="Number of threads to use for the Read Subsampling step [default: 1]")
-parserDBG.add_argument('-max-nodes', dest="max_nodes", action="store", type=int, default=1000, help="Maximum number of nodes in contig graph [default: 1000]")
-parserDBG.add_argument('-nb-cores', dest="nb_cores", action="store", type=int, default=1, help="Number of cores for DBG assembly [default: 1]")
-parserDBG.add_argument('-max-memory', dest="max_memory", action="store", type=int, default=0, help="Maximum memory for graph building (in MBytes) [default: 0]")
+parserDBG.add_argument('-max-nodes', dest="maxNodes", action="store", type=int, default=1000, help="Maximum number of nodes in contig graph [default: 1000]")
+parserDBG.add_argument('-nb-cores', dest="nbCores", action="store", type=int, default=1, help="Number of cores for the Local Assembly step (DBG assembly) [default: 1]")
+parserDBG.add_argument('-max-memory', dest="maxMemory", action="store", type=int, default=0, help="Maximum memory for graph building (in MBytes) [default: 0]")
 parserDBG.add_argument('-verbose', dest="verbosity", action="store", type=int, default=0, help="Verbosity level for DBG assembly [default: 0]")
+parserDBG.add_argument("--multiple", action="store_true", help="To return the assembled sequences even if multiple solutions are found (by default, if MTG-Link returns multiple solutions, we consider 'No Assembly' as it is not possible to know which one is the correct one)")
 
 # IRO module options.
-parserIRO = subparsers.add_parser("IRO", help="Targeted assembly using an Iterative Read Overlap (IRO) algorithm")
+parserIRO = subparsers.add_parser("IRO", help="Local assembly using an Iterative Read Overlap (IRO) algorithm")
 parserIRO.add_argument('-gfa', dest="gfa", action="store", help="Input GFA file (GFA 2.0) (format: xxx.gfa)", required=True)
-parserIRO.add_argument('-flank', dest="flank_size", action="store", type=int, default=5000, help="Flanking sequences' size (bp) [default: 5000]")
 parserIRO.add_argument('-bam', dest="bam", action="store", help="BAM file: linked reads mapped on current genome assembly (format: xxx.bam)", required=True)
 parserIRO.add_argument('-fastq', dest="reads", action="store", help="File of indexed reads (format: xxx.fastq | xxx.fq)", required=True)
 parserIRO.add_argument('-index', dest="index", action="store", help="Barcodes index file (format: xxx.bci)", required=True)
 parserIRO.add_argument('-bxuDir', dest="bxuDir", action="store", help="Directory where the FASTQ files containing the subsample of reads are located (1 file per target) (format of FASTQ files: xxx.bxu.fastq) [to provide if the read subsampling step has already been done for this dataset]")
-parserIRO.add_argument('-occ', dest="occ_barcodes", action="store", type=int, default=2, help="Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]")
+parserIRO.add_argument('-flank', dest="flankSize", action="store", type=int, default=10000, help="Flanking sequences' size (bp) [default: 10000]")
+parserIRO.add_argument('-occ', dest="minBarcOcc", action="store", type=int, default=2, help="Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]")
 parserIRO.add_argument('-out', dest="outDir", action="store", default="./MTG-Link_results", help="Output directory [default: ./MTG-Link_results]")
 parserIRO.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any [optional]")
 parserIRO.add_argument('-line', dest="line", action="store", type=int, help="Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input) [optional]")
-parserIRO.add_argument('-ext', dest="extension", action="store", type=int, default=500, help="Size of the extension of the gap on both sides (bp); determine start/end of gapfilling [default: 500]")
-parserIRO.add_argument('-l', dest="max_length", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the gap to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
-parserIRO.add_argument('-s', dest="seed_size", action="store", type=int, default=10, help="Seed size used for indexing the reads (bp) [default: 10]")
-parserIRO.add_argument('-o', dest="min_overlap", action="store", type=int, default=20, help="Minimum overlapping size (bp) [default: 20]")
-parserIRO.add_argument('-a', dest="abundance_min", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance(s) of reads used for gapfilling ; extension's groups having less than this number of reads are discarded from the graph [default: [3, 2]]")
-parserIRO.add_argument('-dmax', dest="max_score", action="store", type=int, default=2, help="Maximum number of gaps/substitutions allowed in the inexact overlap between reads [default: 2]")
+parserIRO.add_argument('-ext', dest="extSize", action="store", type=int, default=500, help="Size of the extension of the target on both sides (bp); determine start/end of local assembly [default: 500]")
+parserIRO.add_argument('-l', dest="maxLength", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the target to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
+parserIRO.add_argument('-s', dest="seedSize", action="store", type=int, default=10, help="Seed size used for indexing the reads (bp) [default: 10]")
+parserIRO.add_argument('-o', dest="minOverlap", action="store", type=int, default=20, help="Minimum overlapping size (bp) [default: 20]")
+parserIRO.add_argument('-a', dest="abundanceMin", action="store", type=int, default=[3, 2], nargs='+', help="Minimal abundance(s) of reads used for local assembly ; extension's groups having less than this number of reads are discarded from the graph [default: [3, 2]]")
+parserIRO.add_argument('-dmax', dest="maxScore", action="store", type=int, default=2, help="Maximum number of gaps/substitutions allowed in the inexact overlap between reads [default: 2]")
 parserIRO.add_argument('-t', dest="threads", action="store", type=int, default=1, help="Number of threads to use for the Read Subsampling step [default: 1]")
 
 args = parser.parse_args()
@@ -191,28 +192,28 @@ os.mkdir(evalDir)
 #----------------------------------------------------
 try:
     module = args.MTGLink_module
-    chunkSize = args.flank_size
-    barcodesMinOcc = args.occ_barcodes
-    extSize = args.extension
-    maxLength = args.max_length
+    chunkSize = args.flankSize
+    barcodesMinOcc = args.minBarcOcc
+    extSize = args.extSize
+    maxLength = args.maxLength
     threads = args.threads
 
     # Module DBG.
     if module == "DBG":
-        minLength = args.min_length
-        kmerSizeList = args.kmer_size
-        abundanceThresholdList = args.abundance_threshold
-        maxNodes = args.max_nodes
-        nbCores = args.nb_cores
-        maxMemory = args.max_memory
+        minLength = args.minLength
+        kmerSizeList = args.kmerSize
+        abundanceThresholdList = args.abundanceThreshold
+        maxNodes = args.maxNodes
+        nbCores = args.nbCores
+        maxMemory = args.maxMemory
         verbosity = args.verbosity
 
     # Module IRO.
     if module == "IRO":
-        seedSize = args.seed_size
-        minOverlapSize = args.min_overlap
-        abundanceMinList = args.abundance_min
-        dmax = args.max_score
+        seedSize = args.seedSize
+        minOverlapSize = args.minOverlap
+        abundanceMinList = args.abundanceMin
+        dmax = args.maxScore
 
 except Exception as e:
     print("\nFile 'main.py': Something wrong with the parameters")

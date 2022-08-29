@@ -189,7 +189,7 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
 
     Return:
         - outputGFA: list
-            list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
+            list containing the assembled sequence's name, as well as its length, its sequence, the k-mer size used for the DBG assembly, the beginning and ending positions of the overlap and the quality of the assembled sequence
     """
     try:
         # Get the information about the sequence.
@@ -211,18 +211,19 @@ def getOutputForGfa(record, extSize, leftName, rightName, leftScaffold, rightSca
         ## Module IRO.
         if module == "IRO":
             solutionName = str(leftName) +":"+ str(rightName) + "_" + orientation
-        solution = solutionName + orientationSign
+        # solution = solutionName + orientationSign
 
-        if not solution:
-            print("File 'qualitativeEvaluation.py, function 'getOutputForGfa()': Unable to create the 'solution' variable.", file=sys.stderr)
-            sys.exit(1)
+        # if not solution:
+        #     print("File 'qualitativeEvaluation.py, function 'getOutputForGfa()': Unable to create the 'solution' variable.", file=sys.stderr)
+        #     sys.exit(1)
 
         # Get the position for edges.
         pos_1 = getPositionForEdgesOfGFA(leftScaffold.orient, orientationSign, leftScaffold.slen, seqLength, extSize)
         pos_2 = getPositionForEdgesOfGFA(orientationSign, rightScaffold.orient, seqLength, rightScaffold.slen, extSize)
 
         # Get the list 'output_for_gfa'.
-        outputGFA = [solutionName, seqLength, str(sequence), solution, k, pos_1, pos_2, quality]
+        outputGFA = [solutionName, seqLength, str(sequence), k, pos_1, pos_2, quality]
+        # outputGFA = [solutionName, seqLength, str(sequence), solution, k, pos_1, pos_2, quality]
 
         if not outputGFA:
             print("File 'qualitativeEvaluation.py, function 'getOutputForGfa()': Unable to create the 'outputGFA' list.", file=sys.stderr)
@@ -258,11 +259,11 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
         - module: str
             name of the module used for the local assembly step (DBG or IRO)
         - outputGFAList: list of lists
-            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
+            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the k-mer size used for the DBG assembly, the beginning and ending positions of the overlap and the quality of the assembled sequence
        
     Return:
         - outputGFAList: list of lists
-            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the number of solution found, the beginning and ending positions of the overlap and the quality of the assembled sequence
+            list of lists, each list containing the assembled sequence's name, as well as its length, its sequence, the k-mer size used for the DBG assembly, the beginning and ending positions of the overlap and the quality of the assembled sequence
     """
     #----------------------------------------------------
     # Pre-Processing
