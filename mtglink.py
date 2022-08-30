@@ -131,6 +131,7 @@ try:
         outputDir = str(main.subsamplingDir) + "/."
         os.system("cp " + inputDir +" "+ outputDir)
         print("The corresponding files are copied to: " + main.subsamplingDir)
+        readSubsamplingSummaryFile = str(main.subsamplingDir) + "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
 
     # Read subsampling step not already performed on this dataset.
     else:
