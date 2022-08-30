@@ -249,7 +249,8 @@ try:
             # Check if multiple solutions are obtained and filter them out, except if the '--multiple' parameter is requested by the user. 
             #TODO: do it also for the IRO module
             if main.module == "DBG":
-                if main.args.multiple:
+                # It is not possible to filter multiple solutions with the '--force' argument. 
+                if main.args.multiple or main.args.force:
                     for outputGFA in outputGFAList:
                         gapfillSeqFile = updateGFAWithSolution(main.outDir, main.gfa_name, outputGFA, outputGFAFile)
                         gapfillSeqFileExist = True

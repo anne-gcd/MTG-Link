@@ -69,7 +69,7 @@ parserDBG.add_argument('-max-nodes', dest="maxNodes", action="store", type=int, 
 parserDBG.add_argument('-nb-cores', dest="nbCores", action="store", type=int, default=1, help="Number of cores for the Local Assembly step (DBG assembly) [default: 1]")
 parserDBG.add_argument('-max-memory', dest="maxMemory", action="store", type=int, default=0, help="Maximum memory for graph building (in MBytes) [default: 0]")
 parserDBG.add_argument('-verbose', dest="verbosity", action="store", type=int, default=0, help="Verbosity level for DBG assembly [default: 0]")
-parserDBG.add_argument("--multiple", action="store_true", help="To return the assembled sequences even if multiple solutions are found (by default, if MTG-Link returns multiple solutions, we consider 'No Assembly' as it is not possible to know which one is the correct one)")
+parserDBG.add_argument("--multiple", action="store_true", help="To return the assembled sequences even if multiple solutions are found (by default, if MTG-Link returns multiple solutions, we consider 'No Assembly' as it is not possible to know which one is the correct one, except when the '--force' argument is provided)")
 
 # IRO module options.
 parserIRO = subparsers.add_parser("IRO", help="Local assembly using an Iterative Read Overlap (IRO) algorithm")
