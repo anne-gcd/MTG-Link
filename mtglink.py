@@ -129,8 +129,7 @@ try:
         # Copy the corresponding files to the 'subsamplingDir' directory.
         inputDir = str(main.bxuDir) + "/*"
         outputDir = str(main.subsamplingDir) + "/."
-        command = ["cp", inputDir, outputDir]
-        subprocess.run(command)
+        os.system("cp " + inputDir +" "+ outputDir)
         print("The corresponding files are copied to: " + main.subsamplingDir)
 
     # Read subsampling step not already performed on this dataset.
