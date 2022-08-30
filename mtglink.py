@@ -267,9 +267,12 @@ try:
                     # If multiple solutions are returned (>1 fwd and/or >1 rev), we consider that no solution is found for the current gap/target.
                     if (nb_fwd > 1) or (nb_rev > 1):
                         out_gfa = gfapy.Gfa.from_file(outputGFAFile)
-                        out_gfa.add_line(outputGFAList[0][0])
+                        leftScaff = str(outputGFAList[0][0]).split(':')[0]
+                        for gap in gaps:
+                            if leftScaff in str(gap):
+                                out_gfa.add_line(gap)
                         out_gfa.to_file(outputGFAFile)
-                    
+            
                     # If unique solutions are returned, update the output GFA file with this solution. 
                     else:
                         for outputGFA in outputGFAList:
