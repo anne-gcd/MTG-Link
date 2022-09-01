@@ -121,7 +121,8 @@ if not re.match('^.*.contigs.fasta$', args.reference):
         coords_file = prefix + ".coords.unsorted" 
 
         # Keep only alignments with >90% Id. ('-I90'). 
-        nucmer_command = ["nucmer", "--maxmatch", "-p", prefix, ref_file, qry_file]
+        #nucmer_command = ["nucmer", "--maxmatch", "-p", prefix, ref_file, qry_file]
+        nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
         coords_command = ["show-coords", "-rcdlT", "-I90", delta_file]
 
         with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
@@ -209,76 +210,76 @@ if not re.match('^.*.contigs.fasta$', args.reference):
                                     delimiter='\t')
 
         rows = list(reader)
-        for row in rows[4:]:
-            len_q = row["LEN_Q"]
-            ref = row["TAG_1"]
-            len_r = row["LEN_R"]
-            start_r = row["S1"]
-            end_r = row["E1"]
-            start_q = row["S2"]
-            end_q = row["E2"]
-            len_align_r = row["LEN_1"]
-            len_align_q = row["LEN_2"]
-            identity = row["%_IDY"]
-            cov_r = row["COV_R"]
-            cov_q = row["COV_Q"]
-            frame_r = row["FRM_R"]
-            frame_q = row["FRM_Q"]
+        for row in rows[3:]:
+                len_q = row["LEN_Q"]
+                ref = row["TAG_1"]
+                len_r = row["LEN_R"]
+                start_r = row["S1"]
+                end_r = row["E1"]
+                start_q = row["S2"]
+                end_q = row["E2"]
+                len_align_r = row["LEN_1"]
+                len_align_q = row["LEN_2"]
+                identity = row["%_IDY"]
+                cov_r = row["COV_R"]
+                cov_q = row["COV_Q"]
+                frame_r = row["FRM_R"]
+                frame_q = row["FRM_Q"]
 
-            # Local assembly performed with the DBG algorithm.
-            if ".k" in qry_file.split('/')[-1]:
-                solution = str(row["TAG_2"]).split('_sol_')[1]
-                if "bkpt1" in str(row["TAG_2"]):
-                    strand = "fwd"
-                else:
-                    strand = "rev"
+                # Local assembly performed with the DBG algorithm.
+                if ".k" in qry_file.split('/')[-1]:
+                    solution = str(row["TAG_2"]).split('_sol_')[1]
+                    if "bkpt1" in str(row["TAG_2"]):
+                        strand = "fwd"
+                    else:
+                        strand = "rev"
 
-            # Estimate quality of assembled sequence (Query).
-            ref_len = int(len_r)
-            qry_len = int(len_q) - 2*args.ext
-            error_10_perc = int(0.1 * ref_len)
-            error_50_perc = int(0.5 * ref_len)
+                # Estimate quality of assembled sequence (Query).
+                ref_len = int(len_r)
+                qry_len = int(len_q) - 2*args.ext
+                error_10_perc = int(0.1 * ref_len)
+                error_50_perc = int(0.5 * ref_len)
 
-            # Length of query sequence is equal +-10% of ref length.
-            if qry_len in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                ## The assembled seq matches to the whole ref seq
-                if int(len_align_q) == ref_len:
-                    quality_rq = 'A'
-                ## The assembled seq matches to the ref seq +-10% of ref length
-                elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                    quality_rq = 'B'
-                ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
-                elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
-                    quality_rq = 'C'
+                # Length of query sequence is equal +-10% of ref length.
+                if qry_len in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+                    ## The assembled seq matches to the whole ref seq
+                    if int(len_align_q) == ref_len:
+                        quality_rq = 'A'
+                    ## The assembled seq matches to the ref seq +-10% of ref length
+                    elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+                        quality_rq = 'B'
+                    ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
+                    elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
+                        quality_rq = 'C'
+                    else:
+                        quality_rq = 'D'
+
                 else:
                     quality_rq = 'D'
 
-            else:
-                quality_rq = 'D'
+                # Write stats results in output file.
+                ## Local assembly performed with the DBG algorithm
+                if ".k" in qry_file.split('/')[-1]:
+                    stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
+                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-            # Write stats results in output file.
-            ## Local assembly performed with the DBG algorithm
-            if ".k" in qry_file.split('/')[-1]:
-                stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
-                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+                ## Local assembly performed with the IRO algorithm
+                if ".dmax" in qry_file.split('/')[-1]:
+                    stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
+                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-            ## Local assembly performed with the IRO algorithm
-            if ".dmax" in qry_file.split('/')[-1]:
-                stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
-                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
-
-            ## Write in output file
-            if os.path.exists(ref_qry_output):
-                with open(ref_qry_output, "a") as output:
-                    output.write('\n' + '\t'.join(str(i) for i in stats))
-            else:
-                with open(ref_qry_output, "a") as output:
-                    output.write('\t'.join(j for j in stats_legend))
-                    output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
+                ## Write in output file
+                if os.path.exists(ref_qry_output):
+                    with open(ref_qry_output, "a") as output:
+                        output.write('\n' + '\t'.join(str(i) for i in stats))
+                else:
+                    with open(ref_qry_output, "a") as output:
+                        output.write('\t'.join(j for j in stats_legend))
+                        output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
         # Sort the 'xxx.nucmerAlignments.stats.unsorted' file for further analysis.
         ref_qry_sorted = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
-        order_command = ["sort", "-k7,8", "-k12,13n", "-r", ref_qry_output]
+        order_command = ["sort", "-k7,8", "-k10", "-k12,13n", "-r", ref_qry_output]
         with open(ref_qry_sorted, "w") as r_sorted:
             subprocess.run(order_command, stdout=r_sorted)
 
