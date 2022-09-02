@@ -74,9 +74,10 @@ with open(commandOut) as out:
     else:
         print("MTG-Link DBG w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunInto", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunInto", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG", shell=True)
+# # We need these files for the test with the '-bxuDir' arg, so do not remove it now. 
+# subprocess.run("rm LOGMTGLinkDBGRunInto", shell=True)
+# subprocess.run("rm ERRLOGMTGLinkDBGRunInto", shell=True)
+# subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG", shell=True)
 
 
 # ### MTG-Link IRO without reference
@@ -249,9 +250,9 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 2 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
-        print("MTG-Link DBG --multiple w/o ref: Pass")
+        print("MTG-Link DBG -bxuDir w/o ref: Pass")
     else:
-        print("MTG-Link DBG --multiple w/o ref: Fail")
+        print("MTG-Link DBG -bxuDir w/o ref: Fail")
 
 subprocess.run("rm LOGMTGLinkDBGRunInto", shell=True)
 subprocess.run("rm ERRLOGMTGLinkDBGRunInto", shell=True)
