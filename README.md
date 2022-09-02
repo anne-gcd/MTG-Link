@@ -102,7 +102,7 @@ MTG-Link can be run with the following command:
 ```
 # The conda environment containing the external dependencies or the MTG-Link bioconda package is called 'mtglink'
 conda activate mtglink
-./mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index barcodeIndex.bci 
+mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index barcodeIndex.bci 
 ```
 * gfaFile.gfa: GFA file containing the coordinates of the targets to fill
 * bamFile.bam: BAM file of the linked reads mapped on the draft assembly. Warning: the associated .bai file must exist
