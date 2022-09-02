@@ -338,7 +338,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         for a in abundanceThresholdList:
 
             try:
-                print("TARGETED ASSEMBLY OF: {} for k={} and a={} (union)".format(str(gapLabel), k, a))
+                print("LOCAL ASSEMBLY OF: {} for k={} and a={} (union)".format(str(gapLabel), k, a))
                 
                 # Input reads file containing the subsample of reads extracted during the 'Read Subsampling' step.
                 try:
