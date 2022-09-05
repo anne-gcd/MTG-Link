@@ -280,13 +280,30 @@ try:
                     if strand == "-":
                         sequence = rc(segments[scaffolds[i][:-1]][1])
 
-                    # Write the unassembled sequence to the FASTA file.
-                    name = scaffolds[i][:-1]
-                    name += " len_" + str(len(sequence))
+                    ##Attn: add sequence of 'N' between the two scaffolds
+                    # Initiation.
+                    if i == 0:
+                        assembly += sequence
 
-                    with open(fasta_name, "a") as fasta:
-                        fasta.write(">" + name)
-                        fasta.write("\n" + str(sequence) + "\n")
+                    # Last scaffold.
+                    elif i == len(scaffolds)-1:
+                        if "J" in overlap:
+                            gapLen = int(overlap.split('J')[0])
+                        else:
+                            gapLen = 1
+                        assembly += "N"*gapLen
+                        assembly += sequence
+                
+                # Write the unassembled sequence to the FASTA file.
+                name = ""
+                for i in range(0, len(scaffolds)):
+                    name += scaffolds[i] + ":"
+                name = name[:-1]    #to remove the last ':' char
+                name += " len_" + str(len(assembly))
+
+                with open(fasta_name, "a") as fasta:
+                    fasta.write(">" + name)
+                    fasta.write("\n" + str(assembly) + "\n")
 
 
 except Exception as e:
