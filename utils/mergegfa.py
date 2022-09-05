@@ -32,32 +32,32 @@ from gfapy.sequence import rc
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="mergegfa.py", usage="%(prog)s -1 <gfa_file1> -2 <gfa_file2> -out <merged_gfa_file>", \
+parser = argparse.ArgumentParser(prog="mergegfa.py", usage="%(prog)s -1 <gfaFile1.gfa> -2 <gfaFile2.gfa> -out <merged_gfa_file>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Merge two GFA files together"))
 
-parser.add_argument("-1", dest="gfa1", action="store", help="GFA 2.0 file no.1 (format: 'xxx.gfa')", required=True)
-parser.add_argument("-2", dest="gfa2", action="store", help="GFA 2.0 file no.2 (format: 'xxx.gfa')", required=True)
+parser.add_argument("-1", dest="gfa1", action="store", help="GFA 2.0 file n°1 (format: 'xxx.gfa')", required=True)
+parser.add_argument("-2", dest="gfa2", action="store", help="GFA 2.0 file n°2 (format: 'xxx.gfa')", required=True)
 parser.add_argument("-out", dest="merged_gfa", action="store", help="Name of the output merged GFA file", required=True)
 
 args = parser.parse_args()
 
 if re.match('^.*.gfa$', args.gfa1) is None:
-    parser.error("The suffix of the input GFA file no.1 (GFA 2.0) should be: '.gfa'")
+    parser.error("The suffix of the input GFA file n°1 (GFA 2.0) should be: '.gfa'")
 if re.match('^.*.gfa$', args.gfa2) is None:
-    parser.error("The suffix of the input GFA file no.2 (GFA 2.0) should be: '.gfa'")
+    parser.error("The suffix of the input GFA file n°2 (GFA 2.0) should be: '.gfa'")
 #----------------------------------------------------
 # Input files
 #----------------------------------------------------
 #GFA 2.0 file no.1 
 gfa_file1 = os.path.abspath(args.gfa1)
-if not os.path.exists(args.one):
-    parser.error("The path of the input GFA file no.1 (GFA 2.0)" + args.gfa1 + "doesn't exist")
+if not os.path.exists(gfa_file1):
+    parser.error("The path of the input GFA file n°1 (GFA 2.0)" + args.gfa1 + "doesn't exist")
 
 #GFA 2.0 file no.2
 gfa_file2 = os.path.abspath(args.gfa2)
-if not os.path.exists(args.two):
-    parser.error("The path of the input GFA file no.1 (GFA 2.0)" + args.gfa2 + "doesn't exist")
+if not os.path.exists(gfa_file2):
+    parser.error("The path of the input GFA file n°2 (GFA 2.0)" + args.gfa2 + "doesn't exist")
 
 #----------------------------------------------------
 # Merge the two GFA files together
@@ -112,14 +112,19 @@ try:
         #Iterate over the 'G' lines of the input GFA file no.2
         for line in gfa2.gaps:
             gap_name = str(line).split('\t')[2] + "--" + str(line).split('\t')[3]
-            if not edge_name in G_seen:
+            if not gap_name in G_seen:
                 merged_gfa.add_line(str(line))
 
         merged_gfa.to_file(merged_gfa_file)
 
 
 except Exception as e:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print("\nException-")
-    exc_type, exc_tb = sys.exc_info()
-    print(exc_type, exc_tb.tb_lineno)
+    print(exc_type, fname, exc_tb.tb_lineno)
     sys.exit(1)
+
+
+print("Output merged GFA file: " + merged_gfa_file)
+

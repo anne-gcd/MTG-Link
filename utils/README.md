@@ -1,199 +1,94 @@
+# Get a GFA file from a FASTA file containing 'Ns' regions
+
 ## fasta2bed.py
 
-The **fasta2bed.py** script takes as input a FASTA file and convert it to a BED file containing the positions of 'Ns' for each scaffold.
-
-### Usage
-
+The **`fasta2bed.py`** script takes as input a FASTA file and converts it to a BED file containing the positions of 'Ns' for each scaffold. It can be run with the following command:  
 ```
-./fasta2bed.py --help
-
-usage: fasta2bed.py -in <fasta_file> -out <output_directory>
-
-Convert a FASTA file to a BED file containing the positions of 'Ns' for each scaffold
-                                
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -in INPUT             FASTA file containing the sequences of the scaffolds 
-                        obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')
-  -out OUTDIR           Output directory for saving the BED file
+fasta2bed.py -fa fastaFile.fasta -out outDir
 ```
+* fastaFile.fasta: FASTA file containing the sequences of the scaffolds obtained from the assembly
+* outDir: Directory to save the output BED file
 
+The format of the output BED file is: `<scaffoldID>  <Nstretch_startPosition>  <Nstretch_endPosition>`
 
 ## bed2gfa.py
 
-The **bed2gfa.py** script converts a BED file containing the positions of 'Ns' for each scaffold to a GFA file (GFA 2.0). 
-
+The **`bed2gfa.py`** script converts a BED file containing the positions of 'Ns' for each scaffold to a GFA file (GFA 2.0).  
 It is possible to filter the 'Ns' regions you want to treat as gaps by:
-* their size (e.g. gap sizes)
-* the flanking contigs' sizes (for example, select only to the 'Ns' regions whose flanking contigs' sizes are long enough to get enough barcodes)
+* their size (e.g. gap lengths)
+* the flanking contigs' sizes (for example, select only the 'Ns' regions whose flanking contigs' sizes are long enough to get enough barcodes)
 
-### Usage
-
+It can be run with the following command:  
 ```
-./bed2gfa.py --help
-
-usage: bed2gfa.py -bed <bed_file> -fa <fasta_file> -out <output_directory> [options]
-
-Convert a BED file containing the positions of 'Ns' for each scaffold to a GFA file ('Ns' regions are treated as gaps). We can filter the 'Ns' regions by their size (e.g. gap sizes) and by the contigs' sizes on both sides (long enough for ex to get enough barcodes)
-                                
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -bed BED              BED file containing the positions of 'Ns' for each scaffold 
-                        (format: 'xxx.bed')
-  -fa FASTA             FASTA file containing the sequences of the scaffolds 
-                        obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')
-  -min MIN              Minimum size of the 'Ns' region to treat/process as a gap
-  -max MAX              Maximum size of the 'Ns' region to treat/process as a gap
-  -contigs CONTIGS_SIZE
-                        Minimum size of the flanking contigs of the 'Ns' region 
-                        to treat/process as a gap
-  -out OUTDIR           Output directory for saving the GFA file
+bed2gfa.py -bed bedFile.bed -fa fastaFile.fasta -out outDir -min MIN_GAPLENGTH -max MAX_GAPLENGTH -contigs MIN_CONTIGSIZE
 ```
+* bedFile.bed: BED file containing the 'Ns' coordinates for each scaffold
+* fastaFile.fasta: FASTA file containing the sequences of the scaffolds obtained from the assembly
+* outDir: Directory to save the output GFA file and gap flanking sequences FASTA files
+* MIN_GAPLENGTH: Minimum size of the 'Ns' region to treat as a gap
+* MAX_GAPLENGTH: Maximum size of the 'Ns' region to treat as a gap
+* MIN_CONTIGSIZE: Minimum size of the flanking contigs of the 'Ns' region to treat as a gap
 
+The output GFA file is a GFA 2.0 file. 
+
+
+# Get a GFA file from a file containing the paths between scaffolds
 
 ## paths2gfa.py
 
-The **paths2gfa.py** script takes as input a file containing the paths between scaffolds and transform it to a GFA file (GFA 2.0).
-
-Format of a path: `<int:nb_scaffolds>****<sid1(f|r)>+<sid2(f|r)>`
-
-### Usage
-
+The **`paths2gfa.py`** script takes as input a file containing the paths between scaffolds and converts it to a GFA file (GFA 2.0). It can be run with the following command:  
 ```
-./paths2gfa.py --help
-
-usage: paths2gfa.py -in <fasta_file> -paths <paths_file> -out <output_directory>
-
-Transform a file containing the paths between scaffolds to a GFA file
-                                
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -in INPUT             FASTA file containing the sequences of the scaffolds 
-                        obtained from the assembly (format: 'xxx.fasta')
-  -paths PATHS          File containing the paths between scaffolds (obtained from 
-                        the matrix) (format: 'xxx.paths.txt')
-  -out OUTDIR           Output directory for saving the GFA file and the 
-                        corresponding FASTA file
+paths2gfa.py -fa fastaFile.fasta -paths pathsFile.txt -out outDir
 ```
+* fastaFile.fasta: FASTA file containing the sequences of the scaffolds obtained from the assembly
+* pathsFile.txt: File containing the paths between scaffolds (obtained from the matrix)
+* outDir: Directory to save the output GFA file and gap flanking sequences FASTA files
 
+The format of the input PATHS file is: `<numberOfScaffolds>****<sid1(f|r)>+<sid2(f|r)>`  
+When the orientation of the scaffold is undetermined (?), both forward and reverse orientations are taken into consideration.  
+The output GFA file is a GFA 2.0 file. 
+
+
+# Get a GFA file from a matrix file containing the links between the ends of the scaffolds
 
 ## matrix2gfa.py
 
-The **matrix2gfa.py** script takes as input a file containing the links between the ends of the scaffolds in tabular format and transform it to a GFA file (GFA 2.0).
-
-### Usage
-
+The **`matrix2gfa.py`** script takes as input a file containing the links between the ends of the scaffolds in tabular format (matrix) and converts it to a GFA file (GFA 2.0). It can be run with the following command:  
 ```
-./matrix2gfa.py --help
-
-usage: matrix2gfa.py -in <fasta_file> -matrix <matrix_file> -out <output_directory> -threshold <int>
-
-Transform a file containing the matrix (links between the ends of the scaffolds) to a GFA file
-
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -in INPUT             FASTA file containing the sequences of the scaffolds 
-                        obtained from the assembly (format: 'xxx.fasta')
-  -matrix MATRIX        File containing the links between the ends of the 
-                        scaffolds in tabular format
-  -threshold THRESHOLD  Minimal number of links to be considered
-  -out OUTDIR           Output directory for saving the GFA file and the 
-                        corresponding FASTA file
+matrix2gfa.py -fa fastaFile.fasta -matrix matrixFile.matrix -out outDir -threshold THRESHOLD
 ```
+* fastaFile.fasta: FASTA file containing the sequences of the scaffolds obtained from the assembly
+* matrixFile.matrix: File containing the links between the ends of the scaffolds in tabular format (matrix)
+* outDir: Directory to save the output GFA file and gap flanking sequences FASTA files
+* THRESHOLD: Minimal number of links two scaffolds must share to try to fill the gap between them
+
+The format of the input MATRIX file is: `<scaffoldLeftID>:<extremitiesCoordStart>-<extremitiesCoordEnd> <scaffoldRightID>:<extremitiesCoordStart>-<extremitiesCoordEnd> <numberOfLinks>`  
+The output GFA file is a GFA 2.0 file.
 
 
-## gfa2_to_gfa1.py
-
-The **gfa2_to_gfa1.py** script converts a GFA 2.0 file into a GFA 1.0 file.
-
-### Usage
-
-```
-./gfa2_to_gfa1.py --help
-
-usage: gfa.2_to_gfa.1.py -in <input_gfa_2.0)> -out <output_directory>
-
-Convert a GFA 2.0 file into a GFA 1.0 file                                
-
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -in INPUT             GFA 2.0 file (format: 'xxx.gfa')
-  -out OUTDIR           Output directory for saving the GFA 1.0 file
-```
-
-
-## gfa2fasta.py
-
-The **gfa2fasta.py** script takes as input a GFA file (GFA 1.0) and transform it to a FASTA file. The gaps of the GFA file are returned as 'Ns' regions in the output FASTA file.
-
-### Usage
-
-```
-./gfa2fasta.py --help
-
-usage: gfa2fasta.py -in <gfa_file> -out <output_directory>
-
-Transform a GFA file (GFA 1.0) to a FASTA file (gaps are returned as 'Ns' regions)
-                                
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -in INPUT             GFA 1.0 file (format: 'xxx.gfa')
-  -out OUTDIR           Output directory for saving the FASTA file
-```
-
-
-## gfa2_to_fasta.py
-
-The **gfa2_to_fasta.py** script takes as input a GFA file (GFA 2.0) and transform it to a FASTA file. The gaps of the GFA file are returned as 'Ns' regions in the output FASTA file.
-
-### Usage
-
-```
-./gfa2_to_fasta.py --help
-
-usage: gfa2_to_fasta.py -in <gfa_file> -out <output_directory>
-
-Transform a GFA file (GFA 2.0) to a FASTA file (gaps are returned as 'Ns' regions)
-                                
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -in INPUT             GFA 2.0 file (format: 'xxx.gfa')
-  -out OUTDIR           Output directory for saving the FASTA file
-```
-
+# Merge two GFA 2.0 files together
 
 ## mergegfa.py
 
-The **mergegfa.py** script takes as input two GFA files (GFA 2.0) and merge them together.
-
-### Usage
-
+The **mergegfa.py** script takes as input two GFA files (GFA 2.0) and merge them together. It can be run with the following command:  
 ```
-./mergegfa.py --help
-
-usage: mergegfa.py -1 <gfa_file1> -2 <gfa_file2> -out <merged_gfa_file>
-
-Merge two GFA files together
-                                
-optional arguments:
-  -h, --help            show this help message and exit
-
-[Main options]:
-  -1 INPUT              GFA 2.0 file no.1 (format: 'xxx.gfa')
-  -2 INPUT              GFA 2.0 file no.2 (format: 'xxx.gfa')
-  -out OUTDIR           Name of the output merged GFA file
+mergegfa.py -1 <gfaFile1.gfa> -2 <gfaFile2.gfa> -out <mergedGFAFile>
 ```
+* gfaFile1.gfa: GFA 2.0 file n°1
+* gfaFile2.gfa: GFA 2.0 file n°2
+* mergedGFAFile: Name of the output merged GFA file
+
+The output GFA file is a GFA 2.0 file. 
+
+
+# Convert a GFA 2.0 file to a FASTA file
+
+## gfa2tofasta.py
+
+The **`gfa2tofasta.py`** script takes as input a GFA file (GFA 2.0) and converts it to a FASTA file. The gaps of the GFA file are returned as 'Ns' regions in the output FASTA file. It can be run with the following command:  
+```
+gfa2tofasta.py -in <gfaFile.gfa> -out <outDir>
+```
+* gfaFile.gfa: GFA 2.0 file
+* outDir: Directory to save the output FASTA file
+
