@@ -131,7 +131,7 @@ try:
         outputDir = str(main.subsamplingDir) + "/."
         os.system("cp " + inputDir +" "+ outputDir)
         print("The corresponding files are copied to: " + main.subsamplingDir)
-        readSubsamplingSummaryFile = str(main.subsamplingDir) + "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
+        readSubsamplingSummaryFile = str(main.subsamplingDir) + "{}.flank{}.occ{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
 
     # Read subsampling step not already performed on this dataset.
     else:
@@ -145,7 +145,7 @@ try:
 
         # For each gap/target, get the list of barcodes of potential interest (e.g. barcodes of reads mapping on chunk/flank regions) and append the file containing all the lists obtained for all gaps/targets ('allBarcodesFile').
         print("\nSTEP 2a: Barcodes Extraction\n")
-        allBarcodesFile = "{}.c{}.f{}.allBarcodesFiles.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
+        allBarcodesFile = "{}.flank{}.occ{}.allBarcodesFiles.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
         for gap in gaps:
             unionBarcodesFile = extractBarcodesFromChunkRegions(gap, main.gfaFile, main.bamFile, main.chunkSize, main.barcodesMinOcc)
             try:
@@ -161,7 +161,7 @@ try:
 
         # For each gap/target, generate a summary of the number of barcodes and reads extracted from the union of both gap/target flanking regions.
         print("\nSTEP 2c: Read Subsampling Summary")
-        readSubsamplingSummaryFile = "{}.c{}.f{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
+        readSubsamplingSummaryFile = "{}.flank{}.occ{}.readSubsampling_summary.txt".format(main.gfa_name, main.chunkSize, main.barcodesMinOcc)
         try:
             with open(readSubsamplingSummaryFile, "w") as summaryFile:
                 legend = ["Left_Scaffold", "Right_Scaffold", "Target_Size", "Flank_Size", "MinOcc_Barcodes", "Nb_Barcodes", "Nb_Reads"]
@@ -175,7 +175,7 @@ try:
 
                             # Get the gap/target flanking scaffolds name..
                             suffixBarcodesFile = str(current_file).split('/')[-1].split('.gfa.')[1]
-                            FlankingScaffold = re.split('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))[0]
+                            FlankingScaffold = re.split('\.g.*\.flank.*\.occ.*\.bxu$', str(suffixBarcodesFile))[0]
 
                             ## Get the name of the left flanking scaffold.
                             LeftFlankingScaffold_wo_sign = re.split('\+_|\-_', str(suffixBarcodesFile))[0]
@@ -191,10 +191,10 @@ try:
                             RightFlankingScaffold = RightFlankingScaffold_wo_sign + RightFlankingScaffold_sign
 
                             # Get the parameters values ('gapSizeValue', 'chunkSizeValue', 'minOccBarcodesValue').
-                            suffixParametersValues = re.findall('\.g.*\.c.*\.f.*\.bxu$', str(suffixBarcodesFile))
-                            gapSizeValue = suffixParametersValues[0].split('.g')[1].split('.c')[0]
-                            chunkSizeValue = suffixParametersValues[0].split('.c')[1].split('.f')[0]
-                            minOccBarcodesValue = suffixParametersValues[0].split('.f')[1].split('.bxu')[0]
+                            suffixParametersValues = re.findall('\.g.*\.flank.*\.occ.*\.bxu$', str(suffixBarcodesFile))
+                            gapSizeValue = suffixParametersValues[0].split('.g')[1].split('.flank')[0]
+                            chunkSizeValue = suffixParametersValues[0].split('.flank')[1].split('.occ')[0]
+                            minOccBarcodesValue = suffixParametersValues[0].split('.occ')[1].split('.bxu')[0]
 
                             # Get the number of barcodes.
                             barcodesFile = os.path.abspath(current_file)

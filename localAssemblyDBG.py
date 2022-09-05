@@ -300,7 +300,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]
-            bkptFile = "{}.{}.g{}.c{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, k)
+            bkptFile = "{}.{}.g{}.flank{}.k{}.offset_rm.bkpt.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, k)
             try:
                 with open(bkptFile, "w") as bkpt:
                     # Left kmer and Reverse Right kmer (dependent on the orientation of the left scaffold).
@@ -342,14 +342,14 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 
                 # Input reads file containing the subsample of reads extracted during the 'Read Subsampling' step.
                 try:
-                    unionReadsFile = "{}.{}.g{}.c{}.f{}.bxu.fastq".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc)
+                    unionReadsFile = "{}.{}.g{}.flank{}.occ{}.bxu.fastq".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc)
                     subReadsFile = os.path.join(main.subsamplingDir, unionReadsFile)
                 except FileNotFoundError as err:
                     print("File 'localAssemblyDBG.py': The input reads file {} doesn't exist. \nFileNotFoundError-{}".format(subReadsFile, err))
                     sys.exit(1)
                 
                 # Prefix of the output files containing the results obtained from `MindTheGap fill`. 
-                outputPrefix = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
+                outputPrefix = "{}.{}.g{}.flank{}.occ{}.k{}.a{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
 
                 # Determine the maximum assembly length (bp) if the gap/target length is known.
                 ## NB: if the gap/target length is unknown, it is set to 0.
@@ -402,7 +402,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
     #----------------------------------------------------
     try:
         # Output file containing the assembled sequence(s).
-        insertionsFile = "{}.{}.g{}.c{}.f{}.k{}.a{}.bxu.insertions_filtered.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
+        insertionsFile = "{}.{}.g{}.flank{}.occ{}.k{}.a{}.bxu.insertions_filtered.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
 
         # Case of unsuccessful targeted assembly.
         if not success:

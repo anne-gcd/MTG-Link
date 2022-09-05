@@ -200,7 +200,7 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
 
         # Do the union of the barcodes on both left and right regions (e.g. both left and right chunks/flanks). 
         gfa_name = gfaFile.split('/')[-1]
-        unionBarcodesFile = "{}.{}.g{}.c{}.f{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, barcodesMinOcc)
+        unionBarcodesFile = "{}.{}.g{}.flank{}.occ{}.bxu".format(gfa_name, str(gapLabel), gap.length, chunkSize, barcodesMinOcc)
         try:
             with open(unionBarcodesFile, "w") as unionBarcFile:
                 ## Filter barcodes by the minimal occurrence of barcodes observed in the union set from the two flanking gap/target sequences ('barcodesMinOcc')
