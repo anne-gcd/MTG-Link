@@ -42,6 +42,13 @@ For more information on the LRez and MindTheGap tools:
 * LRez: <https://github.com/morispi/LRez>
 * MindTheGap: <https://github.com/GATB/MindTheGap>
 
+### Installation from conda
+
+MTG-link is also distributed as a [Bioconda package](https://anaconda.org/bioconda/mtglink), which can be installed with:
+```
+conda install -c bioconda mtglink
+```
+
 ### Installation from source
 
 Clone the MTG-Link repository with:
@@ -49,24 +56,9 @@ Clone the MTG-Link repository with:
 git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 ```
 
-You can install the external dependencies via the **conda** package manager:  
-`conda install -c bioconda samtools gfapy blast regex mindthegap lrez`  
-`conda install -c conda-forge biopython pathos`   
-`conda install -c bioconda/label/cf201901 mummer`  
-
-Alternatively, you can install them via the requirements.txt file.  
+Please make sure you have installed all the external dependencies. Alternatively, you can install them via the requirements.txt file.  
 To install a list of packages into a specified **conda** environment, do the following:  
 `conda create --name <env> --file requirements.txt`  
-
-For pysam, you have to install it using **pip**:  
-`pip install pysam`  
-
-### Installation from conda
-
-MTG-link is also distributed as a [Bioconda package](https://anaconda.org/bioconda/mtglink), which can be installed with:
-```
-conda install -c bioconda mtglink
-```
 
 ### Testing the installation
 
@@ -93,16 +85,14 @@ LRez index fastq -f readsFile.fastq -o barcodeIndex.bci
 # The reads file is gzipped.
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 ```
-* readsFile.fastq: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag)
+* readsFile.fastq: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag) TODO:below
 * barcodeIndex.bci: File where to store the LRez barcode index
 
 ### 2) Run MTG-Link
 
 MTG-Link can be run with the following command:  
 ```
-# The conda environment containing the external dependencies or the MTG-Link bioconda package is called 'mtglink'
-conda activate mtglink
-./mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index barcodeIndex.bci 
+mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index barcodeIndex.bci 
 ```
 * gfaFile.gfa: GFA file containing the coordinates of the targets to fill
 * bamFile.bam: BAM file of the linked reads mapped on the draft assembly. Warning: the associated .bai file must exist
@@ -132,7 +122,7 @@ conda activate mtglink
     --multiple              To return the assembled sequences even if multiple solutions are found (by default, if MTG-Link returns multiple solutions, we consider 'No Assembly' as it is not possible to know which one is the correct one)
 ```
 
-**NB:** The `-refDir` directory should contain 1 file per target, e.g. 1 file per reference sequence. Besides, the files contained in `-refDir` should be formatted so that they contain the gap label. Thus, the prefix of these files and of their record ID should be for ex:  
+**NB:** The `-refDir` directory should contain 1 file per target, e.g. 1 file per reference sequence. Besides, the files contained in `-refDir` should be formatted so that they contain the gap label. Thus, the prefix of these files and of their record ID should be for exemple:  
 * Gap into scaffold: `<leftScaffoldName>_<coordLeftScaffoldStart>-<coordLeftScaffoldEnd>-L(+|-)_<rightScaffoldName>_<coordRightScaffoldStart>-<coordRightScaffoldEnd>-R(+|-)`
 * Gap between scaffolds: `<ScaffoldName1>(+|-)_<scaffoldName2>(+|-)`
 
@@ -150,4 +140,11 @@ To contact a developer, request help, or for any feedback on MTG-Link, please us
 You can see all issues concerning MTG-Link [here](https://github.com/anne-gcd/MTG-Link/issues).
 
 If you do not have any github account, you can also send an email to Anne Guichard (<anne.guichard@irisa.fr>).
+
+
+#TODO
+Reference to readme.md for use cases
+
+#TODO above
+see details how to prepare input files (ref to other md)
 
