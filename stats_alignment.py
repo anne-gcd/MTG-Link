@@ -151,10 +151,10 @@ if not re.match('^.*.contigs.fasta$', args.reference):
             g = int("".join(list(gap_size)[1:]))
             if g == 0:
                 g = "NA"
-            chunk_size = qry_file.split('.bxu')[0].split('.')[-4]
-            c = int("".join(list(chunk_size)[1:]))
+            flank_size = qry_file.split('.bxu')[0].split('.')[-4]
+            flank = int(flank_size.split('flank')[1])
             barcodes_occ = qry_file.split('.bxu')[0].split('.')[-3]
-            f = int("".join(list(barcodes_occ)[1:]))
+            occ = int(barcodes_occ.split('occ')[1])
             kmer_size = qry_file.split('.bxu')[0].split('.')[-2]
             k = int("".join(list(kmer_size)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
@@ -167,10 +167,10 @@ if not re.match('^.*.contigs.fasta$', args.reference):
             g = int("".join(list(gap_size)[1:]))
             if g == 0:
                 g = "NA"
-            chunk_size = qry_file.split('.bxu')[0].split('.')[-6]
-            c = int("".join(list(chunk_size)[1:]))
+            flank_size = qry_file.split('.bxu')[0].split('.')[-6]
+            flank = int(flank_size.split('flank')[1])
             barcodes_occ = qry_file.split('.bxu')[0].split('.')[-5]
-            f = int("".join(list(barcodes_occ)[1:]))
+            occ = int(barcodes_occ.split('occ')[1])
             seed_size = qry_file.split('.bxu')[0].split('.')[-4]
             s = int("".join(list(seed_size)[1:]))
             min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
@@ -260,12 +260,12 @@ if not re.match('^.*.contigs.fasta$', args.reference):
                 # Write stats results in output file.
                 ## Local assembly performed with the DBG algorithm
                 if ".k" in qry_file.split('/')[-1]:
-                    stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
+                    stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                 ## Local assembly performed with the IRO algorithm
                 if ".dmax" in qry_file.split('/')[-1]:
-                    stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
+                    stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                 ## Write in output file
@@ -376,12 +376,12 @@ if not re.match('^.*.contigs.fasta$', args.reference):
                             # Write stats results in output file.
                             ## Local assembly performed with the DBG algorithm
                             if ".k" in qry_file.split('/')[-1]:
-                                stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
+                                stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                             ## Local assembly performed with the IRO algorithm
                             if ".dmax" in qry_file.split('/')[-1]:
-                                stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
+                                stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                             with open(ref_qry_sorted, "a") as output_ref:
@@ -446,10 +446,10 @@ elif re.match('^.*.contigs.fasta$', args.reference):
             g = int("".join(list(gap_size)[1:]))
             if g == 0:
                 g = "NA"
-            chunk_size = qry_file.split('.bxu')[0].split('.')[-4]
-            c = int("".join(list(chunk_size)[1:]))
+            flank_size = qry_file.split('.bxu')[0].split('.')[-4]
+            flank = int(flank_size.split('flank')[1])
             barcodes_occ = qry_file.split('.bxu')[0].split('.')[-3]
-            f = int("".join(list(barcodes_occ)[1:]))
+            occ = int(barcodes_occ.split('occ')[1])
             kmer_size = qry_file.split('.bxu')[0].split('.')[-2]
             k = int("".join(list(kmer_size)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
@@ -462,10 +462,10 @@ elif re.match('^.*.contigs.fasta$', args.reference):
             g = int("".join(list(gap_size)[1:]))
             if g == 0:
                 g = "NA"
-            chunk_size = qry_file.split('.bxu')[0].split('.')[-6]
-            c = int("".join(list(chunk_size)[1:]))
+            flank_size = qry_file.split('.bxu')[0].split('.')[-6]
+            flank = int(flank_size.split('flank')[1])
             barcodes_occ = qry_file.split('.bxu')[0].split('.')[-5]
-            f = int("".join(list(barcodes_occ)[1:]))
+            occ = int(barcodes_occ.split('occ')[1])
             seed_size = qry_file.split('.bxu')[0].split('.')[-4]
             s = int("".join(list(seed_size)[1:]))
             min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
@@ -619,12 +619,12 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                 # Write stats results in output file.
                 ## Local assembly performed with the DBG algorithm
                 if ".k" in qry_file.split('/')[-1]:
-                    stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
+                    stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                 ## Local assembly performed with the IRO algorithm
                 if ".dmax" in qry_file.split('/')[-1]:
-                    stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
+                    stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                 ## Write in output file
@@ -735,12 +735,12 @@ elif re.match('^.*.contigs.fasta$', args.reference):
                             # Write stats results in output file.
                             ## Local assembly performed with the DBG algorithm
                             if ".k" in qry_file.split('/')[-1]:
-                                stats = [qry_id, g, c, f, k, a, strand, solution, len_q, ref, len_r, \
+                                stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                             ## Local assembly performed with the IRO algorithm
                             if ".dmax" in qry_file.split('/')[-1]:
-                                stats = [qry_id, g, c, f, s, o, a, d, len_q, ref, len_r, \
+                                stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
                             with open(ref_qry_sorted, "a") as output_ref:
