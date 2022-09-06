@@ -264,11 +264,11 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
 
             if leftScaffold.orient == "-":
-                    leftKmerRegion_start = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize
-                    leftKmerRegion_end = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize + k
+                    leftKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - k
+                    leftKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
 
             leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
-            leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, leftScaffold.orient, k)
+            leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, k)
             if not leftKmer:
                 print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the left kmer for {}.".format(str(leftRegion).split(':')[0]), file=sys.stderr)
 
@@ -278,11 +278,11 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + k
 
             if rightScaffold.orient == "-":
-                rightKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - k
-                rightKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
+                rightKmerRegion_start = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize
+                rightKmerRegion_end = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize + k
 
             rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
-            rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, rightScaffold.orient, k)
+            rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, k)
             if not rightKmer:
                 print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
 
@@ -290,13 +290,13 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             if rightScaffold.orient == "+":
                 revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
             if rightScaffold.orient == "-":
-                revLeftKmer = str(rc(rightFlankingSeq)[extSize:(extSize + k)][::-1])
+                revLeftKmer = str(rc(leftFlankingSeq)[(len(leftFlankingSeq) - extSize - k):(len(leftFlankingSeq) - extSize)])
 
             # Reverse Right kmer.
             if leftScaffold.orient == "+":
                 revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
             if leftScaffold.orient == "-":
-                revRightKmer = str(rc(leftFlankingSeq)[(len(leftFlankingSeq) - extSize - k):(len(leftFlankingSeq) - extSize)][::-1])
+                revRightKmer = str(rc(rightFlankingSeq)[extSize:(extSize + k)])
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]
