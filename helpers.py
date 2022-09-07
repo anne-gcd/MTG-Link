@@ -172,10 +172,7 @@ class Scaffold(Gap):
         #get the sequence of the scaffold
         for record in SeqIO.parse(seq_link, "fasta"):
             if re.match(self.name, record.id):
-                if self.orient == "+":
-                    return record.seq
-                elif self.orient == "-":
-                    return rc(record.seq)
+                return record.seq
 
     #Method "chunk"
     def chunk(self, c):

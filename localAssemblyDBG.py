@@ -262,12 +262,15 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             if leftScaffold.orient == "+":
                 leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - k
                 leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
+                leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
+                leftKmerName = leftScaffold.name
 
             if leftScaffold.orient == "-":
-                    leftKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - k
-                    leftKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
+                leftKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - k
+                leftKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
+                leftKmerRegion = str(rightRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
+                leftKmerName = rightScaffold.name
 
-            leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
             leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, k)
             if not leftKmer:
                 print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the left kmer for {}.".format(str(leftRegion).split(':')[0]), file=sys.stderr)
@@ -276,12 +279,15 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             if rightScaffold.orient == "+":
                 rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
                 rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + k
+                rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
+                rightKmerName = rightScaffold.name
 
             if rightScaffold.orient == "-":
                 rightKmerRegion_start = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize
                 rightKmerRegion_end = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize + k
+                rightKmerRegion = str(leftRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
+                rightKmerName = leftScaffold.name
 
-            rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
             rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, k)
             if not rightKmer:
                 print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
@@ -289,14 +295,18 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             # Reverse Left kmer.
             if rightScaffold.orient == "+":
                 revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+                revLeftKmerName = rightScaffold.name
             if rightScaffold.orient == "-":
-                revLeftKmer = str(rc(leftFlankingSeq)[(len(leftFlankingSeq) - extSize - k):(len(leftFlankingSeq) - extSize)])
+                revRightKmer = str(rc(rightFlankingSeq)[extSize:(extSize + k)])
+                revRightKmerName = rightScaffold.name
 
             # Reverse Right kmer.
             if leftScaffold.orient == "+":
                 revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
+                revRightKmerName = leftScaffold.name
             if leftScaffold.orient == "-":
-                revRightKmer = str(rc(rightFlankingSeq)[extSize:(extSize + k)])
+                revLeftKmer = str(rc(leftFlankingSeq)[(len(leftFlankingSeq) - extSize - k):(len(leftFlankingSeq) - extSize)])
+                revLeftKmerName = leftScaffold.name
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]
@@ -304,15 +314,15 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             try:
                 with open(bkptFile, "w") as bkpt:
                     # Left kmer and Reverse Right kmer (dependent on the orientation of the left scaffold).
-                    line1 = ">bkpt1_TargetID.{}_TargetLen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
+                    line1 = ">bkpt1_TargetID.{}_TargetLen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftKmerName, k)
                     line2 = leftKmer
-                    line7 = "\n>bkpt2_TargetID.{}_TargetLen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, leftScaffold.name, k)
+                    line7 = "\n>bkpt2_TargetID.{}_TargetLen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, revRightKmerName, k)
                     line8 = revRightKmer
                     
                     # Right kmer and Reverse Left kmer (dependent on the orientation of the right scaffold).
-                    line3 = "\n>bkpt1_TargetID.{}_TargetLen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
+                    line3 = "\n>bkpt1_TargetID.{}_TargetLen.{} right_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightKmerName, k)
                     line4 = rightKmer
-                    line5 = "\n>bkpt2_TargetID.{}_TargetLen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, rightScaffold.name, k)
+                    line5 = "\n>bkpt2_TargetID.{}_TargetLen.{} left_kmer.{}_len.{} offset_rm\n".format(str(gapLabel), gap.length, revLeftKmerName, k)
                     line6 = revLeftKmer
                     
                     bkpt.writelines([line1, line2, line3, line4, line5, line6, line7, line8])
