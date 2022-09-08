@@ -189,7 +189,7 @@ try:
                         # GFA file
                         #----------------------------------------------------
                         os.chdir(outDir)
-                        gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_insertions_contigs_" + str(minContigSize) + ".gfa")
+                        gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_insertions_extension_" + str(args.ext_size) + "_contigs_" + str(minContigSize) + ".gfa")
 
                         # Initiate the GFA file.
                         if not os.path.exists(gfaFile):
