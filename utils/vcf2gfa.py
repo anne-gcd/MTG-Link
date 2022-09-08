@@ -33,11 +33,12 @@ from Bio import SeqIO
 #----------------------------------------------------
 parser = argparse.ArgumentParser(prog="vcf2gfa.py", usage="%(prog)s -vcf <vcfFile.vcf> -fa <fastaFile.fasta> -out <outDir> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=("Convert a VCF file containing the insertions coordinates to a GFA file (GFA 2.0). We can filter the insertions by the contigs' sizes on both sides (long enough for ex to get enough barcodes)"))
+                                description=("Convert a VCF file containing the insertions coordinates to a GFA file (GFA 2.0). We can filter the insertions by the contigs' sizes on both sides (long enough for ex to get enough barcodes). As for some insertions, there are a few micro-homologies (mh), we are not sure that the given position in the VCF file is the exact position, so extend the insertion by '--extension' bp on both sides of the insertion"))
 
 parser.add_argument("-vcf", dest="vcf", action="store", help="VCF file containing the insertions coordinates (format: 'xxx.vcf')", required=True)
 parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-contigs", dest="contigs_size", action="store", type=int, help="Minimum size of the flanking contigs of the insertion to treat as a target")
+parser.add_argument("-extension", dest="ext_size", action="store", type=int, default=50, help="Size of the extension of the insertion (bp): extend the insertion by '--extension' bp on both sides of the insertion [default: 50]")
 parser.add_argument("-out", dest="outDir", action="store", help="Directory to save the output GFA file and gap flanking sequences FASTA files", required=True)
 
 args = parser.parse_args()
@@ -100,11 +101,11 @@ try:
                 if sv_type == "INS":
 
                     ## Get the start and end positions of the insertion' coordinates.
-                    insCoord_start = int(pos)
+                    insCoord_start = int(pos) - args.ext_size
                     end_pos = str(info).split('END=')[1]
                     if ";" in end_pos:
                         end_pos = end_pos.split(';')[0]
-                    insCoord_end = int(end_pos)
+                    insCoord_end = int(end_pos) + args.ext_size
                     
                     ## Get the size of the insertion region (e.g. the target size).
                     target_size = insCoord_end - insCoord_start
