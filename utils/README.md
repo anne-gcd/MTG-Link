@@ -78,7 +78,7 @@ It can be run with the following command:
 ```
 vcf2gfa.py -vcf vcfFile.vcf -fa fastaFile.fasta -out outDir -contigs MIN_CONTIGSIZE
 ```
-* vcfFile.bed: VCF file containing the insertions coordinates
+* vcfFile.vcf: VCF file containing the insertions coordinates
 * fastaFile.fasta: FASTA file containing the sequences of the scaffolds obtained from the assembly
 * outDir: Directory to save the output GFA file and gap flanking sequences FASTA files
 * MIN_CONTIGSIZE: Minimum size of the flanking contigs of the insertion to treat as a target
