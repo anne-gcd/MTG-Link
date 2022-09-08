@@ -232,7 +232,7 @@ try:
                     if strand == "-":
                         sequence = rc(segments[scaffolds[i][:-1]][1])
                     
-                    ##Attn: remove overlap only on scaffolds, not on gapfilled seq
+                    ##Attn: remove overlap only on scaffolds, not on assembled seq
                     # Initiation.
                     if i == 0:
                         overlap = int(overlaps[i][:-1])
@@ -254,7 +254,7 @@ try:
 
                 # Write the assembly sequence to the FASTA file.
                 name = ""
-                for i in range(1, len(scaffolds)):
+                for i in range(len(scaffolds)):
                     name += scaffolds[i] + ":"
                 name = name[:-1]    #to remove the last ':' char
                 name += " len_" + str(len(assembly))
