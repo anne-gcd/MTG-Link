@@ -53,7 +53,7 @@ The output GFA file is a GFA 2.0 file.
 
 ## matrix2gfa.py
 
-The **`matrix2gfa.py`** script takes as input a file containing the links between the ends of the scaffolds in tabular format (matrix) and converts it to a GFA file (GFA 2.0). It can be run with the following command:  
+The **`matrix2gfa.py`** script takes as input a file containing the number of common barcodes between all possibles pairs of scaffolds' extremities (links between the ends of the scaffolds) in tabular format (matrix) and converts it to a GFA file (GFA 2.0). It can be run with the following command:  
 ```
 matrix2gfa.py -fa fastaFile.fasta -matrix matrixFile.matrix -out outDir -threshold THRESHOLD
 ```
@@ -62,8 +62,28 @@ matrix2gfa.py -fa fastaFile.fasta -matrix matrixFile.matrix -out outDir -thresho
 * outDir: Directory to save the output GFA file and gap flanking sequences FASTA files
 * THRESHOLD: Minimal number of links two scaffolds must share to try to fill the gap between them
 
-The format of the input MATRIX file is: `<scaffoldLeftID>:<extremitiesCoordStart>-<extremitiesCoordEnd> <scaffoldRightID>:<extremitiesCoordStart>-<extremitiesCoordEnd> <numberOfLinks>`  
+The format of the input MATRIX file is: `<scaffoldLeftID>:<extremitiesCoordStart>-<extremitiesCoordEnd> <scaffoldRightID>:<extremitiesCoordStart>-<extremitiesCoordEnd> <numberOfCommonBarcodes>`  
 The output GFA file is a GFA 2.0 file.
+
+
+# Get a GFA file from a VCF file containing insertions coordinates
+
+## vcf2gfa.py
+
+The **`vcf2gfa.py`** script converts a VCF file containing the insertions coordinates to a GFA file (GFA 2.0).  
+It is possible to filter the insertions you want to treat as targets (e.g. you want to reconstruct) by:
+* the flanking contigs' sizes (for example, select only the insertions whose flanking contigs' sizes are long enough to get enough barcodes)
+
+It can be run with the following command:  
+```
+vcf2gfa.py -vcf vcfFile.vcf -fa fastaFile.fasta -out outDir -contigs MIN_CONTIGSIZE
+```
+* vcfFile.bed: VCF file containing the insertions coordinates
+* fastaFile.fasta: FASTA file containing the sequences of the scaffolds obtained from the assembly
+* outDir: Directory to save the output GFA file and gap flanking sequences FASTA files
+* MIN_CONTIGSIZE: Minimum size of the flanking contigs of the insertion to treat as a target
+
+The output GFA file is a GFA 2.0 file. 
 
 
 # Merge two GFA 2.0 files together
