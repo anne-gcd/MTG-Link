@@ -32,6 +32,7 @@ Presently, it is directly compatible with the following linked-reads technologie
 * Mummer
 * Pathos
 * Pysam
+* Regex
 * LRez
 * MindTheGap
 
