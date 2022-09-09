@@ -1,0 +1,16 @@
+##fileformat=VCFv4.2
+##contig=<ID=68,length=444265>
+##contig=<ID=26939,length=929610>
+##contig=<ID=27292,length=366715>
+##contig=<ID=27358,length=343768>
+##ALT=<ID=<INS>,Description="Insertion of reference sequence">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the structural variant">
+##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Length of the structural variant">
+##INFO=<ID=SEQ,Number=1,Type=Integer,Description="Sequence of the structural variant">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of SV:DEL=Deletion, CON=Contraction, INS=Insertion, DUP=Duplication, INV=Inversion">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype of the structural variant">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	TRUTH
+68	222132	id1	N	<INS>	.	.	SVTYPE=INS;END=222132	GT	1/1
+26939	464805	id2	N	<INS>	.	.	SVTYPE=INS;END=464805	GT	1/1
+27292	183358	id.3	N	<INS>	.	.	SVTYPE=INS;END=183358	GT	1/1
+27358	171884	id.4	N	<INS>	.	.	SVTYPE=INS;END=171884	GT	1/1

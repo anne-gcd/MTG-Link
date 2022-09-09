@@ -1,0 +1,4 @@
+insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.gfa.68_0-222082-L+_68_222182-444265-R+.g100.flank10000.occ2.bxu
+insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.gfa.26939_0-464755-L+_26939_464855-929610-R+.g100.flank10000.occ2.bxu
+insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.gfa.27292_0-183308-L+_27292_183408-366715-R+.g100.flank10000.occ2.bxu
+insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.gfa.27358_0-171834-L+_27358_171934-343768-R+.g100.flank10000.occ2.bxu

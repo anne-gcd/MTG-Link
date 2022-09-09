@@ -128,6 +128,11 @@ mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index b
 
 **NB:** When using the `--force` option, the `--multiple` option cannot be used, as otherwise it would filter unique solutions obtained with different `-k` values. 
 
+#### Examples of use cases
+
+MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
+For each of these use cases, an example of the procedure to follow to perform local assembly with MTG-Link is detailed [here](./docs/UseCases.md).
+
 <!--
 ## License
 Please note that GATB-Core is distributed under Affero-GPL license.
@@ -140,11 +145,4 @@ To contact a developer, request help, or for any feedback on MTG-Link, please us
 You can see all issues concerning MTG-Link [here](https://github.com/anne-gcd/MTG-Link/issues).
 
 If you do not have any github account, you can also send an email to Anne Guichard (<anne.guichard@irisa.fr>).
-
-
-#TODO
-Reference to readme.md for use cases
-
-#TODO above
-see details how to prepare input files (ref to other md)
 

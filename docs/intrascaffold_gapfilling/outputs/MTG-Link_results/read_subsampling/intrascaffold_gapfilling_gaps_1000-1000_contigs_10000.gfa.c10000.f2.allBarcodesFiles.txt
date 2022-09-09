@@ -1,0 +1,4 @@
+intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.gfa.26939_0-464805-L+_26939_465805-930610-R+.g1000.c10000.f2.bxu
+intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.gfa.27292_0-183358-L+_27292_184358-367715-R+.g1000.c10000.f2.bxu
+intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.gfa.27358_0-171884-L+_27358_172884-344768-R+.g1000.c10000.f2.bxu
+intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.gfa.68_0-222132-L+_68_223132-445265-R+.g1000.c10000.f2.bxu

@@ -1,0 +1,8 @@
+>bkpt1_TargetID.27292-2-_27292-1-_TargetLen.0 left_kmer.27292-2_len.21 offset_rm
+AGATTAGTAGCACAGTTTTAA
+>bkpt1_TargetID.27292-2-_27292-1-_TargetLen.0 right_kmer.27292-1_len.21 offset_rm
+
+>bkpt2_TargetID.27292-2-_27292-1-_TargetLen.0 left_kmer.27292-1_len.21 offset_rm
+NNNNNNNNNNNNNNNNNNNNN
+>bkpt2_TargetID.27292-2-_27292-1-_TargetLen.0 right_kmer.27292-2_len.21 offset_rm
+TTAAAACTGTGCTACTAATCT
