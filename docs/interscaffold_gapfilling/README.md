@@ -9,11 +9,11 @@ In the case of **inter-scaffold gap-filling**, you should have the following inp
 * A **matrix** file representing the links between scaffolds in tabular format
     * the matrix file contains the number of common barcodes between all possibles pairs of scaffolds' extremities (links between the ends of the scaffolds).
 * A sequences file in **FASTA** format
-    * the FASTA file contains scaffolds sequences.
+    * the FASTA file contains scaffolds sequences (reference genome).
 * A set of linked reads in **FASTQ** format
     * the FASTQ file is a **barcoded** FASTQ file from linked reads. The barcode sequence must be in the header (BX:Z tag). For example, the *longranger basic* pipeline outputs a FASTQ file with barcode information attached.
     * the FASTQ file must be **gzipped**.
-* An indexed **BAM** file obtained after mapping the linked reads onto the draft genome assembly
+* An indexed **BAM** file obtained after mapping the linked reads onto the reference genome
     * the BAM file is a *Samtools* **indexed** BAM file. Each read in the BAM file has **barcode** information attached. For example, the *longranger* pipeline outputs an indexed BAM file containing position-sorted, aligned reads. Each read in this BAM file has Chromium barcode and phasing information attached.
 
 **NB**: If you don't have the FASTQ file, you can generate it with the following command:
@@ -21,7 +21,7 @@ In the case of **inter-scaffold gap-filling**, you should have the following inp
 samtools bam2fq -T BX bamFile.bam > readsFile.fastq
 gzip -c readsFile.fastq > readsFile.fastq.gz
 ```
-* bamFile.bam: BAM file of the linked reads mapped on the draft assembly. Warning: the associated .bai file must exist
+* bamFile.bam: BAM file of the linked reads mapped on the reference genome. Warning: the associated .bai file must exist
 * readsFile.fastq: Linked reads file, with the barcode sequence in the header (BX:Z tag)
 
 ### Example
@@ -43,7 +43,7 @@ To generate a GFA file from a matrix file containing the number of common barcod
 # Create a GFA file from the matrix file, with a minimal number of links between two scaffolds being of 10
 ../../utils/matrix2gfa.py -fa interscaffold_gapfilling.fasta -matrix interscaffold_gapfilling.matrix -out . -threshold 10
 ```
-* interscaffold_gapfilling.fasta: FASTA file containing the sequences of the scaffolds
+* interscaffold_gapfilling.fasta: FASTA file containing the sequences of the scaffolds (reference genome)
 * interscaffold_gapfilling.matrix: Matrix file containing the number of common barcodes between all possibles pairs of scaffolds' extremities
 * **Outputs**: 
     * GFA file: 'interscaffold_gapfilling_interscaffold_gapfilling_threshold_10.gfa'

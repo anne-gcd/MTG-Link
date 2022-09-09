@@ -6,14 +6,14 @@ An example of the outputs you should get is located in the `outputs/` directory.
 ## Input files
 
 In the case of **alternative allele reconstruction of large insertion variants**, you should have the following input files:
-* A draft genome assembly in **FASTA** format
-    * the FASTA file contains scaffolds sequences (reference FASTA file).
+* A sequences file in **FASTA** format
+    * the FASTA file contains scaffolds sequences (reference genome).
 * The insertions coordinates in **VCF** format
     * the VCF file contains information on the large insertion variants (including the insertions coordinates).
 * A set of linked reads in **FASTQ** format
     * the FASTQ file is a **barcoded** FASTQ file from linked reads. The barcode sequence must be in the header (BX:Z tag). For example, the *longranger basic* pipeline outputs a FASTQ file with barcode information attached.
     * the FASTQ file must be **gzipped**.
-* An indexed **BAM** file obtained after mapping the linked reads onto the draft genome assembly
+* An indexed **BAM** file obtained after mapping the linked reads onto the reference genome
     * the BAM file is a *Samtools* **indexed** BAM file. Each read in the BAM file has **barcode** information attached. For example, the *longranger* pipeline outputs an indexed BAM file containing position-sorted, aligned reads. Each read in this BAM file has Chromium barcode and phasing information attached.
 
 **NB**: If you don't have the FASTQ file, you can generate it with the following command:
@@ -21,7 +21,7 @@ In the case of **alternative allele reconstruction of large insertion variants**
 samtools bam2fq -T BX bamFile.bam > readsFile.fastq
 gzip -c readsFile.fastq > readsFile.fastq.gz
 ```
-* bamFile.bam: BAM file of the linked reads mapped on the draft assembly. Warning: the associated .bai file must exist
+* bamFile.bam: BAM file of the linked reads mapped on the reference genome. Warning: the associated .bai file must exist
 * readsFile.fastq: Linked reads file, with the barcode sequence in the header (BX:Z tag)
 
 ### Example
@@ -45,7 +45,7 @@ To generate a GFA file from a VCF file containing the insertions coordinates, yo
 ../../utils/vcf2gfa.py -vcf insertionsvariants_reconstruction.vcf -fa insertionsvariants_reconstruction.fasta -out . -contigs 10000
 ```
 * insertionsvariants_reconstruction.vcf: VCF file containing the insertions coordinates
-* insertionsvariants_reconstruction.fasta: FASTA file containing the sequences of the scaffolds obtained from the draft assembly (reference FASTA file)
+* insertionsvariants_reconstruction.fasta: FASTA file containing the sequences of the scaffolds (reference genome)
 * **Outputs**: 
     * GFA file: 'insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.gfa'
     * FASTA files containing the left flanking region of the target: 'insertionsvariants_reconstruction_[scaffoldID]_[coordLeftFlankingSeq_start]-[coordLeftFlankingSeq_end].g100.c10000.left.fasta'

@@ -7,11 +7,11 @@
 ## What is MTG-Link ?
 
 MTG-Link is a **local assembly** tool dedicated to **linked-reads**. It leverages barcode information from linked-reads to assemble **specific loci**.  
-The locus of interest is defined by two coordinates on a draft genome, indicating its left and right flanking sequences, and the sequence in-between to be assembled is referred to as the target sequence.  
+The locus of interest is defined by two coordinates on a reference genome, indicating its left and right flanking sequences, and the sequence in-between to be assembled is referred to as the target sequence.  
 The main feature of MTG-Link is that it takes advantage of the linked-read barcode information to get a **subsample of reads** of interest for the **local assembly** of each sequence. It also automatically tests different parameters values and performs a **qualitative evaluation** of the obtained assemblies.  
 MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.
 
-It takes as input a set of linked reads, the target flanking sequences and coordinates in GFA format (with the flanking sequences identified as ”segment” elements (S lines and the targets identified as ”gap” elements (G lines)) and an indexed BAM file obtained after mapping the linked reads onto the draft genome assembly.  
+It takes as input a set of linked reads, the target flanking sequences and coordinates in GFA format (with the flanking sequences identified as ”segment” elements (S lines and the targets identified as ”gap” elements (G lines)) and an indexed BAM file obtained after mapping the linked reads onto the reference genome.  
 It outputs the set of assembled target sequences in Fasta format, as well as an assembly graph file in GFA format, complementing the input GFA file with the obtained target sequences.
 
 Presently, it is directly compatible with the following linked-reads technologies, given the barcodes are reported using the BX:Z tag:
@@ -91,7 +91,7 @@ MTG-Link can be run with the following command:
 mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci 
 ```
 * gfaFile.gfa: GFA file containing the coordinates of the targets to fill
-* bamFile.bam: BAM file of the linked reads mapped on the draft assembly. Warning: the associated .bai file must exist
+* bamFile.bam: BAM file of the linked reads mapped on the reference genome. Warning: the associated .bai file must exist
 * readsFile.fastq.gz: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag). The FASTQ file must be gzipped
 * barcodeIndex.bci: LRez barcode index of the FASTQ file
 
