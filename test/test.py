@@ -20,13 +20,16 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 1 targets were successfully assembled:\n\t* 8_0-3152098-L+:8_3153098-6305195-R+\n\t\t* fwd_1/1.k51\t2000 bp\tAA\n\t\t* rev_1/1.k51\t2000 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG: Pass")
     else:
+        passed = False
         print("MTG-Link DBG: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGInstall", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGInstall", shell=True)
-subprocess.run("rm -rf test_install/results_MTGLink_DBG", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGInstall", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGInstall", shell=True)
+    subprocess.run("rm -rf test_install/results_MTGLink_DBG", shell=True)
 
 
 # ### MTG-Link IRO
@@ -70,8 +73,10 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 2 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG w/o ref: Fail")
 
 # # We need these files for the test with the '-bxuDir' arg, so do not remove it now. 
@@ -118,13 +123,16 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 3 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tA\n\t\t* rev_1/1.k61\t2000 bp\tA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tB\n\t\t* rev_1/1.k51\t2004 bp\tB\n\t* 27358_0-171884-L+:27358_172884-344768-R+\n\t\t* fwd_2/2.k61\t2000 bp\tA\n\t\t* rev_1/2.k61\t2000 bp\tA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG w/ ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG w/ ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunIntoRef", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunIntoRef", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_withRef", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunIntoRef", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunIntoRef", shell=True)
+    subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_withRef", shell=True)
 
 
 # ### MTG-Link IRO with reference
@@ -160,13 +168,16 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 2 targets were successfully assembled:\n\t* 68-1+:68-2+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t* 26939-1+:26939-2+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunBetween", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunBetween", shell=True)
-subprocess.run("rm -rf test_run/gapsBetweenScaffolds/results_MTGLink_DBG", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunBetween", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunBetween", shell=True)
+    subprocess.run("rm -rf test_run/gapsBetweenScaffolds/results_MTGLink_DBG", shell=True)
 
 
 # ### MTG-Link IRO without reference
@@ -207,13 +218,16 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 2 targets were successfully assembled:\n\t* 68-1+:68-2+\n\t\t* fwd_1/1.k61\t2000 bp\tA\n\t\t* rev_1/1.k61\t2000 bp\tA\n\t* 26939-1+:26939-2+\n\t\t* fwd_1/1.k51\t2004 bp\tB\n\t\t* rev_1/1.k51\t2004 bp\tB"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunBetweenRef", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunBetweenRef", shell=True)
-subprocess.run("rm -rf test_run/gapsBetweenScaffolds/results_MTGLink_DBG_withRef", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunBetweenRef", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunBetweenRef", shell=True)
+    subprocess.run("rm -rf test_run/gapsBetweenScaffolds/results_MTGLink_DBG_withRef", shell=True)
 
 
 # ### MTG-Link IRO with reference
@@ -250,16 +264,19 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 2 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG -bxuDir w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG -bxuDir w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunInto", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunInto", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG", shell=True)
-subprocess.run("rm LOGMTGLinkDBGRunIntoBXUDir", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunIntoBXUDir", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_bxuDir", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunInto", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunInto", shell=True)
+    subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG", shell=True)
+    subprocess.run("rm LOGMTGLinkDBGRunIntoBXUDir", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunIntoBXUDir", shell=True)
+    subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_bxuDir", shell=True)
 
 
 
@@ -281,13 +298,16 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 3 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA\n\t* 27358_0-171884-L+:27358_172884-344768-R+\n\t\t* fwd_1/2.k61\t1756 bp\tAA\n\t\t* fwd_2/2.k61\t2000 bp\tAA\n\t\t* rev_1/2.k61\t2000 bp\tAA\n\t\t* rev_2/2.k61\t1756 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG --multiple w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG --multiple w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunIntoMultiple", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunIntoMultiple", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_Multiple", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunIntoMultiple", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunIntoMultiple", shell=True)
+    subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_Multiple", shell=True)
 
 
 
@@ -309,13 +329,16 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 3 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k51\t2000 bp\tAA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA\n\t* 27358_0-171884-L+:27358_172884-344768-R+\n\t\t* fwd_1/2.k61\t1756 bp\tAA\n\t\t* fwd_2/2.k61\t2000 bp\tAA\n\t\t* rev_1/2.k61\t2000 bp\tAA\n\t\t* rev_2/2.k61\t1756 bp\tAA\n\t\t* fwd_1/2.k51\t1756 bp\tAA\n\t\t* fwd_2/2.k51\t2000 bp\tAA\n\t\t* rev_1/2.k51\t2000 bp\tAA\n\t\t* rev_2/2.k51\t1756 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG --force w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG --force w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunIntoForce", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunIntoForce", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_Force", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunIntoForce", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunIntoForce", shell=True)
+    subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_Force", shell=True)
 
 
 
@@ -337,11 +360,14 @@ with open(commandOut, "a") as out, open(commandLog, "a") as log:
 expectedString = "In total, 3 targets were successfully assembled:\n\t* 68_0-222132-L+:68_223132-445265-R+\n\t\t* fwd_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k61\t2000 bp\tAA\n\t\t* rev_1/1.k51\t2000 bp\tAA\n\t* 26939_0-464805-L+:26939_465805-930610-R+\n\t\t* fwd_1/1.k51\t2004 bp\tAA\n\t\t* rev_1/1.k51\t2004 bp\tAA\n\t* 27358_0-171884-L+:27358_172884-344768-R+\n\t\t* fwd_2/2.k61\t2000 bp\tAA\n\t\t* rev_1/2.k61\t2000 bp\tAA\n\t\t* fwd_2/2.k51\t2000 bp\tAA\n\t\t* rev_1/2.k51\t2000 bp\tAA\n\t\t* rev_2/2.k41\t2000 bp\tAA"
 with open(commandOut) as out:
     if expectedString in out.read():
+        passed = True
         print("MTG-Link DBG --force -l -m w/o ref: Pass")
     else:
+        passed = False
         print("MTG-Link DBG --force -l -m w/o ref: Fail")
 
-subprocess.run("rm LOGMTGLinkDBGRunIntoForce_lm", shell=True)
-subprocess.run("rm ERRLOGMTGLinkDBGRunIntoForce_lm", shell=True)
-subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_Force_lm", shell=True)
+if passed:
+    subprocess.run("rm LOGMTGLinkDBGRunIntoForce_lm", shell=True)
+    subprocess.run("rm ERRLOGMTGLinkDBGRunIntoForce_lm", shell=True)
+    subprocess.run("rm -rf test_run/gapsIntoScaffolds/results_MTGLink_DBG_Force_lm", shell=True)
 
