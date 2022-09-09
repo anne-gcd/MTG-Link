@@ -7,14 +7,14 @@
 ## What is MTG-Link ?
 
 MTG-Link is a **local assembly** tool dedicated to **linked-reads**. It leverages barcode information from linked-reads to assemble **specific loci**.  
-The locus of interest is defined by two coordinates on a reference genome, indicating its left and right flanking sequences, and the sequence in-between to be assembled is referred to as the target sequence.  
 The main feature of MTG-Link is that it takes advantage of the linked-read barcode information to get a **subsample of reads** of interest for the **local assembly** of each sequence. It also automatically tests different parameters values and performs a **qualitative evaluation** of the obtained assemblies.  
-MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.
+
+MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as the reconstruction of the alternative allele of large insertion variants. Notably, the sequence to be assembled can be totally unknown (even in a related species such as in targeted assembly). The locus of interest is only defined by two coordinates on a reference genome, indicating its left and right flanking sequences, and the sequence in-between to be assembled is referred to as the target sequence.  
 
 It takes as input a set of linked reads, the target flanking sequences and coordinates in GFA format (with the flanking sequences identified as ”segment” elements (S lines and the targets identified as ”gap” elements (G lines)) and an indexed BAM file obtained after mapping the linked reads onto the reference genome.  
 It outputs the set of assembled target sequences in Fasta format, as well as an assembly graph file in GFA format, complementing the input GFA file with the obtained target sequences.
 
-Presently, it is directly compatible with the following linked-reads technologies, given the barcodes are reported using the BX:Z tag:
+Presently, it is directly compatible with the following linked-reads technologies, given that the barcodes are reported using the BX:Z tag:
 * 10X Genomics
 * Haplotagging
 * stLFR
@@ -42,7 +42,7 @@ For more information on the LRez and MindTheGap tools:
 
 ### Installation from conda
 
-MTG-link is also distributed as a [Bioconda package](https://anaconda.org/bioconda/mtglink), which can be installed with:
+MTG-link is distributed as a [Bioconda package](https://anaconda.org/bioconda/mtglink), which can be installed with:
 ```
 conda install -c bioconda mtglink
 ```
@@ -60,7 +60,7 @@ To install a list of packages into a specified **conda** environment, do the fol
 
 ### Testing the installation
 
-You can test the installation of MTG-Link with the script `test.py` located in the `test/` directory, that runs MTG-Link on several test datasets, .   
+You can test the installation of MTG-Link with the script `test.py` located in the `test/` directory, that runs MTG-Link on several small toy datasets.   
 Please run the following command to try out MTG-Link on these datasets:
 ```
 cd test/
@@ -95,9 +95,9 @@ mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -inde
 * readsFile.fastq.gz: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag). The FASTQ file must be gzipped
 * barcodeIndex.bci: LRez barcode index of the FASTQ file
 
-MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
-As users do not have the same input files depending on their use case, the `utils/` directory contains [scripts](./utils/README.md) to obtain the requested input GFA file from different input file formats.  
-Besides, for each of these use cases, an example of the procedure to follow to perform local assembly with MTG-Link is detailed [here](./docs/UseCases.md).
+MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as the reconstruction of the alternative allele of large insertion variants.  
+As users do not have the same input files depending on their use case, the `utils/` directory contains [scripts](./utils/README.md) to obtain the requested input GFA file from different input file formats (bed, fasta, vcf).  
+Besides, for each of these use cases, an example of the procedure to follow to perform local assembly with MTG-Link is detailed [here](./docs/README.md).
 
 #### Options
 
