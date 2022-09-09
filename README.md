@@ -99,6 +99,10 @@ mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index b
 * readsFile.fastq: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag)
 * barcodeIndex.bci: LRez barcode index of the FASTQ file
 
+MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
+As users do not have the same input files depending on their use case, the `utils/` directory contains [scripts](./utils/README.md) to obtain the requested input GFA file from different input file formats.  
+Besides, for each of these use cases, an example of the procedure to follow to perform local assembly with MTG-Link is detailed [here](./docs/UseCases.md).
+
 #### Options
 
 ```
@@ -127,11 +131,6 @@ mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index b
 * Gap between scaffolds: `<ScaffoldName1>(+|-)_<scaffoldName2>(+|-)`
 
 **NB:** When using the `--force` option, the `--multiple` option cannot be used, as otherwise it would filter unique solutions obtained with different `-k` values. 
-
-#### Examples of use cases
-
-MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
-For each of these use cases, an example of the procedure to follow to perform local assembly with MTG-Link is detailed [here](./docs/UseCases.md).
 
 <!--
 ## License
