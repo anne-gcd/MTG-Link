@@ -92,11 +92,11 @@ LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 
 MTG-Link can be run with the following command:  
 ```
-mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq -index barcodeIndex.bci 
+mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci 
 ```
 * gfaFile.gfa: GFA file containing the coordinates of the targets to fill
 * bamFile.bam: BAM file of the linked reads mapped on the draft assembly. Warning: the associated .bai file must exist
-* readsFile.fastq: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag)
+* readsFile.fastq.gz: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag). The FASTQ file must be gzipped
 * barcodeIndex.bci: LRez barcode index of the FASTQ file
 
 MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
