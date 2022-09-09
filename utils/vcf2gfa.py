@@ -131,7 +131,7 @@ try:
                     insertion_length = int(insertions_coordinatesList[i][1]) - int(insertions_coordinatesList[i][0])
 
                     # Get the left flanking sequence.
-                    if i == 0:      #first gap
+                    if i == 0:      #first target
                         left_start_index = 0 
                         left_end_index = insertions_coordinatesList[i][0]
                     else:
@@ -140,7 +140,7 @@ try:
                     left_flanking_seq = record.seq[int(left_start_index):int(left_end_index)]
 
                     # Get the right flanking sequence.
-                    if i == len(insertions_coordinatesList)-1:     #last gap
+                    if i == len(insertions_coordinatesList)-1:     #last target
                         right_start_index = insertions_coordinatesList[i][1]
                         right_end_index = len(record.seq)
                     else:
