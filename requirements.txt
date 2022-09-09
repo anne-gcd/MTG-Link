@@ -2,11 +2,9 @@
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
 biopython=1.79
-blast=2.5.0
 gfapy=1.2.0
-lrez=2.2.3
-mindthegap=2.2.3
 mummer=3.23
 pathos=0.2.8
-regex=2021.11.2
-samtools=1.6
+pysam=0.19.1
+lrez=2.2.3
+mindthegap=2.2.3

@@ -28,13 +28,10 @@ Presently, it is directly compatible with the following linked-reads technologie
 ### External dependencies
 
 * Biopython
-* Blast
 * Gfapy
 * Mummer
 * Pathos
 * Pysam
-* Regex
-* Samtools
 * LRez
 * MindTheGap
 
@@ -56,7 +53,7 @@ Clone the MTG-Link repository with:
 git clone --recursive https://github.com/anne-gcd/MTG-Link.git
 ```
 
-Please make sure you have installed all the external dependencies. Alternatively, you can install them via the requirements.txt file.  
+Please make sure you have installed all the external dependencies. Alternatively, you can install them via the "requirements.txt" file.  
 To install a list of packages into a specified **conda** environment, do the following:  
 `conda create --name <env> --file requirements.txt`  
 
@@ -65,12 +62,10 @@ To install a list of packages into a specified **conda** environment, do the fol
 You can test the installation of MTG-Link with the script `test.py` located in the `test/` directory, that runs MTG-Link on several test datasets, .   
 Please run the following command to try out MTG-Link on these datasets:
 ```
-# Before running the tests, activate the conda environment containing the external dependencies or the MTG-Link bioconda package (called 'mtglink' in the example below)
-conda activate mtglink
 cd test/
 ./test.py
 ```
-In total, there are 8 tests. To make sure MTG-Link is running properly, all tests should "Pass".  
+To make sure MTG-Link is running properly, all tests should "Pass".  
 If at least one test "Fail", either MTG-Link is not installed properly or there is an unsolved issue in the code. In this case, please use the [issue form](https://github.com/anne-gcd/MTG-Link/issues) of GitHub.
 
 
