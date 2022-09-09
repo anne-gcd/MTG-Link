@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -54,7 +54,7 @@ parser = argparse.ArgumentParser(prog="stats_alignment.py", usage="%(prog)s -qry
 #TODO: Modif lines 55 and 63-64
 parser.add_argument("-qry", "--query", action="store", help="File containing the query sequences (format: 'xxx.insertions_filtered.fasta')", required=True)
 parser.add_argument("-ref", "--reference", action="store", help="File containing either the reference sequence or the target flanking contigs sequences (format: 'xxx.fasta')", required=True)
-parser.add_argument("-ext", "--ext", action="store", type=int, help="Size of the extension of the target on both sides (bp); determine start/end of targeted assembly", required=True)
+parser.add_argument("-ext", "--ext", action="store", type=int, help="Size of the extension of the target on both sides (bp); determine start/end of local assembly", required=True)
 parser.add_argument("-p", "--prefix", action="store", help="Prefix of the output files", required=True)
 parser.add_argument("-out", "--outDir", action="store", help="Output directory for saving results", required=True)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -21,7 +21,7 @@
 
 """Module 'gapFilling.py': Local Assembly
 
-The module 'gapFilling.py' enables to perform two out of the three main steps of the MTG-Link targeted assembly pipeline: Local Assembly and Qualitative Evaluation.
+The module 'gapFilling.py' enables to perform two out of the three main steps of the MTG-Link local assembly pipeline: Local Assembly and Qualitative Evaluation.
 (The Read Subsampling step was performed before). 
 """
 
@@ -42,7 +42,7 @@ from qualitativeEvaluation import qualitativeEvaluationOfTheAssembly
 #----------------------------------------------------
 def fillGapByLocalAssemblyAndQualitativeEvaluation(current_gap):
     """
-    To perform the targeted assembly on a specific gap/target. 
+    To perform the local assembly on a specific gap/target. 
     This consists of two main steps: Local Assembly and Qualitative Evaluation. 
     NB: The Read Subsampling step was performed before. 
 

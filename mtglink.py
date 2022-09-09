@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -22,7 +22,7 @@
 """Module 'mtglink.py': Local Assembly Pipeline MTG-Link
 
 The module 'mtglink.py' enables to process the input and output GFA files, and to process all gaps in a multi-threading way.
-It output as well a summary of the targeted assembly results.
+It output as well a summary of the local assembly results.
 """
 
 from __future__ import print_function
@@ -228,10 +228,10 @@ except Exception as e:
 
 
 #--------------------------------------------------------------
-# Targeted Assembly (Local Assembly and Qualitative Evaluation steps)
+# Local Assembly MTG-Link (Local Assembly and Qualitative Evaluation steps)
 #--------------------------------------------------------------
 try:
-    print("\nSTEP 3/3: Local Assembly (Local Assembly and Qualitative Evaluation steps)\n")
+    print("\nSTEP 3/3: Local Assembly MTG-Link (Local Assembly and Qualitative Evaluation steps)\n")
 
     # Start multiprocessing.
     p = Pool()
@@ -288,7 +288,7 @@ try:
     p.close()
 
 except Exception as e:
-    print("File 'mtglink.py': Something wrong with the 'Targeted Assembly' step.")
+    print("File 'mtglink.py': Something wrong with the 'Local Assembly MTG-Link' step.")
     print("Exception-{}".format(e))
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

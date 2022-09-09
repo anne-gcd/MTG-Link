@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #

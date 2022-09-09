@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -21,7 +21,7 @@
 
 """Module 'localAssemblyIRO.py': Local Assembly With the IRO (Iterative Read Overlap) algorithm
 
-The module 'localAssemblyIRO.py' enables to perform the local assembly step of the MTG-Link targeted assembly pipeline, using an Iterative Read Overlap (IRO) algorithm. 
+The module 'localAssemblyIRO.py' enables to perform the local assembly step of the MTG-Link local assembly pipeline, using an Iterative Read Overlap (IRO) algorithm. 
 The IRO algorithm is based on-the-fly computations of read overlaps and iterative extensions of the current assembly sequence, using the subsample of linked reads obtained during the 'Read Subsampling' step of the MTG-Link pipeline.
 """
 
@@ -174,7 +174,7 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
     """
     To extend a read's sequence with overlapping reads.
     This is an iterative function.
-    The Boolean value it returns represents the success of the targeted assembly
+    The Boolean value it returns represents the success of the local assembly
     NB: extGroup is a dictionary containing the extension's sequence as key, and the reads sharing this extension as value
         (value format: [read's sequence, index of beginning of overlap])
 
@@ -200,7 +200,7 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
         - minOverlapSize: int
             minimum overlapping size
         - abundanceMinList: list
-            list of minimal abundance(s) of reads used for targeted assembly
+            list of minimal abundance(s) of reads used for local assembly
             extension's groups having less than this number of reads are discarded from the graph
         - dmax: int
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
@@ -218,27 +218,27 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
             - the assembled sequence (assembly) and a Boolean variable equal to True if a solution is found 
               (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
-            - the reason why the targeted assembly failed and a Boolean variable equal to False if no solution is found
+            - the reason why the local assembly failed and a Boolean variable equal to False if no solution is found
         - bpTotal: the number of total bp added to all possible assembled sequences
     """
     try:
         # Base cases.
 
-        ## Target reached (with at most 2 substitutions): Successful targeted assembly.
+        ## Target reached (with at most 2 substitutions): Successful local assembly.
         kmer_STOP = "({})".format(STOP)
         match = regex.findall(str(kmer_STOP)+"{s<=2}", assembly, overlapped=True)
         if match != []:
             return assembly, True, bpTotal
         
-        ## Assembly length superior to 'maxLength' specified by the user: Targeted Assembly aborted.
+        ## Assembly length superior to 'maxLength' specified by the user: Local Assembly aborted.
         if len(assembly) > maxLength:
             return "|S| > maxLength", False, bpTotal
 
-        ## Number of total bp added to all possible assembled sequences higher than 100*maxLength: Targeted Assembly aborted.
+        ## Number of total bp added to all possible assembled sequences higher than 100*maxLength: Local Assembly aborted.
         if bpTotal > 10*maxLength:
             return "Too many explorations: No solution", False, bpTotal
 
-        ## Exploration takes too much time (> 25% maxLength e.g. we allow 0.25 s per bp): Targeted Assembly aborted.
+        ## Exploration takes too much time (> 25% maxLength e.g. we allow 0.25 s per bp): Local Assembly aborted.
         if (time.time() - startTime) > 0.25*maxLength:
             return "Exploration takes too much time: No solution", False, bpTotal
 
@@ -407,7 +407,7 @@ def extendReadWithOverlappingReads(assembly, lenRead, inputSeqName, STOP, seedDi
             if success:
                 return res, True, bpTotal
 
-        # If we don't find a complete assembled sequence, return the reason why the targeted assembly was not successful along with False.
+        # If we don't find a complete assembled sequence, return the reason why the local assembly was not successful along with False.
         return res, False, bpTotal
 
     except Exception as e:
@@ -437,7 +437,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
         - minOverlapSize: int
             minimum overlapping size
         - abundanceMinList: list
-            list of minimal abundance(s) of reads used for targeted assembly
+            list of minimal abundance(s) of reads used for local assembly
             extension's groups having less than this number of reads are discarded from the graph
         - dmax: int
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
@@ -449,7 +449,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
             - the assembled sequence from the read containing the k-mer START to the read containing the k-mer STOP (assembly) (and so the Boolean value equal to True)
               if a solution is found (e.g. we arrived to STOP kmer (target), with at most 2 substitutions in the target sequence)
             OR
-            - the reason why the targeted assembly failed (and so the Boolean value equal to False)
+            - the reason why the local assembly failed (and so the Boolean value equal to False)
               if no solution is found
         - success: boolean
             True/False
@@ -534,7 +534,7 @@ def fillGapWithIROAlgo(gapLabel, readsList, bkptFile, seedSize, minOverlapSize, 
                 return "List 'abundanceMinList' is empty", False
             res, success, bpTotal = extendReadWithOverlappingReads(read, len(read), inputSeqName, STOP, seedDict, assemblyHash, readsList, seedSize, minOverlapSize, abundanceMinList, dmax, maxLength, bpTotal, startTime, iroLog)
 
-            # Case of successful targeted assembly.
+            # Case of successful local assembly.
             break
 
         return res, success
@@ -570,7 +570,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         - minOverlapSize: int
             minimum overlapping size for reads overlaps
         - abundanceMinList: list
-            list of minimal abundance(s) of reads used for targeted assembly
+            list of minimal abundance(s) of reads used for local assembly
             extension's groups having less than this number of reads are discarded from the graph
         - dmax: int
             maximum number of gaps/substitutions allowed in the inexact overlap between reads
@@ -761,7 +761,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             sys.exit(1)
         abundanceMinString = '-'.join(map(str, abundanceMinList))
         
-        print("TARGETED ASSEMBLY OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
+        print("LOCAL ASSEMBLY OF: {} for s={}, o={}, a={} and dmax={} (union)".format(str(gapLabel), seedSize, minOverlapSize, abundanceMinString, dmax))
 
         # Determine the maximum assembly length (bp) if the gap/target length is known.
         ## NB: if the gap/target length is unknown, it is set to 0.
@@ -785,7 +785,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         # Output file containing the assembled sequence(s).
         insertionsFile = "{}.{}.g{}.c{}.f{}.s{}.o{}.a{}.dmax{}.bxu.insertions_filtered.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, seedSize, minOverlapSize, abundanceMinString, dmax)
 
-        # Case of unsuccessful targeted assembly.
+        # Case of unsuccessful local assembly.
         if not success:
             print("\n{}: {}\n".format(gapLabel, res))
             try:
@@ -802,7 +802,7 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyIRO.py', function 'localAssemblyWithIROAlgorithm()': Unable to open or write to the input 'gapfillingFile' {}. \nIOError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
             
-            # Save the reason why there is no complete targeted assembly in a log file.
+            # Save the reason why there is no complete local assembly in a log file.
             iroLog = str(gapLabel) + "_IROresults.log"
             try:
                 with open(iroLog, "a") as log:
@@ -811,9 +811,9 @@ def localAssemblyWithIROAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyIRO.py', function 'localAssemblyWithIROAlgorithm()': Unable to open or write to the file {}. \nIOError-{}".format(str(iroLog), err))
                 sys.exit(1)
 
-        # Case of successful targeted assembly.
+        # Case of successful local assembly.
         if success:
-            print("\n{}: Successful Targeted Assembly !\n". format(gapLabel))
+            print("\n{}: Successful Local Assembly !\n". format(gapLabel))
 
             # Get the k-mers gap/target flanking sequences (kmers START and STOP).
             START = leftFlankingSeq[(len(leftFlankingSeq) - extSize - 31):(len(leftFlankingSeq) - extSize)]

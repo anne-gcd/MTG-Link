@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -21,7 +21,7 @@
 
 """Module 'helpers.py': Classes and general functions
 
-The module 'helpers.py' contains the classes and general functions used in the targeted assembly pipeline MTG-Link.
+The module 'helpers.py' contains the classes and general functions used in the local assembly pipeline MTG-Link.
 """
 
 import os

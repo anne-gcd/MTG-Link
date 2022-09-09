@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #*****************************************************************************
 #  Name: MTG-Link
-#  Description: Targeted Assemblies of regions of interest, using linked read data.
+#  Description: Local assembly tool for linked-reads data
 #  Copyright (C) 2020 INRAE
 #  Author: Anne Guichard
 #
@@ -21,7 +21,7 @@
 
 """Module 'localAssemblyDBG.py': Local Assembly With the DBG (De Bruijn Graph) algorithm
 
-The module 'localAssemblyDBG.py' enables to perform the local assembly step of the MTG-Link targeted assembly pipeline, using a DBG (De Bruijn Graph) algorithm. 
+The module 'localAssemblyDBG.py' enables to perform the local assembly step of the MTG-Link local assembly pipeline, using a DBG (De Bruijn Graph) algorithm. 
 The DBG algorithm is performed with the 'fill' module of the software MindTheGap, using the subsample of linked reads obtained during the 'Read Subsampling' step of the MTG-Link pipeline.
 """
 
@@ -76,7 +76,7 @@ def fillGapWithMTGFill(gapLabel, readsFile, bkptFile, k, a, maxLength, maxNodes,
             - the file containing the assembled sequence(s) (and so the Boolean value equal to True)
               if a solution is found (e.g. we arrived to stop kmer)
             OR
-            - the sentence "Targeted Assembly not completed..." (and so the Boolean value equal to False)
+            - the sentence "Local Assembly not completed..." (and so the Boolean value equal to False)
               if no solution is found
         - True/False: boolean
     """
@@ -110,9 +110,9 @@ def fillGapWithMTGFill(gapLabel, readsFile, bkptFile, k, a, maxLength, maxNodes,
             res = os.path.abspath(main.assemblyDir +"/"+ outputPrefix + ".insertions.fasta")
             return res, True
 
-        # If we don't find a complete assembled sequence, return "Targeted Assembly not completed..." along with False.
+        # If we don't find a complete assembled sequence, return "Local Assembly not completed..." along with False.
         else:
-            res = "Targeted Assembly not completed..."
+            res = "Local Assembly not completed..."
             return res, False
 
     except Exception as e:
@@ -381,18 +381,18 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                         print("File 'localAssemblyDBG.py', function 'localAssemblyWithDBGAlgorithm()': Unable to open the file {} or to open/write to the file {}. \nIOError-{}".format(str(res), str(assembliesFile), err))
                         sys.exit(1)
                     if not success:
-                        res = "Targeted Assembly not completed for k{} and lower...".format(str(max(kmerSizeList)))
+                        res = "Local Assembly not completed for k{} and lower...".format(str(max(kmerSizeList)))
 
             except Exception as e:
                 print("File 'localAssemblyDBG.py': Something wrong with the 'Local Assembly performed with `MindTheGap fill`' step of the function 'localAssemblyWithDBGAlgorithm()'")
                 print("Exception-{}".format(e))
                 sys.exit(1)
             
-            # Case of successful targeted assembly, break the loop on 'a'.
+            # Case of successful local assembly, break the loop on 'a'.
             if success:
                 break
 
-        # Case of successful targeted assembly, break the loop on 'k'.
+        # Case of successful local assembly, break the loop on 'k'.
         if success:
             break
 
@@ -404,7 +404,7 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
         # Output file containing the assembled sequence(s).
         insertionsFile = "{}.{}.g{}.flank{}.occ{}.k{}.a{}.bxu.insertions_filtered.fasta".format(gfa_name, str(gapLabel), gap.length, chunkSize, main.barcodesMinOcc, k, a)
 
-        # Case of unsuccessful targeted assembly.
+        # Case of unsuccessful local assembly.
         if not success:
             print("\n{}: {}\n".format(gapLabel, res))
             try:
@@ -414,9 +414,9 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 print("File 'localAssemblyDBG.py': The output 'gapfillingFile' {} doesn't exist. \nFileNotFoundError-{}".format(str(gapfillingFile), err))
                 sys.exit(1)
 
-        # Case of successful targeted assembly.
+        # Case of successful local assembly.
         if success:
-            print("\n{}: Successful Targeted Assembly for k{} !\n". format(gapLabel, str(k)))
+            print("\n{}: Successful Local Assembly for k{} !\n". format(gapLabel, str(k)))
 
             # Save and pre-process the file containing the assembled sequence(s) for further qualitative evaluation.
             ## Modify the 'insertionFile' and save it to a new file ('gapfillingFile') so that the 'solution x/y' part appears in record.id (and not just in record.description)
