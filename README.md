@@ -76,12 +76,10 @@ If at least one test "Fail", either MTG-Link is not installed properly or there 
 
 Prior to running MTG-Link, the LRez barcode index of the linked reads FASTQ file has to be built. This can be done with one of the following command:
 ```
-# The reads file is not gzipped.
-LRez index fastq -f readsFile.fastq -o barcodeIndex.bci
 # The reads file is gzipped.
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 ```
-* readsFile.fastq: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag) TODO:below
+* readsFile.fastq.gz: Linked reads file (gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
 * barcodeIndex.bci: File where to store the LRez barcode index
 
 ### 2) Run MTG-Link
