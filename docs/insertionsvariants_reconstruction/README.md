@@ -45,5 +45,5 @@ LRez index fastq -f insertionsvariants_reconstruction.fastq.gz -o insertionsvari
     * Output FASTA file: 'insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta'
         * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
-**NB**: The output files and directory of MTG-Link are detailed [here](TODO)
+**NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)
 

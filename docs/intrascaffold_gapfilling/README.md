@@ -51,7 +51,7 @@ LRez index fastq -f intrascaffold_gapfilling.fastq.gz -o intrascaffold_gapfillin
     * Output FASTA file: 'intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.assembled_sequences.fasta'
         * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
-**NB**: The output files and directory of MTG-Link are detailed [here](TODO)
+**NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)
 
 
 ## Get the updated FASTA file with assembled sequences
