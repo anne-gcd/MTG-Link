@@ -58,7 +58,6 @@ parserDBG.add_argument('-bxuDir', dest="bxuDir", action="store", help="Directory
 parserDBG.add_argument('-t', dest="threads", action="store", type=int, default=1, help="Number of threads to use for the Read Subsampling step [default: 1]")
 parserDBG.add_argument('-flank', dest="flankSize", action="store", type=int, default=10000, help="Flanking sequences' size (bp) [default: 10000]")
 parserDBG.add_argument('-occ', dest="minBarcOcc", action="store", type=int, default=2, help="Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]")
-parserDBG.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any [optional]")
 parserDBG.add_argument('-ext', dest="extSize", action="store", type=int, default=500, help="Size of the extension of the target on both sides (bp); determine start/end of local assembly [default: 500]")
 parserDBG.add_argument('-l', dest="maxLength", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the target to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
 parserDBG.add_argument('-m', dest="minLength", action="store", type=int, default=1000, help="Minimum assembly length (bp), by default 2*(-ext) bp [default: 1000]")
@@ -83,7 +82,6 @@ parserIRO.add_argument('-bxuDir', dest="bxuDir", action="store", help="Directory
 parserIRO.add_argument('-t', dest="threads", action="store", type=int, default=1, help="Number of threads to use for the Read Subsampling step [default: 1]")
 parserIRO.add_argument('-flank', dest="flankSize", action="store", type=int, default=10000, help="Flanking sequences' size (bp) [default: 10000]")
 parserIRO.add_argument('-occ', dest="minBarcOcc", action="store", type=int, default=2, help="Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]")
-parserIRO.add_argument('-refDir', dest="refDir", action="store", help="Directory containing the reference sequences if any [optional]")
 parserIRO.add_argument('-ext', dest="extSize", action="store", type=int, default=500, help="Size of the extension of the target on both sides (bp); determine start/end of local assembly [default: 500]")
 parserIRO.add_argument('-l', dest="maxLength", action="store", type=int, default=10000, help="Maximum assembly length (bp) (it could be a bit bigger than the length of the target to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]")
 parserIRO.add_argument('-s', dest="seedSize", action="store", type=int, default=10, help="Seed size used for indexing the reads (bp) [default: 10]")
@@ -138,13 +136,14 @@ else:
     bxuDir = ""
 
 # Directory containing the reference sequences if any.
-if args.refDir is not None:
-    refDir = os.path.abspath(args.refDir)
-    if not os.path.exists(refDir):
-        parser.error("\nWarning: The path of the directory containing the reference sequences doesn't exist")
-    print("Directory containing the reference sequences: " + refDir)
-else:
-    refDir = ""
+# if args.refDir is not None:
+#     refDir = os.path.abspath(args.refDir)
+#     if not os.path.exists(refDir):
+#         parser.error("\nWarning: The path of the directory containing the reference sequences doesn't exist")
+#     print("Directory containing the reference sequences: " + refDir)
+# else:
+#     refDir = ""
+refDir = ""
 
 # Line of GFA file input from which to start analysis (if not provided, start analysis from first line of GFA file input).
 if args.line is not None:

@@ -106,7 +106,6 @@ Besides, for each of these use cases, an example of the procedure to follow to p
     -t THREADS              Number of threads to use for the Read Subsampling step [default: 1]
     -flank FLANKSIZE        Flanking sequences' size (bp) [default: 10000]
     -occ MINBARCOCC         Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]
-    -refDir REFDIR          Directory containing the reference sequences if any (1 file per target) [optional]
     -ext EXTSIZE            Size of the extension of the target on both sides (bp); determine start/end of local assembly [default: 500]
     -l MAXLENGTH            Maximum assembly length (bp) (it could be a bit bigger than the length of the target to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]
     -m MINLENGTH            Minimum assembly length (bp), by default 2*(-ext) bp [default: 1000]
@@ -119,10 +118,6 @@ Besides, for each of these use cases, an example of the procedure to follow to p
     -verbose VERBOSITY      Verbosity level for DBG assembly [default: 0]
     --multiple              To return the assembled sequences even if multiple solutions are found (by default, if MTG-Link returns multiple solutions, we consider 'No Assembly' as it is not possible to know which one is the correct one)
 ```
-
-**NB:** The `-refDir` directory should contain 1 file per target, e.g. 1 file per reference sequence. Besides, the files contained in `-refDir` should be formatted so that they contain the gap label. Thus, the prefix of these files and of their record ID should be for exemple:  
-* Gap into scaffold: `<leftScaffoldName>_<coordLeftScaffoldStart>-<coordLeftScaffoldEnd>-L(+|-)_<rightScaffoldName>_<coordRightScaffoldStart>-<coordRightScaffoldEnd>-R(+|-)`
-* Gap between scaffolds: `<ScaffoldName1>(+|-)_<scaffoldName2>(+|-)`
 
 **NB:** When using the `--force` option, the `--multiple` option cannot be used, as otherwise it would filter unique solutions obtained with different `-k` values. 
 

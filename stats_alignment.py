@@ -98,306 +98,307 @@ except OSError:
 outDir = os.getcwd()
 
 
-#----------------------------------------------------
-# Ref = reference sequence of simulated gap/target
-#----------------------------------------------------
-if not re.match('^.*.contigs.fasta$', args.reference):
+# #----------------------------------------------------
+# # Ref = reference sequence of simulated gap/target
+# #----------------------------------------------------
+# if not re.match('^.*.contigs.fasta$', args.reference):
 
-    #----------------------------------------------------
-    # NUCmer alignments
-    #----------------------------------------------------
-    try: 
-        # Run NUCmer to obtain alignments of the reference sequence against the query's sequences.
-        prefix = args.prefix + ".ref_qry"
+#     #----------------------------------------------------
+#     # NUCmer alignments
+#     #----------------------------------------------------
+#     try: 
+#         # Run NUCmer to obtain alignments of the reference sequence against the query's sequences.
+#         prefix = args.prefix + ".ref_qry"
 
-        log_file = str(prefix) + ".log"
-        with open(log_file, "a") as log:
-            log.write("Query file: " + str(qry_file) + "\n")
-            log.write("Reference file: " + str(ref_file) + "\n")
-            log.write("The results are saved in " + outDir)
+#         log_file = str(prefix) + ".log"
+#         with open(log_file, "a") as log:
+#             log.write("Query file: " + str(qry_file) + "\n")
+#             log.write("Reference file: " + str(ref_file) + "\n")
+#             log.write("The results are saved in " + outDir)
 
-        nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
-        delta_file = prefix + ".delta"
-        coords_file = prefix + ".coords.unsorted" 
+#         nucmerLog = "{}_nucmer_ref_qry.log".format(args.prefix)
+#         delta_file = prefix + ".delta"
+#         coords_file = prefix + ".coords.unsorted" 
 
-        # Keep only alignments with >90% Id. ('-I90'). 
-        #nucmer_command = ["nucmer", "--maxmatch", "-p", prefix, ref_file, qry_file]
-        nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
-        coords_command = ["show-coords", "-rcdlT", "-I90", delta_file]
+#         # Keep only alignments with >90% Id. ('-I90'). 
+#         #nucmer_command = ["nucmer", "--maxmatch", "-p", prefix, ref_file, qry_file]
+#         nucmer_command = ["nucmer", "-p", prefix, ref_file, qry_file]
+#         coords_command = ["show-coords", "-rcdlT", "-I90", delta_file]
 
-        with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
-            subprocess.run(nucmer_command, stderr=log)
-            subprocess.run(coords_command, stdout=coords, stderr=log)
+#         with open(coords_file, "w") as coords, open(nucmerLog, "a") as log:
+#             subprocess.run(nucmer_command, stderr=log)
+#             subprocess.run(coords_command, stdout=coords, stderr=log)
 
-        # Sort the 'xxx.coords.unsorted' file for further analysis.
-        coords_sorted_file = prefix + ".coords"
-        sort_command = ["sort", "-n", coords_file]
-        with open(coords_sorted_file, "w") as coords_sorted:
-            subprocess.run(sort_command, stdout=coords_sorted)
+#         # Sort the 'xxx.coords.unsorted' file for further analysis.
+#         coords_sorted_file = prefix + ".coords"
+#         sort_command = ["sort", "-n", coords_file]
+#         with open(coords_sorted_file, "w") as coords_sorted:
+#             subprocess.run(sort_command, stdout=coords_sorted)
 
-    except Exception as e:
-        print("\nFile 'stats_alignment.py': Something wrong with the NUCmer alignments, when ref = reference sequence")
-        print("Exception-")
-        print(e)
-        sys.exit(1)
+#     except Exception as e:
+#         print("\nFile 'stats_alignment.py': Something wrong with the NUCmer alignments, when ref = reference sequence")
+#         print("Exception-")
+#         print(e)
+#         sys.exit(1)
 
-    #----------------------------------------------------
-    # Parameters of the local assembly step
-    #----------------------------------------------------
-    try:
-        # Local assembly performed with the DBG algorithm.
-        if ".k" in qry_file.split('/')[-1]:
-            gap_size = qry_file.split('.bxu')[0].split('.')[-5]
-            g = int("".join(list(gap_size)[1:]))
-            if g == 0:
-                g = "NA"
-            flank_size = qry_file.split('.bxu')[0].split('.')[-4]
-            flank = int(flank_size.split('flank')[1])
-            barcodes_occ = qry_file.split('.bxu')[0].split('.')[-3]
-            occ = int(barcodes_occ.split('occ')[1])
-            kmer_size = qry_file.split('.bxu')[0].split('.')[-2]
-            k = int("".join(list(kmer_size)[1:]))
-            abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
-            a = int("".join(list(abundance_min)[1:]))
-            qry_id = qry_file.split('/')[-1].split('.')[2]
+#     #----------------------------------------------------
+#     # Parameters of the local assembly step
+#     #----------------------------------------------------
+#     try:
+#         # Local assembly performed with the DBG algorithm.
+#         if ".k" in qry_file.split('/')[-1]:
+#             gap_size = qry_file.split('.bxu')[0].split('.')[-5]
+#             g = int("".join(list(gap_size)[1:]))
+#             if g == 0:
+#                 g = "NA"
+#             flank_size = qry_file.split('.bxu')[0].split('.')[-4]
+#             flank = int(flank_size.split('flank')[1])
+#             barcodes_occ = qry_file.split('.bxu')[0].split('.')[-3]
+#             occ = int(barcodes_occ.split('occ')[1])
+#             kmer_size = qry_file.split('.bxu')[0].split('.')[-2]
+#             k = int("".join(list(kmer_size)[1:]))
+#             abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
+#             a = int("".join(list(abundance_min)[1:]))
+#             qry_id = qry_file.split('/')[-1].split('.')[2]
 
-        # Local assembly performed with the IRO algorithm.
-        if ".dmax" in qry_file.split('/')[-1]:
-            gap_size = qry_file.split('.bxu')[0].split('.')[-7]
-            g = int("".join(list(gap_size)[1:]))
-            if g == 0:
-                g = "NA"
-            flank_size = qry_file.split('.bxu')[0].split('.')[-6]
-            flank = int(flank_size.split('flank')[1])
-            barcodes_occ = qry_file.split('.bxu')[0].split('.')[-5]
-            occ = int(barcodes_occ.split('occ')[1])
-            seed_size = qry_file.split('.bxu')[0].split('.')[-4]
-            s = int("".join(list(seed_size)[1:]))
-            min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
-            o = int("".join(list(min_overlap)[1:]))
-            abundance_min = qry_file.split('.bxu')[0].split('.')[-2]
-            a = str("".join(list(abundance_min)[1:]))
-            dmax = qry_file.split('.bxu')[0].split('.')[-1]
-            d = int("".join(list(dmax)[4:]))
-            qry_id = qry_file.split('/')[-1].split('.')[2]
+#         # Local assembly performed with the IRO algorithm.
+#         if ".dmax" in qry_file.split('/')[-1]:
+#             gap_size = qry_file.split('.bxu')[0].split('.')[-7]
+#             g = int("".join(list(gap_size)[1:]))
+#             if g == 0:
+#                 g = "NA"
+#             flank_size = qry_file.split('.bxu')[0].split('.')[-6]
+#             flank = int(flank_size.split('flank')[1])
+#             barcodes_occ = qry_file.split('.bxu')[0].split('.')[-5]
+#             occ = int(barcodes_occ.split('occ')[1])
+#             seed_size = qry_file.split('.bxu')[0].split('.')[-4]
+#             s = int("".join(list(seed_size)[1:]))
+#             min_overlap = qry_file.split('.bxu')[0].split('.')[-3]
+#             o = int("".join(list(min_overlap)[1:]))
+#             abundance_min = qry_file.split('.bxu')[0].split('.')[-2]
+#             a = str("".join(list(abundance_min)[1:]))
+#             dmax = qry_file.split('.bxu')[0].split('.')[-1]
+#             d = int("".join(list(dmax)[4:]))
+#             qry_id = qry_file.split('/')[-1].split('.')[2]
 
-    except Exception as e:
-        print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = reference sequence")
-        print("Exception-")
-        print(e)
-        sys.exit(1)
+#     except Exception as e:
+#         print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = reference sequence")
+#         print("Exception-")
+#         print(e)
+#         sys.exit(1)
 
-    #----------------------------------------------------
-    # Quality estimation
-    #----------------------------------------------------
-    try:
-        # Output stats file of NUCmer alignment (Query vs Ref).
-        ref_qry_output = outDir + "/" + args.prefix + ".nucmerAlignments.stats.unsorted"
+#     #----------------------------------------------------
+#     # Quality estimation
+#     #----------------------------------------------------
+#     try:
+#         # Output stats file of NUCmer alignment (Query vs Ref).
+#         ref_qry_output = outDir + "/" + args.prefix + ".nucmerAlignments.stats.unsorted"
 
-        ## Local assembly performed with the DBG algorithm
-        if ".k" in qry_file.split('/')[-1]:
-            stats_legend = ["Target", "Len_target", "Flank", "Barc_occ", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+#         ## Local assembly performed with the DBG algorithm
+#         if ".k" in qry_file.split('/')[-1]:
+#             stats_legend = ["Target", "Len_target", "Flank", "Barc_occ", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+#                             "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
 
-        ## Local assembly performed with the IRO algorithm
-        if ".dmax" in qry_file.split('/')[-1]:
-            stats_legend = ["Target", "Len_target", "Flank", "Barc_occ", "s", "o", "a", "dmax", "Len_Q", "Ref", "Len_R", \
-                            "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
+#         ## Local assembly performed with the IRO algorithm
+#         if ".dmax" in qry_file.split('/')[-1]:
+#             stats_legend = ["Target", "Len_target", "Flank", "Barc_occ", "s", "o", "a", "dmax", "Len_Q", "Ref", "Len_R", \
+#                             "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
-        # Get output values from NUCmer.
-        reader = csv.DictReader(open(coords_sorted_file), \
-                                    fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
-                                    delimiter='\t')
+#         # Get output values from NUCmer.
+#         reader = csv.DictReader(open(coords_sorted_file), \
+#                                     fieldnames=("S1", 'E1', "S2", "E2", "LEN_1", "LEN_2", "%_IDY", "LEN_R", "LEN_Q", "COV_R", "COV_Q", "FRM_R", "FRM_Q", "TAG_1", "TAG_2"), \
+#                                     delimiter='\t')
 
-        rows = list(reader)
-        for row in rows[3:]:
-                len_q = row["LEN_Q"]
-                ref = row["TAG_1"]
-                len_r = row["LEN_R"]
-                start_r = row["S1"]
-                end_r = row["E1"]
-                start_q = row["S2"]
-                end_q = row["E2"]
-                len_align_r = row["LEN_1"]
-                len_align_q = row["LEN_2"]
-                identity = row["%_IDY"]
-                cov_r = row["COV_R"]
-                cov_q = row["COV_Q"]
-                frame_r = row["FRM_R"]
-                frame_q = row["FRM_Q"]
+#         rows = list(reader)
+#         for row in rows[3:]:
+#                 len_q = row["LEN_Q"]
+#                 ref = row["TAG_1"]
+#                 len_r = row["LEN_R"]
+#                 start_r = row["S1"]
+#                 end_r = row["E1"]
+#                 start_q = row["S2"]
+#                 end_q = row["E2"]
+#                 len_align_r = row["LEN_1"]
+#                 len_align_q = row["LEN_2"]
+#                 identity = row["%_IDY"]
+#                 cov_r = row["COV_R"]
+#                 cov_q = row["COV_Q"]
+#                 frame_r = row["FRM_R"]
+#                 frame_q = row["FRM_Q"]
 
-                # Local assembly performed with the DBG algorithm.
-                if ".k" in qry_file.split('/')[-1]:
-                    solution = str(row["TAG_2"]).split('_sol_')[1]
-                    if "bkpt1" in str(row["TAG_2"]):
-                        strand = "fwd"
-                    else:
-                        strand = "rev"
+#                 # Local assembly performed with the DBG algorithm.
+#                 if ".k" in qry_file.split('/')[-1]:
+#                     solution = str(row["TAG_2"]).split('_sol_')[1]
+#                     if "bkpt1" in str(row["TAG_2"]):
+#                         strand = "fwd"
+#                     else:
+#                         strand = "rev"
 
-                # Estimate quality of assembled sequence (Query).
-                ref_len = int(len_r)
-                qry_len = int(len_q) - 2*args.ext
-                error_10_perc = int(0.1 * ref_len)
-                error_50_perc = int(0.5 * ref_len)
+#                 # Estimate quality of assembled sequence (Query).
+#                 ref_len = int(len_r)
+#                 qry_len = int(len_q) - 2*args.ext
+#                 error_10_perc = int(0.1 * ref_len)
+#                 error_50_perc = int(0.5 * ref_len)
 
-                # Length of query sequence is equal +-10% of ref length.
-                if qry_len in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                    ## The assembled seq matches to the whole ref seq
-                    if int(len_align_q) == ref_len:
-                        quality_rq = 'A'
-                    ## The assembled seq matches to the ref seq +-10% of ref length
-                    elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                        quality_rq = 'B'
-                    ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
-                    elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
-                        quality_rq = 'C'
-                    else:
-                        quality_rq = 'D'
+#                 # Length of query sequence is equal +-10% of ref length.
+#                 if qry_len in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+#                     ## The assembled seq matches to the whole ref seq
+#                     if int(len_align_q) == ref_len:
+#                         quality_rq = 'A'
+#                     ## The assembled seq matches to the ref seq +-10% of ref length
+#                     elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+#                         quality_rq = 'B'
+#                     ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
+#                     elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
+#                         quality_rq = 'C'
+#                     else:
+#                         quality_rq = 'D'
 
-                else:
-                    quality_rq = 'D'
+#                 else:
+#                     quality_rq = 'D'
 
-                # Write stats results in output file.
-                ## Local assembly performed with the DBG algorithm
-                if ".k" in qry_file.split('/')[-1]:
-                    stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
-                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+#                 # Write stats results in output file.
+#                 ## Local assembly performed with the DBG algorithm
+#                 if ".k" in qry_file.split('/')[-1]:
+#                     stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
+#                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-                ## Local assembly performed with the IRO algorithm
-                if ".dmax" in qry_file.split('/')[-1]:
-                    stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
-                        start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+#                 ## Local assembly performed with the IRO algorithm
+#                 if ".dmax" in qry_file.split('/')[-1]:
+#                     stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
+#                         start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-                ## Write in output file
-                if os.path.exists(ref_qry_output):
-                    with open(ref_qry_output, "a") as output:
-                        output.write('\n' + '\t'.join(str(i) for i in stats))
-                else:
-                    with open(ref_qry_output, "a") as output:
-                        output.write('\t'.join(j for j in stats_legend))
-                        output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
+#                 ## Write in output file
+#                 if os.path.exists(ref_qry_output):
+#                     with open(ref_qry_output, "a") as output:
+#                         output.write('\n' + '\t'.join(str(i) for i in stats))
+#                 else:
+#                     with open(ref_qry_output, "a") as output:
+#                         output.write('\t'.join(j for j in stats_legend))
+#                         output.write('\n'+'\n' + '\t'.join(str(i) for i in stats))
 
-        # Sort the 'xxx.nucmerAlignments.stats.unsorted' file for further analysis.
-        ref_qry_sorted = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
-        order_command = ["sort", "-k7,8", "-k10", "-k12,13n", "-r", ref_qry_output]
-        with open(ref_qry_sorted, "w") as r_sorted:
-            subprocess.run(order_command, stdout=r_sorted)
+#         # Sort the 'xxx.nucmerAlignments.stats.unsorted' file for further analysis.
+#         ref_qry_sorted = outDir + "/" + args.prefix + ".nucmerAlignments.stats"
+#         order_command = ["sort", "-k7,8", "-k10", "-k12,13n", "-r", ref_qry_output]
+#         with open(ref_qry_sorted, "w") as r_sorted:
+#             subprocess.run(order_command, stdout=r_sorted)
 
-    except Exception as e:
-        print("\nFile 'stats_alignment.py': Something wrong with the quality estimation, when ref = reference sequence")
-        print("Exception-")
-        print(e)
-        sys.exit(1)
+#     except Exception as e:
+#         print("\nFile 'stats_alignment.py': Something wrong with the quality estimation, when ref = reference sequence")
+#         print("Exception-")
+#         print(e)
+#         sys.exit(1)
         
-    #----------------------------------------------------
-    # Alignment in multiple chunks/flanks (for DBG)
-    #----------------------------------------------------
-    try:      
-        # If alignment in multiple chunks/flanks, calculate the appropriate quality score.
-        ## Local assembly performed with the DBG algorithm
-        if ".k" in qry_file.split('/')[-1]:
-            with open(ref_qry_sorted, "r") as r:
-                r.seek(0)
-                reader = csv.DictReader(r, fieldnames=("Target", "Len_target", "Flank", "Barc_occ", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
-                                        "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
-                                        delimiter='\t')
+#     #----------------------------------------------------
+#     # Alignment in multiple chunks/flanks (for DBG)
+#     #----------------------------------------------------
+#     try:      
+#         # If alignment in multiple chunks/flanks, calculate the appropriate quality score.
+#         ## Local assembly performed with the DBG algorithm
+#         if ".k" in qry_file.split('/')[-1]:
+#             with open(ref_qry_sorted, "r") as r:
+#                 r.seek(0)
+#                 reader = csv.DictReader(r, fieldnames=("Target", "Len_target", "Flank", "Barc_occ", "k", "a", "Strand", "Solution", "Len_Q", "Ref", "Len_R", \
+#                                         "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"), \
+#                                         delimiter='\t')
 
-                rows = list(reader)
-                for i in range(1, len(rows)):
-                    if ("fwd" in rows[i]["Strand"]) or ("rev" in rows[i]["Strand"]):
-                        qry_id = rows[i]["Target"]
-                        g = rows[i]["Len_target"]
-                        c = rows[i]["Flank"]
-                        f = rows[i]["Barc_occ"]
-                        k = rows[i]["k"]
-                        a = rows[i]["a"]
-                        strand = rows[i]["Strand"]
-                        solution = rows[i]["Solution"]
-                        len_q = rows[i]["Len_Q"]
-                        ref = rows[i]["Ref"]
-                        len_r = rows[i]["Len_R"]
-                        frame_r = rows[i]["Frame_R"]
-                        frame_q = rows[i]["Frame_Q"]
-                        ref_len = int(len_r)
-                        qry_len = int(len_q) - 2*args.ext
+#                 rows = list(reader)
+#                 for i in range(1, len(rows)):
+#                     if ("fwd" in rows[i]["Strand"]) or ("rev" in rows[i]["Strand"]):
+#                         qry_id = rows[i]["Target"]
+#                         g = rows[i]["Len_target"]
+#                         c = rows[i]["Flank"]
+#                         f = rows[i]["Barc_occ"]
+#                         k = rows[i]["k"]
+#                         a = rows[i]["a"]
+#                         strand = rows[i]["Strand"]
+#                         solution = rows[i]["Solution"]
+#                         len_q = rows[i]["Len_Q"]
+#                         ref = rows[i]["Ref"]
+#                         len_r = rows[i]["Len_R"]
+#                         frame_r = rows[i]["Frame_R"]
+#                         frame_q = rows[i]["Frame_Q"]
+#                         ref_len = int(len_r)
+#                         qry_len = int(len_q) - 2*args.ext
 
-                        if (strand != rows[i-1]["Strand"]) or (solution != rows[i-1]["Solution"]):
-                            lack_ref = 0
-                            lack_qry = 0
-                            start_r = int(rows[i]["Start_ref"])
-                            lack_ref += start_r - 1
-                            if frame_q == "1":
-                                start_q = int(rows[i]["Start_qry"])
-                                lack_qry += start_q - (args.ext+1)
-                            elif frame_q == "-1":
-                                end_q = int(rows[i]["Start_qry"])
-                                lack_qry += qry_len - (end_q - args.ext)
+#                         if (strand != rows[i-1]["Strand"]) or (solution != rows[i-1]["Solution"]):
+#                             lack_ref = 0
+#                             lack_qry = 0
+#                             start_r = int(rows[i]["Start_ref"])
+#                             lack_ref += start_r - 1
+#                             if frame_q == "1":
+#                                 start_q = int(rows[i]["Start_qry"])
+#                                 lack_qry += start_q - (args.ext+1)
+#                             elif frame_q == "-1":
+#                                 end_q = int(rows[i]["Start_qry"])
+#                                 lack_qry += qry_len - (end_q - args.ext)
 
-                        if (strand == rows[i-1]["Strand"]) and (solution == rows[i-1]["Solution"]):
-                            if int(rows[i]["Start_ref"]) > int(rows[i-1]["End_ref"]):
-                                lack_ref += int(rows[i]["Start_ref"]) - int(rows[i-1]["End_ref"])
-                            if frame_q == "1":
-                                if int(rows[i]["Start_qry"]) > int(rows[i-1]["End_qry"]):
-                                    lack_qry += int(rows[i]["Start_qry"]) - int(rows[i-1]["End_qry"])
-                            elif frame_q == "-1":
-                                if int(rows[i]["Start_qry"]) < int(rows[i-1]["End_qry"]):
-                                    lack_qry += int(rows[i-1]["End_qry"]) - int(rows[i]["Start_qry"])
+#                         if (strand == rows[i-1]["Strand"]) and (solution == rows[i-1]["Solution"]):
+#                             if int(rows[i]["Start_ref"]) > int(rows[i-1]["End_ref"]):
+#                                 lack_ref += int(rows[i]["Start_ref"]) - int(rows[i-1]["End_ref"])
+#                             if frame_q == "1":
+#                                 if int(rows[i]["Start_qry"]) > int(rows[i-1]["End_qry"]):
+#                                     lack_qry += int(rows[i]["Start_qry"]) - int(rows[i-1]["End_qry"])
+#                             elif frame_q == "-1":
+#                                 if int(rows[i]["Start_qry"]) < int(rows[i-1]["End_qry"]):
+#                                     lack_qry += int(rows[i-1]["End_qry"]) - int(rows[i]["Start_qry"])
 
-                        if (i == len(rows)-1) or ((strand != rows[i+1]["Strand"]) or (solution != rows[i+1]["Solution"])):
-                            end_r = int(rows[i]["End_ref"])
-                            lack_ref += ref_len - end_r
-                            if frame_q == "1":
-                                end_q = int(rows[i]["End_qry"])
-                                lack_qry += qry_len - (end_q - args.ext)
-                            elif frame_q == "-1":
-                                start_q = int(rows[i]["End_qry"])
-                                lack_qry += start_q - (args.ext+1)
+#                         if (i == len(rows)-1) or ((strand != rows[i+1]["Strand"]) or (solution != rows[i+1]["Solution"])):
+#                             end_r = int(rows[i]["End_ref"])
+#                             lack_ref += ref_len - end_r
+#                             if frame_q == "1":
+#                                 end_q = int(rows[i]["End_qry"])
+#                                 lack_qry += qry_len - (end_q - args.ext)
+#                             elif frame_q == "-1":
+#                                 start_q = int(rows[i]["End_qry"])
+#                                 lack_qry += start_q - (args.ext+1)
 
-                            len_align_r = ref_len - lack_ref
-                            len_align_q = qry_len - lack_qry
+#                             len_align_r = ref_len - lack_ref
+#                             len_align_q = qry_len - lack_qry
 
-                            identity = "/"
-                            cov_r = "/"
-                            cov_q = "/"
+#                             identity = "/"
+#                             cov_r = "/"
+#                             cov_q = "/"
 
-                            # Assign a quality score.
-                            ## The assembled seq matches to the whole ref seq
-                            if int(len_align_q) == ref_len:
-                                quality_rq = 'A'
-                            ## The assembled seq matches to the ref seq +-10% of ref length
-                            elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
-                                quality_rq = 'B'
-                            ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
-                            elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
-                                quality_rq = 'C'
-                            else:
-                                quality_rq = 'D'
+#                             # Assign a quality score.
+#                             ## The assembled seq matches to the whole ref seq
+#                             if int(len_align_q) == ref_len:
+#                                 quality_rq = 'A'
+#                             ## The assembled seq matches to the ref seq +-10% of ref length
+#                             elif int(len_align_q) in range((ref_len - error_10_perc), (ref_len + error_10_perc)):
+#                                 quality_rq = 'B'
+#                             ## The assembled seq matches to the ref seq, but not along all their length (>= 50% of their length align)
+#                             elif int(len_align_q) in range((ref_len - error_50_perc), (ref_len + error_50_perc)):
+#                                 quality_rq = 'C'
+#                             else:
+#                                 quality_rq = 'D'
 
-                            # Write stats results in output file.
-                            ## Local assembly performed with the DBG algorithm
-                            if ".k" in qry_file.split('/')[-1]:
-                                stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
-                                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+#                             # Write stats results in output file.
+#                             ## Local assembly performed with the DBG algorithm
+#                             if ".k" in qry_file.split('/')[-1]:
+#                                 stats = [qry_id, g, flank, occ, k, a, strand, solution, len_q, ref, len_r, \
+#                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-                            ## Local assembly performed with the IRO algorithm
-                            if ".dmax" in qry_file.split('/')[-1]:
-                                stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
-                                    start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
+#                             ## Local assembly performed with the IRO algorithm
+#                             if ".dmax" in qry_file.split('/')[-1]:
+#                                 stats = [qry_id, g, flank, occ, s, o, a, d, len_q, ref, len_r, \
+#                                     start_r, end_r, start_q, end_q, len_align_r, len_align_q, identity, cov_r, cov_q, frame_r, frame_q, quality_rq]
 
-                            with open(ref_qry_sorted, "a") as output_ref:
-                                output_ref.write('\n' + '\t'.join(str(i) for i in stats))
+#                             with open(ref_qry_sorted, "a") as output_ref:
+#                                 output_ref.write('\n' + '\t'.join(str(i) for i in stats))
 
-    except Exception as e:
-        print("\nFile 'stats_alignment.py': Something wrong with the quality estimation for alignment in multiple chunks/flanks (DBG), when ref = reference sequence")
-        print("Exception-")
-        print(e)
-        sys.exit(1)
+#     except Exception as e:
+#         print("\nFile 'stats_alignment.py': Something wrong with the quality estimation for alignment in multiple chunks/flanks (DBG), when ref = reference sequence")
+#         print("Exception-")
+#         print(e)
+#         sys.exit(1)
         
 
 #----------------------------------------------------
 # Ref = gap/target flanking contigs' sequences
 #----------------------------------------------------
-elif re.match('^.*.contigs.fasta$', args.reference):
+# elif re.match('^.*.contigs.fasta$', args.reference):
+if re.match('^.*.contigs.fasta$', args.reference):
 
     #----------------------------------------------------
     # NUCmer alignments

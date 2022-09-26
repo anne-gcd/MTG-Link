@@ -324,44 +324,45 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
     # Reference File (sequence(s) to compare the assembly to)
     #--------------------------------------------------------- 
     try:
-        # Qualitative evaluation with the reference sequence ('refDir' provided by the user).
-        if main.refDir != "":
-            for current_file in os.listdir(main.refDir):
-                if str(gapLabel) in current_file:
-                    referenceFile = main.refDir +"/"+ str(current_file)
-            if not os.path.isfile(referenceFile):
-                print("\nWarning: No reference file was found for this gap/target. The Qualitative Evaluation step will be performed with the gap/target flanking contigs' sequences.")
-                referenceFile = ""
+        # # Qualitative evaluation with the reference sequence ('refDir' provided by the user).
+        # if main.refDir != "":
+        #     for current_file in os.listdir(main.refDir):
+        #         if str(gapLabel) in current_file:
+        #             referenceFile = main.refDir +"/"+ str(current_file)
+        #     if not os.path.isfile(referenceFile):
+        #         print("\nWarning: No reference file was found for this gap/target. The Qualitative Evaluation step will be performed with the gap/target flanking contigs' sequences.")
+        #         referenceFile = ""
+
+        # # Qualitative evalution with the gap/target flanking contigs' sequences.
+        # elif (main.refDir == "") or (referenceFile == ""):
 
         # Qualitative evalution with the gap/target flanking contigs' sequences.
-        elif (main.refDir == "") or (referenceFile == ""):
+        ## Merge both left and right flanking contigs sequences into a unique file (referenceFile).
+        referenceFile = main.contigDir +"/"+ str(gapLabel) +".g"+ str(gap.length) +".ext"+ str(extSize) + ".contigs.fasta"
+        try:
+            with open(referenceFile, "w") as ref_fasta:
 
-            # Merge both left and right flanking contigs sequences into a unique file (referenceFile).
-            referenceFile = main.contigDir +"/"+ str(gapLabel) +".g"+ str(gap.length) +".ext"+ str(extSize) + ".contigs.fasta"
-            try:
-                with open(referenceFile, "w") as ref_fasta:
+                # Left scaffold oriented '+'.
+                if leftScaffold.orient == "+":
+                    ref_fasta.write(">" + leftScaffold.name + "_region:" + str(leftScaffold.slen - extSize) + "-" + str(leftScaffold.slen) + "\n")
+                    ref_fasta.write(leftFlankingSeq[(leftScaffold.slen - extSize):leftScaffold.slen])
+                # Left scaffold oriented '-'.
+                elif leftScaffold.orient == "-":
+                    ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(extSize) + "_revcom\n")
+                    ref_fasta.write(rc(leftFlankingSeq[0:extSize]))
 
-                    # Left scaffold oriented '+'.
-                    if leftScaffold.orient == "+":
-                        ref_fasta.write(">" + leftScaffold.name + "_region:" + str(leftScaffold.slen - extSize) + "-" + str(leftScaffold.slen) + "\n")
-                        ref_fasta.write(leftFlankingSeq[(leftScaffold.slen - extSize):leftScaffold.slen])
-                    # Left scaffold oriented '-'.
-                    elif leftScaffold.orient == "-":
-                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(extSize) + "_revcom\n")
-                        ref_fasta.write(rc(leftFlankingSeq[0:extSize]))
+                # Right scaffold oriented '+'.
+                if rightScaffold.orient == "+":
+                    ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(extSize) + "\n")
+                    ref_fasta.write(rightFlankingSeq[0:extSize])
+                # Right scaffold oriented '-'.
+                elif rightScaffold.orient == "-":
+                    ref_fasta.write("\n>" + rightScaffold.name + "_region:" + str(rightScaffold.slen - extSize) + "-" + str(rightScaffold.slen) + "_revcom\n")
+                    ref_fasta.write(rc(rightFlankingSeq[(rightScaffold.slen - extSize):rightScaffold.slen]))
 
-                    # Right scaffold oriented '+'.
-                    if rightScaffold.orient == "+":
-                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(extSize) + "\n")
-                        ref_fasta.write(rightFlankingSeq[0:extSize])
-                    # Right scaffold oriented '-'.
-                    elif rightScaffold.orient == "-":
-                        ref_fasta.write("\n>" + rightScaffold.name + "_region:" + str(rightScaffold.slen - extSize) + "-" + str(rightScaffold.slen) + "_revcom\n")
-                        ref_fasta.write(rc(rightFlankingSeq[(rightScaffold.slen - extSize):rightScaffold.slen]))
-
-            except IOError as err:
-                print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(referenceFile, err))
-                sys.exit(1)
+        except IOError as err:
+            print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(referenceFile, err))
+            sys.exit(1)
 
         if not os.path.isfile(referenceFile):
             print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': The reference file {} doesn't exist.".format(referenceFile), file=sys.stderr)
@@ -455,124 +456,124 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
                             print("File 'qualitativeEvaluation.py, function 'qualitativeEvaluationOfTheAssembly()': Unable to get the strand of the assembled sequence {}.".format(str(record.id)), file=sys.stderr)
                             sys.exit(1)
 
-                        #-------------------------------------------------------------------
-                        # Ref = Reference Sequence (ex: reference sequence of simulated gap/target)
-                        #-------------------------------------------------------------------
-                        if main.refDir != "":
-                            try:
-                                # Get the list of quality scores for each alignment of one assembled sequence against the reference.
-                                qualityScoresList = []
-                                for row in statsReader:
+                        # #-------------------------------------------------------------------
+                        # # Ref = Reference Sequence (ex: reference sequence of simulated gap/target)
+                        # #-------------------------------------------------------------------
+                        # if main.refDir != "":
+                        #     try:
+                        #         # Get the list of quality scores for each alignment of one assembled sequence against the reference.
+                        #         qualityScoresList = []
+                        #         for row in statsReader:
 
-                                    ## Local assembly performed with the DBG algorithm.
-                                    if module == "DBG":
-                                        if (row["Solution"] in record.id) and ((strand == "fwd" and row["Strand"] == "fwd") or (strand == "rev" and row["Strand"] == "rev")):
-                                            qualityScoresList.append(row["Quality"])
+                        #             ## Local assembly performed with the DBG algorithm.
+                        #             if module == "DBG":
+                        #                 if (row["Solution"] in record.id) and ((strand == "fwd" and row["Strand"] == "fwd") or (strand == "rev" and row["Strand"] == "rev")):
+                        #                     qualityScoresList.append(row["Quality"])
 
-                                    ## Local assembly performed with the IRO algorithm.
-                                    if module == "IRO":
-                                        if (row["Target"] == recordLabel):
-                                            qualityScoresList.append(row["Quality"])
+                        #             ## Local assembly performed with the IRO algorithm.
+                        #             if module == "IRO":
+                        #                 if (row["Target"] == recordLabel):
+                        #                     qualityScoresList.append(row["Quality"])
                                 
-                                if qualityScoresList == []:
-                                    qualityScoresList.append('D')
+                        #         if qualityScoresList == []:
+                        #             qualityScoresList.append('D')
 
-                                refQryOutput.seek(0)
+                        #         refQryOutput.seek(0)
 
-                                # Global quality score.
-                                gapfilledSeqQuality = min(qualityScoresList)
+                        #         # Global quality score.
+                        #         gapfilledSeqQuality = min(qualityScoresList)
                                 
-                                record.description = "Quality " + str(gapfilledSeqQuality)
-                                SeqIO.write(record, qualified, "fasta")
+                        #         record.description = "Quality " + str(gapfilledSeqQuality)
+                        #         SeqIO.write(record, qualified, "fasta")
 
-                                # Update GFA with only the good solutions (the ones having a good quality score).
-                                if (len(sequence) > 2*extSize) and (re.match('^.*Quality [AB]$', record.description)):
-                                    if module == "DBG":
-                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, kValue)
-                                    else:
-                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, 0)
-                                    outputGFAList.append(outputGFA)
+                        #         # Update GFA with only the good solutions (the ones having a good quality score).
+                        #         if (len(sequence) > 2*extSize) and (re.match('^.*Quality [AB]$', record.description)):
+                        #             if module == "DBG":
+                        #                 outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, kValue)
+                        #             else:
+                        #                 outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, 0)
+                        #             outputGFAList.append(outputGFA)
 
-                                # Add the bad solutions to a FASTA file containing all bad solutions.
-                                else:
-                                    try:
-                                        with open(badSolutionsFile, "a") as badSolFile:
-                                            if module == "DBG":
-                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + ".k" + str(kValue) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
-                                            else:
-                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")       
-                                            badSolFile.write(str(sequence))
-                                    except IOError as err:
-                                        print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
-                                        sys.exit(1)
+                        #         # Add the bad solutions to a FASTA file containing all bad solutions.
+                        #         else:
+                        #             try:
+                        #                 with open(badSolutionsFile, "a") as badSolFile:
+                        #                     if module == "DBG":
+                        #                         badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + ".k" + str(kValue) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                        #                     else:
+                        #                         badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")       
+                        #                     badSolFile.write(str(sequence))
+                        #             except IOError as err:
+                        #                 print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
+                        #                 sys.exit(1)
                             
-                            except Exception as e:
-                                print("File 'qualitativeEvaluation.py': Something wrong with the case 'Ref = Reference sequence' of the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
-                                print("Exception-{}".format(e))
-                                sys.exit(1)
+                        #     except Exception as e:
+                        #         print("File 'qualitativeEvaluation.py': Something wrong with the case 'Ref = Reference sequence' of the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
+                        #         print("Exception-{}".format(e))
+                        #         sys.exit(1)
 
                         #----------------------------------------------------
                         # Ref = Gap/Target Flanking Contigs' Sequences
                         #----------------------------------------------------
-                        else:
-                            try:
-                                # Get the list of quality scores for each alignment of one assembled sequence against the reference.
-                                qualityLeftScoresList = []
-                                qualityRightScoresList = []
-                                for row in statsReader:
+                        # else:
+                        try:
+                            # Get the list of quality scores for each alignment of one assembled sequence against the reference.
+                            qualityLeftScoresList = []
+                            qualityRightScoresList = []
+                            for row in statsReader:
 
-                                    ## Local assembly performed with the DBG algorithm.
-                                    if module == "DBG":
-                                        if (row["Solution"] in record.id) and ((strand == "fwd" and row["Strand"] == "fwd") or (strand == "rev" and row["Strand"] == "rev")) and (row["Ref"] == leftScaffold.name):
-                                            qualityLeftScoresList.append(row["Quality"])
-                                        elif (row["Solution"] in record.id) and ((strand == "fwd" and row["Strand"] == "fwd") or (strand == "rev" and row["Strand"] == "rev")) and (row["Ref"] == rightScaffold.name):
-                                            qualityRightScoresList.append(row["Quality"])
+                                ## Local assembly performed with the DBG algorithm.
+                                if module == "DBG":
+                                    if (row["Solution"] in record.id) and ((strand == "fwd" and row["Strand"] == "fwd") or (strand == "rev" and row["Strand"] == "rev")) and (row["Ref"] == leftScaffold.name):
+                                        qualityLeftScoresList.append(row["Quality"])
+                                    elif (row["Solution"] in record.id) and ((strand == "fwd" and row["Strand"] == "fwd") or (strand == "rev" and row["Strand"] == "rev")) and (row["Ref"] == rightScaffold.name):
+                                        qualityRightScoresList.append(row["Quality"])
 
-                                    ## Local assembly performed with the IRO algorithm.
-                                    if module == "IRO":
-                                        if (row["Target"] == recordLabel) and (row["Ref"] == leftScaffold.name):
-                                            qualityLeftScoresList.append(row["Quality"])
-                                        elif (row["Target"] == recordLabel) and (row["Ref"] == rightScaffold.name):
-                                            qualityRightScoresList.append(row["Quality"])
+                                ## Local assembly performed with the IRO algorithm.
+                                if module == "IRO":
+                                    if (row["Target"] == recordLabel) and (row["Ref"] == leftScaffold.name):
+                                        qualityLeftScoresList.append(row["Quality"])
+                                    elif (row["Target"] == recordLabel) and (row["Ref"] == rightScaffold.name):
+                                        qualityRightScoresList.append(row["Quality"])
 
-                                if qualityLeftScoresList == []:
-                                    qualityLeftScoresList.append('D')
-                                if qualityRightScoresList == []:
-                                    qualityRightScoresList.append('D')
+                            if qualityLeftScoresList == []:
+                                qualityLeftScoresList.append('D')
+                            if qualityRightScoresList == []:
+                                qualityRightScoresList.append('D')
 
-                                refQryOutput.seek(0)
+                            refQryOutput.seek(0)
 
-                                # Global quality score.
-                                gapfilledSeqQuality = min(qualityLeftScoresList) + min(qualityRightScoresList)
+                            # Global quality score.
+                            gapfilledSeqQuality = min(qualityLeftScoresList) + min(qualityRightScoresList)
 
-                                record.description = "Quality " + str(gapfilledSeqQuality)
-                                SeqIO.write(record, qualified, "fasta")
+                            record.description = "Quality " + str(gapfilledSeqQuality)
+                            SeqIO.write(record, qualified, "fasta")
 
-                                # Update GFA with only the good solutions (the ones having a good quality score).
-                                if (len(sequence) > 2*extSize) and (re.match('^.*Quality [AB]{2}$', record.description)):
-                                    if module == "DBG":
-                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, kValue)
-                                    else:
-                                        outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, 0)
-                                    outputGFAList.append(outputGFA)
-
-                                # Add the bad solutions to a FASTA file containing all bad solutions.
+                            # Update GFA with only the good solutions (the ones having a good quality score).
+                            if (len(sequence) > 2*extSize) and (re.match('^.*Quality [AB]{2}$', record.description)):
+                                if module == "DBG":
+                                    outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, kValue)
                                 else:
-                                    try:
-                                        with open(badSolutionsFile, "a") as badSolFile:
-                                            if module == "DBG":
-                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + ".k" + str(kValue) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
-                                            else:
-                                                badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
-                                            badSolFile.write(str(sequence))
-                                    except IOError as err:
-                                        print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
-                                        sys.exit(1)
+                                    outputGFA = getOutputForGfa(record, extSize, gap.left, gap.right, leftScaffold, rightScaffold, module, 0)
+                                outputGFAList.append(outputGFA)
 
-                            except Exception as e:
-                                print("File 'qualitativeEvaluation.py': Something wrong with the case 'Ref = Gap/Target Flanking Contigs' Sequences' of the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
-                                print("Exception-{}".format(e))
-                                sys.exit(1)
+                            # Add the bad solutions to a FASTA file containing all bad solutions.
+                            else:
+                                try:
+                                    with open(badSolutionsFile, "a") as badSolFile:
+                                        if module == "DBG":
+                                            badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + ".k" + str(kValue) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                                        else:
+                                            badSolFile.write("\n>" + str(gap.left) +":"+ str(gap.right) + "_gf." + str(strand) + " _ len." + str(len(sequence)) + "_qual." + str(gapfilledSeqQuality) +"\n")
+                                        badSolFile.write(str(sequence))
+                                except IOError as err:
+                                    print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
+                                    sys.exit(1)
+
+                        except Exception as e:
+                            print("File 'qualitativeEvaluation.py': Something wrong with the case 'Ref = Gap/Target Flanking Contigs' Sequences' of the 'Quality Estimation' step of the function 'qualitativeEvaluationOfTheAssembly()'")
+                            print("Exception-{}".format(e))
+                            sys.exit(1)
 
                     qualified.seek(0)
 
