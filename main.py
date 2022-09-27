@@ -49,7 +49,7 @@ subparsers = parser.add_subparsers(dest="MTGLink_module", help="MTGLink module u
 # DBG module options.
 parserDBG = subparsers.add_parser("DBG", help="Local assembly using a De Bruijn Graph (DBG) algorithm")
 parserDBG.add_argument('-gfa', dest="gfa", action="store", help="Input GFA file (GFA 2.0) (format: xxx.gfa)", required=True)
-parserDBG.add_argument('-bam', dest="bam", action="store", help="BAM file: linked reads mapped on reference genome (format: xxx.bam)", required=True)
+parserDBG.add_argument('-bam', dest="bam", action="store", help="BAM file: linked-reads mapped on reference genome (format: xxx.bam)", required=True)
 parserDBG.add_argument('-fastq', dest="reads", action="store", help="File (gzipped) of indexed reads (format: xxx.fastq.gz | xxx.fq.gz)", required=True)
 parserDBG.add_argument('-index', dest="index", action="store", help="Barcodes index file (format: xxx.bci)", required=True)
 parserDBG.add_argument('-out', dest="outDir", action="store", default="./MTG-Link_results", help="Output directory [default: ./MTG-Link_results]")
@@ -73,7 +73,7 @@ parserDBG.add_argument("--multiple", action="store_true", help="To return the as
 # IRO module options.
 parserIRO = subparsers.add_parser("IRO", help="Local assembly using an Iterative Read Overlap (IRO) algorithm")
 parserIRO.add_argument('-gfa', dest="gfa", action="store", help="Input GFA file (GFA 2.0) (format: xxx.gfa)", required=True)
-parserIRO.add_argument('-bam', dest="bam", action="store", help="BAM file: linked reads mapped on reference genome (format: xxx.bam)", required=True)
+parserIRO.add_argument('-bam', dest="bam", action="store", help="BAM file: linked-reads mapped on reference genome (format: xxx.bam)", required=True)
 parserIRO.add_argument('-fastq', dest="reads", action="store", help="File (gzipped) of indexed reads (format: xxx.fastq.gz | xxx.fq.gz)", required=True)
 parserIRO.add_argument('-index', dest="index", action="store", help="Barcodes index file (format: xxx.bci)", required=True)
 parserIRO.add_argument('-out', dest="outDir", action="store", default="./MTG-Link_results", help="Output directory [default: ./MTG-Link_results]")
