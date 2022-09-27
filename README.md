@@ -120,7 +120,7 @@ mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -inde
     -bxuDir BXUDIR          Directory where the FASTQ files containing the subsample of reads are located (1 file per target) (format of FASTQ files: xxx.bxu.fastq) [to provide if the read subsampling step has already been done for this dataset]
     -t THREADS              Number of threads to use for the Read Subsampling step [default: 1]
     -flank FLANKSIZE        Flanking sequences' size (bp) [default: 10000]
-    -occ MINBARCOCC         Always remove barcodes for wich the number of occurrences in the union set from the two flanking sequences is smaller that this number [default: 2]
+    -occ MINBARCOCC         Minimum number of occurrences in target flanking regions for a barcode to be retained in the union set [default: 2]
     -ext EXTSIZE            Size of the extension of the target on both sides (bp); determine start/end of local assembly [default: 500]
     -l MAXLENGTH            Maximum assembly length (bp) (it could be a bit bigger than the length of the target to fill OR it could be a very high length to prevent for searching indefinitely [default: 10000]
     -m MINLENGTH            Minimum assembly length (bp), by default 2*(-ext) bp [default: 1000]
