@@ -72,15 +72,35 @@ If at least one test "Fail", either MTG-Link is not installed properly or there 
 
 ## Running MTG-Link
 
+### Inputs
+
+The inputs of MTG-Link are the following:
+
+* Linked-read sequencing files (**FASTQ**, **BAM** and index files)
+* Target sequence definition (**GFA** file)
+
+#### How to generate the input GFA file ?
+
+In the simplest case, when the target sequences to be assembled can be defined each by 2 coordinates on a sequence from the reference genome, you can generate the GFA file from a bed file, with the following command:
+
+```
+./utils/bed2gfa.py -bed target_sequence_coordinates.bed -fa reference_genome.fasta -out . 
+# the output file will be named target_sequence_coordinates.gfa
+```
+
+In [other local assembly use cases](./docs/README.md), such as intra-scaffold and inter-scaffold gap-fillings or the reconstruction of the alternative allele of large insertion variants, the input GFA can be generated from other file types (bed, fasta, vcf), using [scripts](./utils/README.md) in the `utils/` directory.    
+
+
 ### 1) Build LRez barcode index
 
 Prior to running MTG-Link, the LRez barcode index of the linked reads FASTQ file has to be built. This can be done with one of the following command:
+
 ```
-# The reads file is gzipped.
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 ```
-* readsFile.fastq.gz: Linked reads file (gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
-* barcodeIndex.bci: File where to store the LRez barcode index
+
+* `readsFile.fastq.gz`: Linked reads file (must be gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
+* `barcodeIndex.bci`: output file where the LRez barcode index will be stored
 
 ### 2) Run MTG-Link
 
@@ -88,14 +108,12 @@ MTG-Link can be run with the following command:
 ```
 mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci 
 ```
-* gfaFile.gfa: GFA file containing the coordinates of the targets to fill
-* bamFile.bam: BAM file of the linked reads mapped on the reference genome. Warning: the associated .bai file must exist
-* readsFile.fastq.gz: Linked reads file. Warning: the barcode sequence must be in the header (BX:Z tag). The FASTQ file must be gzipped
-* barcodeIndex.bci: LRez barcode index of the FASTQ file
 
-MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as the reconstruction of the alternative allele of large insertion variants.  
-As users do not have the same input files depending on their use case, the `utils/` directory contains [scripts](./utils/README.md) to obtain the requested input GFA file from different input file formats (bed, fasta, vcf).  
-Besides, for each of these use cases, an example of the procedure to follow to perform local assembly with MTG-Link is detailed [here](./docs/README.md).
+* `gfaFile.gfa`: GFA file containing the coordinates of the targets to fill
+* `bamFile.bam`: BAM file of the linked reads mapped on the reference genome. Warning: the associated .bai file must exist
+* `readsFile.fastq.gz`: Linked reads file (gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
+* `barcodeIndex.bci`: LRez barcode index of the FASTQ file
+
 
 #### Options
 
@@ -120,6 +138,23 @@ Besides, for each of these use cases, an example of the procedure to follow to p
 ```
 
 **NB:** When using the `--force` option, the `--multiple` option cannot be used, as otherwise it would filter unique solutions obtained with different `-k` values. 
+
+### Outputs
+
+The main outputs of MTG-Link are the following:
+
+* Output GFA file: `[input_GFA_name]_mtglink.gfa`
+    * it is an assembly graph file in GFA format, that complements the input GFA file with the obtained assembled target sequences.
+* Output FASTA file: `[input_GFA_name].assembled_sequences.fasta`
+    * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
+
+
+**NB:** All the output files and directories (including the intermediate files) of MTG-Link are detailed in [input-output_files.md](./docs/input-output_files.md).
+
+
+## Examples of MTG-Link applications
+
+
 
 <!--
 ## License
