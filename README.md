@@ -154,7 +154,15 @@ The main outputs of MTG-Link are the following:
 
 ## Examples of MTG-Link applications
 
+MTG-Link can be used for various local assembly use cases, such as the reconstruction of loci of interest, intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
 
+We provide [documentation and examples of these different use cases](./docs/README.md) with tiny datasets and all the command lines to run. The main differences between these use cases lie in how to generate the input GFA file, and also how to convert the output of MTG-Link in other formats : 
+
+* [a single locus of interest](): starting from a bed file with locus coordinates.
+* [intra-scaffold gap-filling](docs/intrascaffold_gapfilling/README.md): starting from stretches of 'N's in a genome file. 
+* [inter-scaffold gap-filling](docs/interscaffold_gapfilling/README.md): starting from a set of scaffolds of interest (performing both scaffolding and gap-filling).
+* [assembly of alternative allele of insertion variants](docs/insertionsvariants_reconstruction/README.md): starting from a VCF file, containing insertion sites.
+ 
 
 <!--
 ## License
