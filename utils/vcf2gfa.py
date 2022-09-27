@@ -31,7 +31,7 @@ from Bio import SeqIO
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="vcf2gfa.py", usage="%(prog)s -vcf <vcfFile.vcf> -fa <fastaFile.fasta> -out <outDir> [options]", \
+parser = argparse.ArgumentParser(prog="vcf2gfa.py", usage="%(prog)s -vcf <vcfFile.vcf> -fa <fastaFile.fasta> -out <outputGFAFile> [options]", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Convert a VCF file containing the insertions coordinates to a GFA file (GFA 2.0). We can filter the insertions by the contigs' sizes on both sides (long enough for ex to get enough barcodes). As for some insertions, there are a few micro-homologies (mh), we are not sure that the given position in the VCF file is the exact position, so extend the insertion by '--extension' bp on both sides of the insertion"))
 
@@ -39,7 +39,7 @@ parser.add_argument("-vcf", dest="vcf", action="store", help="VCF file containin
 parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-contigs", dest="contigs_size", action="store", type=int, help="Minimum size of the flanking contigs of the insertion to treat as a target")
 parser.add_argument("-extension", dest="ext_size", action="store", type=int, default=50, help="Size of the extension of the insertion (bp): extend the insertion by '--extension' bp on both sides of the insertion [default: 50]")
-parser.add_argument("-out", dest="outDir", action="store", help="Directory to save the output GFA file and gap flanking sequences FASTA files", required=True)
+parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
 
 args = parser.parse_args()
 
@@ -70,15 +70,7 @@ print("Input FASTA file: " + fastaFile)
 # Directory for saving results
 #----------------------------------------------------
 cwd = os.getcwd()
-if not os.path.exists(args.outDir):
-    os.mkdir(args.outDir)
-try:
-    os.chdir(args.outDir)
-except:
-    print("Something wrong with specified directory. Exception-", sys.exc_info())
-    print("Restoring the path")
-    os.chdir(cwd)
-outDir = os.getcwd()
+outDir = cwd
 print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
@@ -174,13 +166,13 @@ try:
 
                         # Output FASTA files containing the flanking sequences of the current gap.
                         ##Left
-                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(left_start_index) +"-"+ str(left_end_index) +".g"+ str(insertion_length) +".c"+ str(minContigSize) + ".left.fasta")
+                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(left_start_index) +"-"+ str(left_end_index) +".g"+ str(insertion_length) + ".left.fasta")
                         with open(left_fastaFile, "w") as left:
                             left.write(">{} _ len {}".format(left_name, str(left_length)))
                             left.write("\n" + str(left_flanking_seq) + "\n")
 
                         ##Right
-                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(right_start_index) +"-"+ str(right_end_index) +".g"+ str(insertion_length) +".c"+ str(minContigSize) + ".right.fasta")
+                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(right_start_index) +"-"+ str(right_end_index) +".g"+ str(insertion_length) + ".right.fasta")
                         with open(right_fastaFile, "w") as right:
                             right.write((">{} _ len {}".format(right_name, str(right_length))))
                             right.write("\n" + str(right_flanking_seq) + "\n")
@@ -189,8 +181,11 @@ try:
                         # GFA file
                         #----------------------------------------------------
                         os.chdir(outDir)
-                        gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_insertions_extension_" + str(args.ext_size) + "_contigs_" + str(minContigSize) + ".gfa")
-
+                        if args.outGFA is not None:
+                            gfaFile = os.path.abspath(str(args.outGFA))
+                        else:
+                            gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_insertions_extension_" + str(args.ext_size) + "_contigs_" + str(minContigSize) + ".gfa")
+                            
                         # Initiate the GFA file.
                         if not os.path.exists(gfaFile):
                             with open(gfaFile, "w") as f:

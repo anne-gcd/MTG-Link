@@ -18,14 +18,14 @@ An example of the outputs you should get is located in the `outputs/` directory.
         * the flanking contigs' sizes (for example, select only the insertions whose flanking contigs' sizes are long enough to get enough barcodes): `-contigs` option
 ```
 # Create a GFA file with the targets' coordinates of the insertions whose flanking contigs' sizes are at least 10000 bp
-../../utils/vcf2gfa.py -vcf vcfFile.vcf -fa referenceGenome.fasta -out . -contigs 10000
+../../utils/vcf2gfa.py -vcf vcfFile.vcf -fa referenceGenome.fasta -out insertionSequenceCoordinates.gfa -contigs 10000
 ```
 * vcfFile.vcf: VCF file containing the insertions coordinates
 * referenceGenome.fasta: FASTA file of the reference genome
 * **Outputs**: 
-    * GFA file: 'referenceGenome_insertions_extension_50_contigs_10000.gfa'
-    * FASTA files containing the left flanking region of the target: 'referenceGenome_[scaffoldID]_[coordLeftFlankingSeq_start]-[coordLeftFlankingSeq_end].g100.c10000.left.fasta'
-    * FASTA files containing the right flanking region of the target: 'referenceGenome_[scaffoldID]_[coordRightFlankingSeq_start]-[coordRightFlankingSeq_end].g100.c10000.right.fasta'
+    * GFA file: 'insertionSequenceCoordinates.gfa'
+    * FASTA files containing the left flanking region of the target: 'referenceGenome_[scaffoldID]_[coordLeftFlankingSeq_start]-[coordLeftFlankingSeq_end].g100.left.fasta'
+    * FASTA files containing the right flanking region of the target: 'referenceGenome_[scaffoldID]_[coordRightFlankingSeq_start]-[coordRightFlankingSeq_end].g100.right.fasta'
 
 
 ## MTG-Link pipeline
@@ -35,16 +35,16 @@ An example of the outputs you should get is located in the `outputs/` directory.
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 
 # Run MTG-Link
-../../mtglink.py DBG -gfa referenceGenome_insertions_extension_50_contigs_10000.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -ext 100 -m 400 -k 51 41 31 21
+../../mtglink.py DBG -gfa insertionSequenceCoordinates.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -ext 100 -m 400 -k 51 41 31 21
 ```
 * readsFile.fastq.gz: Linked-reads file (must be gzipped), with the barcode sequence in the header (BX:Z tag)
-* referenceGenome_insertions_extension_50_contigs_10000.gfa: GFA file obtained from `vcf2gfa.py`
+* insertionSequenceCoordinates.gfa: GFA file obtained from `vcf2gfa.py`
 * bamFile.bam: input BAM file
 * barcodeIndex.bci: LRez barcode index of the FASTQ file, obtained with `LRez index fastq`
 * **Outputs**: the main outputs of MTG-Link are the following:
-    * Output GFA file: 'referenceGenome_insertions_extension_50_contigs_10000_mtglink.gfa'
+    * Output GFA file: 'insertionSequenceCoordinates_mtglink.gfa'
         * it is an assembly graph file in GFA format, that complements the input GFA file with the obtained assembled target sequences.
-    * Output FASTA file: 'referenceGenome_insertions_extension_50_contigs_10000.assembled_sequences.fasta'
+    * Output FASTA file: 'insertionSequenceCoordinates.assembled_sequences.fasta'
         * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
 **NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)

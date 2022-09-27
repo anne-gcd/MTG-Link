@@ -32,14 +32,14 @@ from Bio import SeqIO
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="matrix2gfa.py", usage="%(prog)s -in <fastaFile.fasta> -matrix <matrixFile.matrix> -out <outDir> -threshold <THRESHOLD>",\
+parser = argparse.ArgumentParser(prog="matrix2gfa.py", usage="%(prog)s -in <fastaFile.fasta> -matrix <matrixFile.matrix> -out <outputGFAFile> -threshold <THRESHOLD>",\
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Convert a file containing the matrix (links between the ends of the scaffolds/contigs) to a GFA file"))
 
 parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-matrix", dest="matrix", action="store", help="File containing the links between the ends of the scaffolds/contigs in tabular format (matrix)", required=True)
 parser.add_argument("-threshold", dest="threshold", type=int,  action="store", help="Minimal number of links two scaffolds must share to try to fill the gap between them", required=False, default=10)
-parser.add_argument("-out", dest="outDir", action="store", help="Directory to save the output GFA file and gap flanking sequences FASTA files", required=True)
+parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
 
 args = parser.parse_args()
 
@@ -68,15 +68,7 @@ print("Input matrix file: " + matrixFile)
 # Directory for saving results
 #----------------------------------------------------
 cwd = os.getcwd()
-if not os.path.exists(args.outDir):
-    os.mkdir(args.outDir)
-try:
-    os.chdir(args.outDir)
-except:
-    print("Something wrong with specified directory. Exception-", sys.exc_info())
-    print("Restoring the path")
-    os.chdir(cwd)
-outDir = os.getcwd()
+outDir = cwd
 print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
@@ -144,7 +136,10 @@ try:
                 # GFA file
                 #----------------------------------------------------
                 os.chdir(outDir)
-                gfaFile = os.path.abspath(fasta_name.split(".fa")[0] +"_"+ matrixFile.split("/")[-1].split(".matrix")[0] + "_threshold_" + str(args.threshold) + ".gfa")
+                if args.outGFA is not None:
+                    gfaFile = os.path.abspath(str(args.outGFA))
+                else:
+                    gfaFile = os.path.abspath(fasta_name.split(".fa")[0] +"_"+ matrixFile.split("/")[-1].split(".matrix")[0] + "_threshold_" + str(args.threshold) + ".gfa")
 
                 # Initiate the GFA file.
                 if not os.path.exists(gfaFile):

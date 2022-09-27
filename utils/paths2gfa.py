@@ -32,13 +32,13 @@ from Bio import SeqIO
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="paths2gfa.py", usage="%(prog)s -fa <fastaFile.fasta> -paths <pathsFile.txt> -out <outDir>", \
+parser = argparse.ArgumentParser(prog="paths2gfa.py", usage="%(prog)s -fa <fastaFile.fasta> -paths <pathsFile.txt> -out <outputGFAFile> ", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Convert a file containing the paths between scaffolds to a GFA file"))
 
 parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-paths", dest="paths", action="store", help="File containing the paths between scaffolds (obtained from the matrix) (format: 'xxx.paths.txt')", required=True)
-parser.add_argument("-out", dest="outDir", action="store", help="Directory to save the output GFA file and gap flanking sequences FASTA files", required=True)
+parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
 
 args = parser.parse_args()
 
@@ -66,15 +66,7 @@ print("Input PATHS file: " + pathsFile)
 # Directory for saving results
 #----------------------------------------------------
 cwd = os.getcwd()
-if not os.path.exists(args.outDir):
-    os.mkdir(args.outDir)
-try:
-    os.chdir(args.outDir)
-except:
-    print("Something wrong with specified directory. Exception-", sys.exc_info())
-    print("Restoring the path")
-    os.chdir(cwd)
-outDir = os.getcwd()
+outDir = cwd
 print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
@@ -115,7 +107,10 @@ try:
                 # GFA file - Segment lines
                 #----------------------------------------------------
                 os.chdir(outDir)
-                gfaFile = os.path.abspath(fasta_name.split(".fa")[0] +"_"+ pathsFile.split("/")[-1].split(".txt")[0] + ".gfa")
+                if args.outGFA is not None:
+                    gfaFile = os.path.abspath(str(args.outGFA))
+                else:
+                    gfaFile = os.path.abspath(fasta_name.split(".fa")[0] +"_"+ pathsFile.split("/")[-1].split(".txt")[0] + ".gfa")
 
                 # Initiate the GFA file.
                 if not os.path.exists(gfaFile):

@@ -19,17 +19,17 @@ An example of the main outputs you should get is located in the `outputs/` direc
         * the flanking contigs' sizes (for example, select only the 'N's regions whose flanking contigs' sizes are long enough to get enough barcodes): `-contigs` option
 ```
 # Get a BED file containing the coordinates of the 'Ns' regions
-../../utils/fasta2bed.py -fa referenceGenome.fasta -out .
+../../utils/fasta2bed.py -fa referenceGenome.fasta -out targetSequenceCoordinates.bed
 
 # Create a GFA file with the gaps/targets of length 1000 bp and whose the flanking contigs' sizes are at least 10000 bp
-../../utils/bed2gfa.py -bed targetSequenceCoordinates.bed -fa referenceGenome.fasta -out . -min 1000 -max 1000 -contigs 10000
+../../utils/bed2gfa.py -bed targetSequenceCoordinates.bed -fa referenceGenome.fasta -out targetSequenceCoordinates.gfa -min 1000 -max 1000 -contigs 10000
 ```
 * referenceGenome.fasta: FASTA file containing the sequences of the scaffolds (reference genome)
 * targetSequenceCoordinates.bed: BED file obtained from `fasta2bed.py`
 * **Outputs**: 
-    * GFA file: 'referenceGenome_gaps_1000-1000_contigs_10000.gfa'
-    * FASTA files containing the left flanking region of the gap/target: 'referenceGenome_[scaffoldID]_[coordLeftFlankingSeq_start]-[coordLeftFlankingSeq_end].g1000.c10000.left.fasta'
-    * FASTA files containing the right flanking region of the gap/target: 'referenceGenome_[scaffoldID]_[coordRightFlankingSeq_start]-[coordRightFlankingSeq_end].g1000.c10000.right.fasta'
+    * GFA file: 'targetSequenceCoordinates.gfa'
+    * FASTA files containing the left flanking region of the gap/target: 'referenceGenome_[scaffoldID]_[coordLeftFlankingSeq_start]-[coordLeftFlankingSeq_end].g1000.left.fasta'
+    * FASTA files containing the right flanking region of the gap/target: 'referenceGenome_[scaffoldID]_[coordRightFlankingSeq_start]-[coordRightFlankingSeq_end].g1000.right.fasta'
 
 
 ## MTG-Link pipeline
@@ -39,16 +39,16 @@ An example of the main outputs you should get is located in the `outputs/` direc
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 
 # Run MTG-Link
-../../mtglink.py DBG -gfa referenceGenome_gaps_1000-1000_contigs_10000.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -k 61 51 41 31 21
+../../mtglink.py DBG -gfa targetSequenceCoordinates.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -k 61 51 41 31 21
 ```
 * readsFile.fastq.gz: Linked-reads file (must be gzipped), with the barcode sequence in the header (BX:Z tag)
-* referenceGenome_gaps_1000-1000_contigs_10000.gfa: GFA file obtained from `bed2gfa.py`
+* targetSequenceCoordinates.gfa: GFA file obtained from `bed2gfa.py`
 * bamFile.bam: input BAM file
 * barcodeIndex.bci: LRez barcode index of the FASTQ file, obtained with `LRez index fastq`
 * **Outputs**: the main outputs of MTG-Link are the following:
-    * Output GFA file: 'referenceGenome_gaps_1000-1000_contigs_10000_mtglink.gfa'
+    * Output GFA file: 'targetSequenceCoordinates_mtglink.gfa'
         * it is an assembly graph file in GFA format, that complements the input GFA file with the obtained assembled target sequences.
-    * Output FASTA file: 'referenceGenome_gaps_1000-1000_contigs_10000.assembled_sequences.fasta'
+    * Output FASTA file: 'targetSequenceCoordinates.assembled_sequences.fasta'
         * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
 **NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)
@@ -59,9 +59,9 @@ LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 The GFA file output by MTG-Link is an assembly graph that represents the relationships between the input sequences and the target sequences (assemblies or gaps). The input FASTA file can be updated with the assembled sequences using this GFA file. The gaps of the GFA file are returned as 'N's regions in the output FASTA file.
 ```
 # Update the input FASTA file with assembled sequences
-../../utils/gfa2tofasta.py -in ./MTG-Link_results/referenceGenome_gaps_1000-1000_contigs_10000_mtglink.gfa -out .
+../../utils/gfa2tofasta.py -in ./MTG-Link_results/targetSequenceCoordinates_mtglink.gfa -out .
 ```
-* referenceGenome_gaps_1000-1000_contigs_10000_mtglink.gfa: GFA file output by ***MTG-Link***
+* targetSequenceCoordinates_mtglink.gfa: GFA file output by ***MTG-Link***
 * **Output**:
-    * FASTA file: 'referenceGenome_gaps_1000-1000_contigs_10000_mtglink_assembly.fasta'
+    * FASTA file: 'targetSequenceCoordinates_mtglink_assembly.fasta'
 

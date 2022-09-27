@@ -21,12 +21,12 @@ LRez compare -b bamFile.bam -r regionsFile.lst -o matrixFile.matrix
     * it is possible to specify the minimal number of links (minimal number of common barcodes) two scaffolds must share to consider a real link between them and so to add the corresponding gap to the GFA file: `-threshold` option
 ```
 # Create a GFA file from the matrix file, with a minimal number of links between two scaffolds being of 10
-../../utils/matrix2gfa.py -fa referenceGenome.fasta -matrix matrixFile.matrix -out . -threshold 10
+../../utils/matrix2gfa.py -fa referenceGenome.fasta -matrix matrixFile.matrix -out targetSequenceCoordinates.gfa -threshold 10
 ```
 * referenceGenome.fasta: FASTA file containing the sequences of the scaffolds (reference genome)
 * matrixFile.matrix: Matrix file containing the number of common barcodes between all possibles pairs of scaffolds' extremities
 * **Outputs**: 
-    * GFA file: 'referenceGenome_matrixFile_threshold_10.gfa'
+    * GFA file: 'targetSequenceCoordinates.gfa'
     * FASTA files containing the scaffolds sequences: 'referenceGenome_[scaffoldID].scaffold.fasta'
 
 
@@ -37,16 +37,16 @@ LRez compare -b bamFile.bam -r regionsFile.lst -o matrixFile.matrix
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 
 # Run MTG-Link
-../../mtglink.py DBG -gfa referenceGenome_matrixFile_threshold_10.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -k 61 51 41 31 21
+../../mtglink.py DBG -gfa targetSequenceCoordinates.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -k 61 51 41 31 21
 ```
 * readsFile.fastq.gz: Linked-reads file (must be gzipped), with the barcode sequence in the header (BX:Z tag)
-* referenceGenome_matrixFile_threshold_10.gfa: GFA file obtained from `matrix2gfa.py`
+* targetSequenceCoordinates.gfa: GFA file obtained from `matrix2gfa.py`
 * bamFile.bam: input BAM file
 * barcodeIndex.bci: LRez barcode index of the FASTQ file, obtained with `LRez index fastq`
 * **Outputs**: the main outputs of MTG-Link are the following:
-    * Output GFA file: 'referenceGenome_matrixFile_threshold_10_mtglink.gfa'
+    * Output GFA file: 'targetSequenceCoordinates_mtglink.gfa'
         * it is an assembly graph file in GFA format, that complements the input GFA file with the obtained assembled target sequences.
-    * Output FASTA file: 'referenceGenome_matrixFile_threshold_10.assembled_sequences.fasta'
+    * Output FASTA file: 'targetSequenceCoordinates.assembled_sequences.fasta'
         * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
 **NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)
@@ -57,9 +57,9 @@ LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 The GFA file output by MTG-Link is an assembly graph that represents the relationships between the input sequences and the target sequences (assemblies or gaps). The input FASTA file can be updated with the assembled sequences using this GFA file. The gaps of the GFA file are returned as 'N's regions in the output FASTA file.
 ```
 # Update the input FASTA file with assembled sequences
-../../utils/gfa2tofasta.py -in ./MTG-Link_results/referenceGenome_matrixFile_threshold_10_mtglink.gfa -out .
+../../utils/gfa2tofasta.py -in ./MTG-Link_results/targetSequenceCoordinates_mtglink.gfa -out .
 ```
-* interscaffold_gapfilling_interscaffold_gapfilling_threshold_10_mtglink.gfa: GFA file output by ***MTG-Link***
+* targetSequenceCoordinates_mtglink.gfa: GFA file output by ***MTG-Link***
 * **Output**:
-    * FASTA file: 'referenceGenome_matrixFile_threshold_10_mtglink_assembly.fasta'
+    * FASTA file: 'targetSequenceCoordinates_mtglink_assembly.fasta'
 
