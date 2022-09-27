@@ -1,4 +1,0 @@
-Left_Scaffold	Right_Scaffold	Target_Size	Flank_Size	MinOcc_Barcodes	Nb_Barcodes	Nb_Reads
-68-2-	68-1-	0	10000	2	1035	3655.0
-27292-2-	27292-1-	0	10000	2	341	1141.0
-26939-2-	26939-1-	0	10000	2	1037	3933.0

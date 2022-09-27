@@ -11,7 +11,7 @@ The main feature of MTG-Link is that it takes advantage of the linked-read barco
 
 MTG-Link can be used for various local assembly use cases, such as intra-scaffold and inter-scaffold gap-fillings, as well as the reconstruction of the alternative allele of large insertion variants. Notably, the sequence to be assembled can be totally unknown (even in a related species such as in targeted assembly). The locus of interest is only defined by two coordinates on a reference genome, indicating its left and right flanking sequences, and the sequence in-between to be assembled is referred to as the target sequence.  
 
-It takes as input a set of linked reads, the target flanking sequences and coordinates in GFA format (with the flanking sequences identified as ”segment” elements (S lines and the targets identified as ”gap” elements (G lines)) and an indexed BAM file obtained after mapping the linked reads onto the reference genome.  
+It takes as input a set of linked-reads, the target flanking sequences and coordinates in GFA format (with the flanking sequences identified as ”segment” elements (S lines and the targets identified as ”gap” elements (G lines)) and an indexed BAM file obtained after mapping the linked-reads onto the reference genome.  
 It outputs the set of assembled target sequences in Fasta format, as well as an assembly graph file in GFA format, complementing the input GFA file with the obtained target sequences.
 
 Presently, it is directly compatible with the following linked-reads technologies, given that the barcodes are reported using the BX:Z tag:
@@ -81,26 +81,25 @@ The inputs of MTG-Link are the following:
 
 #### How to generate the input GFA file ?
 
-In the simplest case, when the target sequences to be assembled can be defined each by 2 coordinates on a sequence from the reference genome, you can generate the GFA file from a bed file, with the following command:
+In the simplest case, when the target sequences to be assembled can be defined each by two coordinates on a sequence from the reference genome, you can generate the GFA file from a BED file, with the following command:
 
 ```
-./utils/bed2gfa.py -bed target_sequence_coordinates.bed -fa reference_genome.fasta -out . 
-# the output file will be named target_sequence_coordinates.gfa
+./utils/bed2gfa.py -bed targetSequenceCoordinates.bed -fa referenceGenome.fasta -out . 
+## the output file will be named 'referenceGenome_gaps_noMin-noMax_contigs_noMinFlank.gfa'
 ```
 
-In [other local assembly use cases](./docs/README.md), such as intra-scaffold and inter-scaffold gap-fillings or the reconstruction of the alternative allele of large insertion variants, the input GFA can be generated from other file types (bed, fasta, vcf), using [scripts](./utils/README.md) in the `utils/` directory.    
+In [other local assembly use cases](./docs/README.md), such as intra-scaffold and inter-scaffold gap-fillings or the reconstruction of the alternative allele of large insertion variants, the input GFA can be generated from other file types (BED, FASTA, VCF), using [scripts](./utils/README.md) in the `utils/` directory.    
 
 
 ### 1) Build LRez barcode index
 
-Prior to running MTG-Link, the LRez barcode index of the linked reads FASTQ file has to be built. This can be done with one of the following command:
-
+Prior to running MTG-Link, the LRez barcode index of the linked-reads FASTQ file has to be built. This can be done with the following command:
 ```
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 ```
-
-* `readsFile.fastq.gz`: Linked reads file (must be gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
+* `readsFile.fastq.gz`: Linked-reads file (must be gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
 * `barcodeIndex.bci`: output file where the LRez barcode index will be stored
+
 
 ### 2) Run MTG-Link
 
@@ -108,12 +107,10 @@ MTG-Link can be run with the following command:
 ```
 mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci 
 ```
-
 * `gfaFile.gfa`: GFA file containing the coordinates of the targets to fill
-* `bamFile.bam`: BAM file of the linked reads mapped on the reference genome. Warning: the associated .bai file must exist
-* `readsFile.fastq.gz`: Linked reads file (gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
+* `bamFile.bam`: BAM file of the linked-reads mapped on the reference genome. Warning: the associated .bai file must exist
+* `readsFile.fastq.gz`: Linked-reads file (must be gzipped). Warning: the barcode sequence must be in the header (BX:Z tag)
 * `barcodeIndex.bci`: LRez barcode index of the FASTQ file
-
 
 #### Options
 
@@ -139,6 +136,7 @@ mtglink.py DBG -gfa gfaFile.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -inde
 
 **NB:** When using the `--force` option, the `--multiple` option cannot be used, as otherwise it would filter unique solutions obtained with different `-k` values. 
 
+
 ### Outputs
 
 The main outputs of MTG-Link are the following:
@@ -148,7 +146,6 @@ The main outputs of MTG-Link are the following:
 * Output FASTA file: `[input_GFA_name].assembled_sequences.fasta`
     * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
-
 **NB:** All the output files and directories (including the intermediate files) of MTG-Link are detailed in [input-output_files.md](./docs/input-output_files.md).
 
 
@@ -156,9 +153,9 @@ The main outputs of MTG-Link are the following:
 
 MTG-Link can be used for various local assembly use cases, such as the reconstruction of loci of interest, intra-scaffold and inter-scaffold gap-fillings, as well as alternative allele reconstruction of large insertion variants.  
 
-We provide [documentation and examples of these different use cases](./docs/README.md) with tiny datasets and all the command lines to run. The main differences between these use cases lie in how to generate the input GFA file, and also how to convert the output of MTG-Link in other formats : 
+We provide [documentation and examples of these different use cases](./docs/README.md) with tiny datasets and all the command lines to run. The main differences between these use cases lie in how to generate the input GFA file, and also how to convert the output of MTG-Link in other formats: 
 
-* [a single locus of interest](): starting from a bed file with locus coordinates.
+* [a single locus of interest](docs/singlelocus_reconstruction/README.md): starting from a BED file with locus coordinates.
 * [intra-scaffold gap-filling](docs/intrascaffold_gapfilling/README.md): starting from stretches of 'N's in a genome file. 
 * [inter-scaffold gap-filling](docs/interscaffold_gapfilling/README.md): starting from a set of scaffolds of interest (performing both scaffolding and gap-filling).
 * [assembly of alternative allele of insertion variants](docs/insertionsvariants_reconstruction/README.md): starting from a VCF file, containing insertion sites.
@@ -171,7 +168,7 @@ Please note that GATB-Core is distributed under Affero-GPL license.
 
 ## Contact
 
-To contact a developer, request help, or for any feedback on MTG-Link, please use the issue form of github: https://github.com/anne-gcd/MTG-Link/issues
+To contact a developer, request help, or for any feedback on MTG-Link, please use the issue form of github: https://github.com/anne-gcd/MTG-Link/issues/new
 
 You can see all issues concerning MTG-Link [here](https://github.com/anne-gcd/MTG-Link/issues).
 

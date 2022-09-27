@@ -1,2 +1,0 @@
-bkpt1_TargetID.26939-2-_26939-1-_TargetLen.0		5	6275	0
-bkpt2_TargetID.26939-2-_26939-1-_TargetLen.0		1	1417	0

@@ -1,2 +1,0 @@
-bkpt1_TargetID.68-2-_68-1-_TargetLen.0		196	38417	1	2	1
-bkpt2_TargetID.68-2-_68-1-_TargetLen.0		10	4462	1	2	1
