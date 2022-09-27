@@ -30,12 +30,12 @@ from Bio import SeqIO
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="fasta2bed.py", usage="%(prog)s -fa <fastaFile.fasta> -out <outDir>", \
+parser = argparse.ArgumentParser(prog="fasta2bed.py", usage="%(prog)s -fa <fastaFile.fasta> -out <outputBEDFile>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=("Convert a FASTA file to a BED file containing the positions of 'Ns' for each scaffold"))
+                                description=("Convert a FASTA file to a BED file containing the 'N's coordinates for each scaffold"))
 
 parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
-parser.add_argument("-out", dest="outDir", action="store", help="Directory to save the output BED file", required=True)
+parser.add_argument("-out", dest="outBED", action="store", help="Name of the output BED file")
 
 args = parser.parse_args()
 
@@ -55,15 +55,7 @@ print("\nInput FASTA file: " + fastaFile)
 # Directory for saving results
 #----------------------------------------------------
 cwd = os.getcwd()
-if not os.path.exists(args.outDir):
-    os.mkdir(args.outDir)
-try:
-    os.chdir(args.outDir)
-except:
-    print("Something wrong with specified directory. Exception-", sys.exc_info())
-    print("Restoring the path")
-    os.chdir(cwd)
-outDir = os.getcwd()
+outDir = cwd
 print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
@@ -71,7 +63,10 @@ print("\nThe results are saved in " + outDir)
 #----------------------------------------------------
 try:
     # Output BED file.
-    bedFile = fasta_name.split('.fa')[0] + "_positions_Ns.bed"
+    if args.outBED is not None:
+        bedFile = str(args.outBED)
+    else:
+        bedFile = fasta_name.split('.fa')[0] + "_NsCoord.bed"
 
     # Iterate over the scaffolds (records) in the FASTA file.
     with open(fastaFile, "r") as in_fasta:
@@ -105,4 +100,5 @@ except Exception as e:
 
 
 print("\nThe BED output file is saved in " + outDir)
+print("Output BED file: " + bedFile)
 

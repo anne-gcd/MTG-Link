@@ -84,8 +84,7 @@ The inputs of MTG-Link are the following:
 In the simplest case, when the target sequences to be assembled can be defined each by two coordinates on a sequence from the reference genome, you can generate the GFA file from a BED file, with the following command:
 
 ```
-./utils/bed2gfa.py -bed targetSequenceCoordinates.bed -fa referenceGenome.fasta -out . 
-## the output file will be named 'referenceGenome_gaps_noMin-noMax_contigs_noMinFlank.gfa'
+./utils/bed2gfa.py -bed targetSequenceCoordinates.bed -fa referenceGenome.fasta -out targetSequenceCoordinates.gfa 
 ```
 
 In [other local assembly use cases](./docs/README.md), such as intra-scaffold and inter-scaffold gap-fillings or the reconstruction of the alternative allele of large insertion variants, the input GFA can be generated from other file types (BED, FASTA, VCF), using [scripts](./utils/README.md) in the `utils/` directory.    
