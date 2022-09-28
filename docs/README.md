@@ -19,13 +19,13 @@ The locus of interest is defined by two coordinates on a chromosome or scaffold 
 LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
 
 # Run MTG-Link
-../mtglink.py DBG -gfa myLocus.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -t 4 -k 61 51 41 31 21
+../mtglink.py DBG -gfa myLocus.gfa -bam bamFile.bam -fastq readsFile.fastq.gz -index barcodeIndex.bci -k 61 51 41 31 21
 ```
 
 **Outputs**: the main outputs of MTG-Link are the following:
-* Output GFA file: 'myLocus_mtglink.gfa'
+* Output GFA file: `myLocus_mtglink.gfa`
 	* it is an assembly graph file in GFA format, that complements the input GFA file with the obtained assembled target sequence.
-* Output FASTA file: 'myLocus.assembled_sequences.fasta'
+* Output FASTA file: `myLocus.assembled_sequences.fasta`
 	* it is a sequence file in FASTA format, that contains the assembled target sequence.
 
 **NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)  

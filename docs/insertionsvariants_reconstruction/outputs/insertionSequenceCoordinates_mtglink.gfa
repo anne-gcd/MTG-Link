@@ -3,8 +3,6 @@ S	68_0-222082-L	222082	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/ou
 S	68_222182-444265-R	222083	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_68_222182-444265.g100.c10000.right.fasta
 S	26939_0-464755-L	464755	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_26939_0-464755.g100.c10000.left.fasta
 S	26939_464855-929610-R	464755	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_26939_464855-929610.g100.c10000.right.fasta
-S	27292_0-183308-L	183308	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_27292_0-183308.g100.c10000.left.fasta
-S	27292_183408-366715-R	183307	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_27292_183408-366715.g100.c10000.right.fasta
 S	27358_0-171834-L	171834	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_27358_0-171834.g100.c10000.left.fasta
 S	27358_171934-343768-R	171834	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_27358_171934-343768.g100.c10000.right.fasta
 S	68_0-222082-L+:68_222182-444265-R+_fwd_1/1.k51	1300	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
@@ -15,10 +13,6 @@ S	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1.k51	1304	*	UR:Z:MTG-Link/docs
 S	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
 S	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1.k51	1304	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
 S	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
-S	27292_0-183308-L+:27292_183408-366715-R+_fwd_1/1.k51	1300	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
-S	27292_0-183308-L+:27292_183408-366715-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
-S	27292_0-183308-L+:27292_183408-366715-R+_rev_1/1.k51	1300	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
-S	27292_0-183308-L+:27292_183408-366715-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
 E	*	68_0-222082-L+	68_0-222082-L+:68_222182-444265-R+_fwd_1/1+	221982	222082$	0	100	*
 E	*	68_0-222082-L+:68_222182-444265-R+_fwd_1/1+	68_222182-444265-R+	1200	1300$	0	100	*
 E	*	68_0-222082-L+	68_0-222082-L+:68_222182-444265-R+_rev_1/1-	221982	222082$	1200	1300$	*
@@ -27,8 +21,4 @@ E	*	26939_0-464755-L+	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1+	464655	4
 E	*	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1+	26939_464855-929610-R+	1204	1304$	0	100	*
 E	*	26939_0-464755-L+	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1-	464655	464755$	1204	1304$	*
 E	*	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1-	26939_464855-929610-R+	0	100	0	100	*
-E	*	27292_0-183308-L+	27292_0-183308-L+:27292_183408-366715-R+_fwd_1/1+	183208	183308$	0	100	*
-E	*	27292_0-183308-L+:27292_183408-366715-R+_fwd_1/1+	27292_183408-366715-R+	1200	1300$	0	100	*
-E	*	27292_0-183308-L+	27292_0-183308-L+:27292_183408-366715-R+_rev_1/1-	183208	183308$	1200	1300$	*
-E	*	27292_0-183308-L+:27292_183408-366715-R+_rev_1/1-	27292_183408-366715-R+	0	100	0	100	*
 G	*	27358_0-171834-L+	27358_171934-343768-R+	100	*
