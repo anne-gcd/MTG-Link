@@ -36,8 +36,8 @@ parser = argparse.ArgumentParser(prog="matrix2gfa.py", usage="%(prog)s -in <fast
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Convert a file containing the matrix (links between the ends of the scaffolds/contigs) to a GFA file"))
 
-parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
-parser.add_argument("-matrix", dest="matrix", action="store", help="File containing the links between the ends of the scaffolds/contigs in tabular format (matrix)", required=True)
+parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds (reference genome) (format: 'xxx.fasta' or 'xxx.fa')", required=True)
+parser.add_argument("-matrix", dest="matrix", action="store", help="File containing the number of common barcodes between all possibles pairs of scaffolds' extremities (matrix)", required=True)
 parser.add_argument("-threshold", dest="threshold", type=int,  action="store", help="Minimal number of links two scaffolds must share to try to fill the gap between them", required=False, default=10)
 parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
 

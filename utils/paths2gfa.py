@@ -36,8 +36,8 @@ parser = argparse.ArgumentParser(prog="paths2gfa.py", usage="%(prog)s -fa <fasta
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Convert a file containing the paths between scaffolds to a GFA file"))
 
-parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
-parser.add_argument("-paths", dest="paths", action="store", help="File containing the paths between scaffolds (obtained from the matrix) (format: 'xxx.paths.txt')", required=True)
+parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds (reference genome) (format: 'xxx.fasta' or 'xxx.fa')", required=True)
+parser.add_argument("-paths", dest="paths", action="store", help="File containing the paths between scaffolds (format: 'xxx.paths.txt')", required=True)
 parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
 
 args = parser.parse_args()

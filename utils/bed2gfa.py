@@ -36,7 +36,7 @@ parser = argparse.ArgumentParser(prog="bed2gfa.py", usage="%(prog)s -bed <bedFil
                                 description=("Convert a BED file containing the 'N's coordinates for each scaffold (or locus coordinates) to a GFA file (GFA 2.0) ('N's regions are treated as gaps). We can filter the 'N's regions by their size (e.g. gap lengths) and by the contigs' sizes on both sides (long enough for ex to get enough barcodes)"))
 
 parser.add_argument("-bed", dest="bed", action="store", help="BED file containing the 'Ns' coordinates for each scaffold (format: 'xxx.bed')", required=True)
-parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
+parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds (reference genome) (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-min", dest="min", action="store", type=int, help="Minimum size of the 'Ns' region to treat as a gap")
 parser.add_argument("-max", dest="max", action="store", type=int, help="Maximum size of the 'Ns' region to treat as a gap")
 parser.add_argument("-contigs", dest="contigs_size", action="store", type=int, help="Minimum size of the flanking contigs of the 'Ns' region to treat as a gap")

@@ -32,12 +32,12 @@ from Bio import SeqIO
 #----------------------------------------------------
 # Arg parser
 #----------------------------------------------------
-parser = argparse.ArgumentParser(prog="gfa2fasta.py", usage="%(prog)s -in <gfaFile.gfa> -out <outDir>", \
+parser = argparse.ArgumentParser(prog="gfa2fasta.py", usage="%(prog)s -in <gfaFile.gfa> -out <outputFASTAFile>", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
-                                description=("Convert a GFA file (GFA 2.0) to a FASTA file (gaps are returned as 'Ns' regions)"))
+                                description=("Convert a GFA file (GFA 2.0) to a FASTA file (gaps are returned as 'N's regions)"))
 
 parser.add_argument("-in", dest="input", action="store", help="GFA 2.0 file (format: 'xxx.gfa')", required=True)
-parser.add_argument("-out", dest="outDir", action="store", help="Directory to save the output FASTA file", required=True)
+parser.add_argument("-out", dest="outFASTA", action="store", help="Name of the output FASTA file")
 
 args = parser.parse_args()
 
@@ -58,16 +58,8 @@ print("\nInput GFA file: " + gfa_file,file=sys.stderr )
 # Directory for saving results
 #----------------------------------------------------
 cwd = os.getcwd()
-if not os.path.exists(args.outDir):
-    os.mkdir(args.outDir)
-try:
-    os.chdir(args.outDir)
-except:
-    print("Something wrong with specified directory. Exception-", sys.exc_info())
-    print("Restoring the path")
-    os.chdir(cwd)
-outDir = os.getcwd()
-print("The results are saved in " + outDir, file=sys.stderr)
+outDir = cwd
+print("\nThe results are saved in " + outDir)
 
 #----------------------------------------------------
 # GFA 2.0 to FASTA
@@ -78,8 +70,11 @@ try:
     gaps = []
     paths = []
     added_to_path = []
-    fasta_name = gfa_name.split('.gfa')[0] + "_assembly.fasta"
-
+    if args.outFASTA is not None:
+        fasta_name = str(args.outFASTA)
+    else:
+        fasta_name = gfa_name.split('.gfa')[0] + "_assembly.fasta"
+    
     # Open the input GFA file.
     with open(gfa_file, "r") as f:
         gfa = gfapy.Gfa.from_file(gfa_file)

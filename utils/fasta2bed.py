@@ -34,7 +34,7 @@ parser = argparse.ArgumentParser(prog="fasta2bed.py", usage="%(prog)s -fa <fasta
                                 formatter_class=argparse.RawTextHelpFormatter, \
                                 description=("Convert a FASTA file to a BED file containing the 'N's coordinates for each scaffold"))
 
-parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
+parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds (reference genome) (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-out", dest="outBED", action="store", help="Name of the output BED file")
 
 args = parser.parse_args()

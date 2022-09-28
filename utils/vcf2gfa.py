@@ -36,7 +36,7 @@ parser = argparse.ArgumentParser(prog="vcf2gfa.py", usage="%(prog)s -vcf <vcfFil
                                 description=("Convert a VCF file containing the insertions coordinates to a GFA file (GFA 2.0). We can filter the insertions by the contigs' sizes on both sides (long enough for ex to get enough barcodes). As for some insertions, there are a few micro-homologies (mh), we are not sure that the given position in the VCF file is the exact position, so extend the insertion by '--extension' bp on both sides of the insertion"))
 
 parser.add_argument("-vcf", dest="vcf", action="store", help="VCF file containing the insertions coordinates (format: 'xxx.vcf')", required=True)
-parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file containing the sequences of the scaffolds obtained from the assembly (format: 'xxx.fasta' or 'xxx.fa')", required=True)
+parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file of the reference genome (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-contigs", dest="contigs_size", action="store", type=int, help="Minimum size of the flanking contigs of the insertion to treat as a target")
 parser.add_argument("-extension", dest="ext_size", action="store", type=int, default=50, help="Size of the extension of the insertion (bp): extend the insertion by '--extension' bp on both sides of the insertion [default: 50]")
 parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
