@@ -272,7 +272,23 @@ try:
                             if leftScaff in str(gap):
                                 out_gfa.add_line(gap)
                         out_gfa.to_file(outputGFAFile)
-            
+
+                        # Add the solutions to the file "bad_solutions.fasta"
+                        badSolutionsFile = main.outDir + "/bad_solutions.fasta"
+                        for outputGFA in outputGFAList:
+                            solutionName = outputGFA[0]
+                            kmerValue = outputGFA[4]
+                            assemblyName = str(solutionName) + ".k" + str(kmerValue)
+                            sequence = outputGFA[2]
+                            quality = outputGFA[7]
+                            try:
+                                with open(badSolutionsFile, "a") as badSolFile:
+                                    badSolFile.write("\n>" + str(assemblyName) + " _ len." + str(len(sequence)) + "_qual." + str(quality) +"\n")
+                                    badSolFile.write(str(sequence))
+                            except IOError as err:
+                                print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(str(badSolutionsFile), err))
+                                sys.exit(1)
+
                     # If unique solutions are returned, update the output GFA file with this solution. 
                     else:
                         for outputGFA in outputGFAList:
