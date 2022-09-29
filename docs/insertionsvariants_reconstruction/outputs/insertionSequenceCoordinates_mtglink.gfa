@@ -1,17 +1,17 @@
 H	VN:Z:2.0
-S	68_0-222082-L	222082	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_68_0-222082.g100.c10000.left.fasta
-S	68_222182-444265-R	222083	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_68_222182-444265.g100.c10000.right.fasta
-S	26939_0-464755-L	464755	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_26939_0-464755.g100.c10000.left.fasta
-S	26939_464855-929610-R	464755	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_26939_464855-929610.g100.c10000.right.fasta
-S	27358_0-171834-L	171834	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_27358_0-171834.g100.c10000.left.fasta
-S	27358_171934-343768-R	171834	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/insertionsvariants_reconstruction_27358_171934-343768.g100.c10000.right.fasta
-S	68_0-222082-L+:68_222182-444265-R+_fwd_1/1.k51	1300	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
+S	68_0-222082-L	222082	*	UR:Z:referenceGenome_68_0-222082.g100.left.fasta
+S	68_222182-444265-R	222083	*	UR:Z:referenceGenome_68_222182-444265.g100.right.fasta
+S	26939_0-464755-L	464755	*	UR:Z:referenceGenome_26939_0-464755.g100.left.fasta
+S	26939_464855-929610-R	464755	*	UR:Z:referenceGenome_26939_464855-929610.g100.right.fasta
+S	27358_0-171834-L	171834	*	UR:Z:referenceGenome_27358_0-171834.g100.left.fasta
+S	27358_171934-343768-R	171834	*	UR:Z:referenceGenome_27358_171934-343768.g100.right.fasta
+S	68_0-222082-L+:68_222182-444265-R+_fwd_1/1.k51	1300	*	UR:Z:MTG-Link_results/insertionSequenceCoordinates.assembled_sequences.fasta
 S	68_0-222082-L+:68_222182-444265-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
-S	68_0-222082-L+:68_222182-444265-R+_rev_1/1.k51	1300	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
+S	68_0-222082-L+:68_222182-444265-R+_rev_1/1.k51	1300	*	UR:Z:MTG-Link_results/insertionSequenceCoordinates.assembled_sequences.fasta
 S	68_0-222082-L+:68_222182-444265-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
-S	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1.k51	1304	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
+S	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1.k51	1304	*	UR:Z:MTG-Link_results/insertionSequenceCoordinates.assembled_sequences.fasta
 S	26939_0-464755-L+:26939_464855-929610-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
-S	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1.k51	1304	*	UR:Z:MTG-Link/docs/insertionsvariants_reconstruction/outputs/MTG-Link_results/insertionsvariants_reconstruction_insertions_extension_50_contigs_10000.assembled_sequences.fasta
+S	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1.k51	1304	*	UR:Z:MTG-Link_results/insertionSequenceCoordinates.assembled_sequences.fasta
 S	26939_0-464755-L+:26939_464855-929610-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
 E	*	68_0-222082-L+	68_0-222082-L+:68_222182-444265-R+_fwd_1/1+	221982	222082$	0	100	*
 E	*	68_0-222082-L+:68_222182-444265-R+_fwd_1/1+	68_222182-444265-R+	1200	1300$	0	100	*

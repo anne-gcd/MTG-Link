@@ -1,7 +1,7 @@
 H	VN:Z:2.0
-S	68-2	222133	*	UR:Z:MTG-Link/docs/interscaffold_gapfilling/outputs/interscaffold_gapfilling_68-2.scaffold.fasta
-S	68-1	222132	*	UR:Z:MTG-Link/docs/interscaffold_gapfilling/outputs/interscaffold_gapfilling_68-1.scaffold.fasta
-S	26939-2	464805	*	UR:Z:MTG-Link/docs/interscaffold_gapfilling/outputs/interscaffold_gapfilling_26939-2.scaffold.fasta
-S	26939-1	464805	*	UR:Z:MTG-Link/docs/interscaffold_gapfilling/outputs/interscaffold_gapfilling_26939-1.scaffold.fasta
+S	68-2	222133	*	UR:Z:referenceGenome_68-2.scaffold.fasta
+S	68-1	222132	*	UR:Z:referenceGenome_68-1.scaffold.fasta
+S	26939-2	464805	*	UR:Z:referenceGenome_26939-2.scaffold.fasta
+S	26939-1	464805	*	UR:Z:referenceGenome_26939-1.scaffold.fasta
 G	*	68-2-	68-1-	0	*
 G	*	26939-2-	26939-1-	0	*

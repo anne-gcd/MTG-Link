@@ -1,17 +1,17 @@
 H	VN:Z:2.0
-S	26939_0-464805-L	464805	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/intrascaffold_gapfilling_26939_0-464805.g1000.c10000.left.fasta
-S	26939_465805-930610-R	464805	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/intrascaffold_gapfilling_26939_465805-930610.g1000.c10000.right.fasta
-S	27358_0-171884-L	171884	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/intrascaffold_gapfilling_27358_0-171884.g1000.c10000.left.fasta
-S	27358_172884-344768-R	171884	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/intrascaffold_gapfilling_27358_172884-344768.g1000.c10000.right.fasta
-S	68_0-222132-L	222132	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/intrascaffold_gapfilling_68_0-222132.g1000.c10000.left.fasta
-S	68_223132-445265-R	222133	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/intrascaffold_gapfilling_68_223132-445265.g1000.c10000.right.fasta
-S	26939_0-464805-L+:26939_465805-930610-R+_fwd_1/1.k51	2004	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/MTG-Link_results/intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.assembled_sequences.fasta
+S	26939_0-464805-L	464805	*	UR:Z:referenceGenome_26939_0-464805.g1000.left.fasta
+S	26939_465805-930610-R	464805	*	UR:Z:referenceGenome_26939_465805-930610.g1000.right.fasta
+S	27358_0-171884-L	171884	*	UR:Z:referenceGenome_27358_0-171884.g1000.left.fasta
+S	27358_172884-344768-R	171884	*	UR:Z:referenceGenome_27358_172884-344768.g1000.right.fasta
+S	68_0-222132-L	222132	*	UR:Z:referenceGenome_68_0-222132.g1000.left.fasta
+S	68_223132-445265-R	222133	*	UR:Z:referenceGenome_68_223132-445265.g1000.right.fasta
+S	26939_0-464805-L+:26939_465805-930610-R+_fwd_1/1.k51	2004	*	UR:Z:MTG-Link_results/targetSequenceCoordinates.assembled_sequences.fasta
 S	26939_0-464805-L+:26939_465805-930610-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
-S	26939_0-464805-L+:26939_465805-930610-R+_rev_1/1.k51	2004	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/MTG-Link_results/intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.assembled_sequences.fasta
+S	26939_0-464805-L+:26939_465805-930610-R+_rev_1/1.k51	2004	*	UR:Z:MTG-Link_results/targetSequenceCoordinates.assembled_sequences.fasta
 S	26939_0-464805-L+:26939_465805-930610-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
-S	68_0-222132-L+:68_223132-445265-R+_fwd_1/1.k61	2000	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/MTG-Link_results/intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.assembled_sequences.fasta
+S	68_0-222132-L+:68_223132-445265-R+_fwd_1/1.k61	2000	*	UR:Z:MTG-Link_results/targetSequenceCoordinates.assembled_sequences.fasta
 S	68_0-222132-L+:68_223132-445265-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
-S	68_0-222132-L+:68_223132-445265-R+_rev_1/1.k61	2000	*	UR:Z:MTG-Link/docs/intrascaffold_gapfilling/outputs/MTG-Link_results/intrascaffold_gapfilling_gaps_1000-1000_contigs_10000.assembled_sequences.fasta
+S	68_0-222132-L+:68_223132-445265-R+_rev_1/1.k61	2000	*	UR:Z:MTG-Link_results/targetSequenceCoordinates.assembled_sequences.fasta
 S	68_0-222132-L+:68_223132-445265-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
 E	*	26939_0-464805-L+	26939_0-464805-L+:26939_465805-930610-R+_fwd_1/1+	464305	464805$	0	500	*
 E	*	26939_0-464805-L+:26939_465805-930610-R+_fwd_1/1+	26939_465805-930610-R+	1504	2004$	0	500	*

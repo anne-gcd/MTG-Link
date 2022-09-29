@@ -1,9 +1,9 @@
 H	VN:Z:2.0
-S	68_0-222132-L	222132	*	UR:Z:/home/genouest/inra_umr1349/aguichard/workspace/MTG-Link_v2.3.2.09.09.22/test/singlelocus_reconstruction/referenceGenome_68_0-222132.g1000.cnoMinFlank.left.fasta
-S	68_223132-445265-R	222133	*	UR:Z:/home/genouest/inra_umr1349/aguichard/workspace/MTG-Link_v2.3.2.09.09.22/test/singlelocus_reconstruction/referenceGenome_68_223132-445265.g1000.cnoMinFlank.right.fasta
-S	68_0-222132-L+:68_223132-445265-R+_fwd_1/1.k61	2000	*	UR:Z:/home/genouest/inra_umr1349/aguichard/workspace/MTG-Link_v2.3.2.09.09.22/test/singlelocus_reconstruction/MTG-Link_results/referenceGenome_gaps_noMin-noMax_contigs_noMinFlank.assembled_sequences.fasta
+S	68_0-222132-L	222132	*	UR:Z:referenceGenome_68_0-222132.g1000.left.fasta
+S	68_223132-445265-R	222133	*	UR:Z:referenceGenome_68_223132-445265.g1000.right.fasta
+S	68_0-222132-L+:68_223132-445265-R+_fwd_1/1.k61	2000	*	UR:Z:MTG-Link_results/myLocus.assembled_sequences.fasta
 S	68_0-222132-L+:68_223132-445265-R+_fwd_1/1	1	*	co:Z:GFAPY_virtual_line
-S	68_0-222132-L+:68_223132-445265-R+_rev_1/1.k61	2000	*	UR:Z:/home/genouest/inra_umr1349/aguichard/workspace/MTG-Link_v2.3.2.09.09.22/test/singlelocus_reconstruction/MTG-Link_results/referenceGenome_gaps_noMin-noMax_contigs_noMinFlank.assembled_sequences.fasta
+S	68_0-222132-L+:68_223132-445265-R+_rev_1/1.k61	2000	*	UR:Z:MTG-Link_results/myLocus.assembled_sequences.fasta
 S	68_0-222132-L+:68_223132-445265-R+_rev_1/1	1	*	co:Z:GFAPY_virtual_line
 E	*	68_0-222132-L+	68_0-222132-L+:68_223132-445265-R+_fwd_1/1+	221632	222132$	0	500	*
 E	*	68_0-222132-L+:68_223132-445265-R+_fwd_1/1+	68_223132-445265-R+	1500	2000$	0	500	*
