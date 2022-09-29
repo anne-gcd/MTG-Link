@@ -86,6 +86,9 @@ In the simplest case, when the target sequences to be assembled can be defined e
 ```
 ./utils/bed2gfa.py -bed targetSequenceCoordinates.bed -fa referenceGenome.fasta -out targetSequenceCoordinates.gfa 
 ```
+* `targetSequenceCoordinates.bed`: BED file containing the locus coordinates
+* `referenceGenome.fasta`: FASTA file containing the chromosome or scaffold sequence (reference genome)
+* `targetSequenceCoordinates.gfa`: Output GFA file
 
 In [other local assembly use cases](./docs/README.md), such as intra-scaffold and inter-scaffold gap-fillings or the reconstruction of the alternative allele of large insertion variants, the input GFA can be generated from other file types (BED, FASTA, VCF), using [scripts](./utils/README.md) in the `utils/` directory.    
 
