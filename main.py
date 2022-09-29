@@ -36,7 +36,7 @@ from Bio import SeqIO
 # Arg parser
 #----------------------------------------------------
 
-MTGLINK_VERSION = "2.3.2"
+MTGLINK_VERSION = "2.4.0"
 
 parser = argparse.ArgumentParser(prog="mtglink.py", \
                                 formatter_class=argparse.RawTextHelpFormatter, \
