@@ -184,7 +184,7 @@ try:
                         if args.outGFA is not None:
                             gfaFile = os.path.abspath(str(args.outGFA))
                         else:
-                            gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_insertions_extension_" + str(args.ext_size) + "_contigs_" + str(minContigSize) + ".gfa")
+                            gfaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_indels_extension_" + str(args.ext_size) + "_contigs_" + str(minContigSize) + ".gfa")
                             
                         # Initiate the GFA file.
                         if not os.path.exists(gfaFile):
