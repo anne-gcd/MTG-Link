@@ -38,7 +38,7 @@ parser = argparse.ArgumentParser(prog="vcf2gfa.py", usage="%(prog)s -vcf <vcfFil
 parser.add_argument("-vcf", dest="vcf", action="store", help="VCF file containing the insertions coordinates (format: 'xxx.vcf')", required=True)
 parser.add_argument("-fa", dest="fasta", action="store", help="FASTA file of the reference genome (format: 'xxx.fasta' or 'xxx.fa')", required=True)
 parser.add_argument("-contigs", dest="contigs_size", action="store", type=int, help="Minimum size of the flanking contigs of the insertion to treat as a target")
-parser.add_argument("-extension", dest="ext_size", action="store", type=int, default=50, help="Size of the extension of the insertion (bp): extend the insertion by '--extension' bp on both sides of the insertion [default: 50]")
+parser.add_argument("-extension", dest="ext_size", action="store", type=int, default=50, help="Size of the extension of the Indel (bp): extend the Indel by '--extension' bp on both sides of the Indel [default: 50]")
 parser.add_argument("-out", dest="outGFA", action="store", help="Name of the output GFA file")
 
 args = parser.parse_args()
@@ -77,10 +77,10 @@ print("\nThe results are saved in " + outDir)
 # VCF to GFA
 #----------------------------------------------------
 try:
-    # Create a dictionary containing the insertions' coordinates for each scaffold.
-    ins_Coords = {}
+    # Create a dictionary containing the Indels' coordinates for each scaffold.
+    indels_Coords = {}
 
-    # Iterate over the positions of 'Ns' in the BED file.
+    # Iterate over the variants in the VCF file.
     with open(vcfFile, "r") as vcf_file:
         for line in vcf_file:
             if line.startswith("#"):
@@ -89,58 +89,58 @@ try:
                 chrom, pos, sv_id, ref, alt, __, __, info, *__ = line.rstrip().split("\t")
                 sv_type = str(info).split('SVTYPE=')[1].split(';')[0]
                 
-                # Process only the insertions (SVTYPE=INS).
-                if sv_type == "INS":
+                # Process the Indels.
+                if (sv_type == "INS") or (sv_type == "DEL"):
 
-                    ## Get the start and end positions of the insertion' coordinates.
-                    insCoord_start = int(pos) - args.ext_size
+                    ## Get the start and end positions of the Indel' coordinates.
+                    indelCoord_start = int(pos) - args.ext_size
                     end_pos = str(info).split('END=')[1]
                     if ";" in end_pos:
                         end_pos = end_pos.split(';')[0]
-                    insCoord_end = int(end_pos) + args.ext_size
+                    indelCoord_end = int(end_pos) + args.ext_size
                     
-                    ## Get the size of the insertion region (e.g. the target size).
-                    target_size = insCoord_end - insCoord_start
-
-                    ## Append the dictionary 'ins_Coords' with the insertions' coordinates (e.g. targets) for each scaffold.
+                    ## Get the size of the Indel region (e.g. the target size).
+                    target_size = indelCoord_end - indelCoord_start
+  
+                    ## Append the dictionary 'indels_Coords' with the Indels' coordinates (e.g. targets) for each scaffold.
                     ## key = scaffold_name ; value = list of positions of targets
-                    if chrom in ins_Coords:
-                        ins_Coords[chrom].append([insCoord_start, insCoord_end])
+                    if chrom in indels_Coords:
+                        indels_Coords[chrom].append([indelCoord_start, indelCoord_end])
                     else:
-                        ins_Coords[chrom] = [[insCoord_start, insCoord_end]]
+                        indels_Coords[chrom] = [[indelCoord_start, indelCoord_end]]
 
-    # For each insertion, get the insertion's length and the left and right flanking sequences.
+    # For each Indel, get the Indels' length and the left and right flanking sequences.
     with open(fastaFile, "r") as fasta_file:
         for record in SeqIO.parse(fasta_file, "fasta"):
-            if record.id in ins_Coords:
+            if record.id in indels_Coords:
 
-                # Iterate over the insertions of 'ins_Coords' for each scaffold.
-                insertions_coordinatesList = ins_Coords[record.id]
-                insertions_coordinatesList.sort()
-                for i in range(len(insertions_coordinatesList)):
+                # Iterate over the Indels of 'indels_Coords' for each scaffold.
+                indels_coordinatesList = indels_Coords[record.id]
+                indels_coordinatesList.sort()
+                for i in range(len(indels_coordinatesList)):
 
-                    # Get the length of the insertion.
-                    insertion_length = int(insertions_coordinatesList[i][1]) - int(insertions_coordinatesList[i][0])
+                    # Get the length of the Indel.
+                    indel_length = int(indels_coordinatesList[i][1]) - int(indels_coordinatesList[i][0])
 
                     # Get the left flanking sequence.
                     if i == 0:      #first target
                         left_start_index = 0 
-                        left_end_index = insertions_coordinatesList[i][0]
+                        left_end_index = indels_coordinatesList[i][0]
                     else:
-                        left_start_index = insertions_coordinatesList[i-1][1]
-                        left_end_index = insertions_coordinatesList[i][0]
+                        left_start_index = indels_coordinatesList[i-1][1]
+                        left_end_index = indels_coordinatesList[i][0]
                     left_flanking_seq = record.seq[int(left_start_index):int(left_end_index)]
 
                     # Get the right flanking sequence.
-                    if i == len(insertions_coordinatesList)-1:     #last target
-                        right_start_index = insertions_coordinatesList[i][1]
+                    if i == len(indels_coordinatesList)-1:     #last target
+                        right_start_index = indels_coordinatesList[i][1]
                         right_end_index = len(record.seq)
                     else:
-                        right_start_index = insertions_coordinatesList[i][1]
-                        right_end_index = insertions_coordinatesList[i+1][0]
+                        right_start_index = indels_coordinatesList[i][1]
+                        right_end_index = indels_coordinatesList[i+1][0]
                     right_flanking_seq = record.seq[int(right_start_index):int(right_end_index)]
 
-                    # If left and right sequences > 'contigs_size', add the insertion/target to the output GFA file.
+                    # If left and right sequences > 'contigs_size', add the Indel/target to the output GFA file.
                     if (args.contigs_size is not None) and (len(left_flanking_seq) < int(args.contigs_size)) and (len(right_flanking_seq) < int(args.contigs_size)):
                         continue
                     else:
@@ -166,13 +166,13 @@ try:
 
                         # Output FASTA files containing the flanking sequences of the current gap.
                         ##Left
-                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(left_start_index) +"-"+ str(left_end_index) +".g"+ str(insertion_length) + ".left.fasta")
+                        left_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(left_start_index) +"-"+ str(left_end_index) +".g"+ str(indel_length) + ".left.fasta")
                         with open(left_fastaFile, "w") as left:
                             left.write(">{} _ len {}".format(left_name, str(left_length)))
                             left.write("\n" + str(left_flanking_seq) + "\n")
 
                         ##Right
-                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(right_start_index) +"-"+ str(right_end_index) +".g"+ str(insertion_length) + ".right.fasta")
+                        right_fastaFile = os.path.abspath(fasta_name.split(".fa")[0] + "_" + str(record.id) +"_"+ str(right_start_index) +"-"+ str(right_end_index) +".g"+ str(indel_length) + ".right.fasta")
                         with open(right_fastaFile, "w") as right:
                             right.write((">{} _ len {}".format(right_name, str(right_length))))
                             right.write("\n" + str(right_flanking_seq) + "\n")
@@ -198,7 +198,7 @@ try:
                             gfa = gfapy.Gfa.from_file(gfaFile)
                             gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(left_name, left_length, os.path.join(outDir, left_fastaFile)))
                             gfa.add_line("S\t{}\t{}\t*\tUR:Z:{}".format(right_name, right_length, os.path.join(outDir, right_fastaFile)))
-                            gfa.add_line("G\t*\t{}\t{}\t{}\t*".format(left_contig, right_contig, insertion_length))
+                            gfa.add_line("G\t*\t{}\t{}\t{}\t*".format(left_contig, right_contig, indel_length))
                             gfa.to_file(gfaFile)
 
 
