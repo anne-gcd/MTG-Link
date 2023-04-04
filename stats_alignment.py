@@ -500,6 +500,9 @@ if re.match('^.*.contigs.fasta$', args.reference):
             stats_legend = ["Target", "Len_target", "Chunk", "Barc_occ", "s", "o", "a", "dmax", "Len_Q", "Ref", "Len_R", \
                             "Start_ref", "End_ref", "Start_qry", "End_qry", "Len_alignR", "Len_alignQ", "%_Id", "%_CovR", "%_CovQ", "Frame_R", "Frame_Q", "Quality"]
         
+        ## Write legend in output file.
+        with open(ref_qry_output, "a") as output:
+            output.write('\t'.join(j for j in stats_legend))
         
         # Get output values from NUCmer.
         reader = csv.DictReader(open(coords_sorted_file), \
