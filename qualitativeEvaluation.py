@@ -344,21 +344,37 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
                 # Left scaffold oriented '+'.
                 if leftScaffold.orient == "+":
-                    ref_fasta.write(">" + leftScaffold.name + "_region:" + str(leftScaffold.slen - extSize) + "-" + str(leftScaffold.slen) + "\n")
-                    ref_fasta.write(leftFlankingSeq[(leftScaffold.slen - extSize):leftScaffold.slen])
+                    if leftScaffold.slen < extSize:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(leftScaffold.slen) + "\n")
+                        ref_fasta.write(leftFlankingSeq[0:leftScaffold.slen])
+                    else:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:" + str(leftScaffold.slen - extSize) + "-" + str(leftScaffold.slen) + "\n")
+                        ref_fasta.write(leftFlankingSeq[(leftScaffold.slen - extSize):leftScaffold.slen])
                 # Left scaffold oriented '-'.
                 elif leftScaffold.orient == "-":
-                    ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(extSize) + "_revcom\n")
-                    ref_fasta.write(rc(leftFlankingSeq[0:extSize]))
+                    if leftScaffold.slen < extSize:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(leftScaffold.slen) + "_revcom\n")
+                        ref_fasta.write(rc(leftFlankingSeq[0:leftScaffold.slen]))
+                    else:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(extSize) + "_revcom\n")
+                        ref_fasta.write(rc(leftFlankingSeq[0:extSize]))
 
                 # Right scaffold oriented '+'.
                 if rightScaffold.orient == "+":
-                    ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(extSize) + "\n")
-                    ref_fasta.write(rightFlankingSeq[0:extSize])
+                    if rightScaffold.slen < extSize:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(rightScaffold.slen) + "\n")
+                        ref_fasta.write(rightFlankingSeq[0:rightScaffold.slen])
+                    else:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(extSize) + "\n")
+                        ref_fasta.write(rightFlankingSeq[0:extSize])
                 # Right scaffold oriented '-'.
                 elif rightScaffold.orient == "-":
-                    ref_fasta.write("\n>" + rightScaffold.name + "_region:" + str(rightScaffold.slen - extSize) + "-" + str(rightScaffold.slen) + "_revcom\n")
-                    ref_fasta.write(rc(rightFlankingSeq[(rightScaffold.slen - extSize):rightScaffold.slen]))
+                    if rightScaffold.slen < extSize:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(rightScaffold.slen) + "_revcom\n")
+                        ref_fasta.write(rc(rightFlankingSeq[0:rightScaffold.slen]))
+                    else:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:" + str(rightScaffold.slen - extSize) + "-" + str(rightScaffold.slen) + "_revcom\n")
+                        ref_fasta.write(rc(rightFlankingSeq[(rightScaffold.slen - extSize):rightScaffold.slen]))
 
         except IOError as err:
             print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(referenceFile, err))
