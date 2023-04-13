@@ -117,16 +117,16 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
 
             # Forward orientations.
             if orient1 == "+":
-                beg1 = str(length1 - extSize)
+                beg1 = str(max([0, length1-extSize]))
                 end1 = str(length1) + "$"  
                 beg2 = str(0)
-                end2 = str(extSize)
+                end2 = str(min([length2, extSize]))
 
             # Reverse orientations.
             elif orient1 == "-":
                 beg1 = str(0)
-                end1 = str(extSize)
-                beg2 = str(length2 - extSize)
+                end1 = str(min([length1, extSize]))
+                beg2 = str(max([0, length2-extSize]))
                 end2 = str(length2) + "$"
 
         # Opposite orientations.
@@ -134,17 +134,17 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
 
             # First sequence in fwd orientation and second sequence in rev orientation.
             if orient1 == "+":
-                beg1 = str(length1 - extSize)
+                beg1 = str(max([0, length1-extSize]))
                 end1 = str(length1) + "$"
-                beg2 = str(length2 - extSize)
+                beg2 = str(max([0, length2-extSize]))
                 end2 = str(length2) + "$"
 
             # First sequence in rev orientation and first sequence in fwd orientation.
             elif orient1 == "-":
                 beg1 = str(0)
-                end1 = str(extSize)
+                end1 = str(min([length1, extSize]))
                 beg2 = str(0)
-                end2 = str(extSize)
+                end2 = str(min([length2, extSize]))
 
         # Get the list 'positions'
         positions = [beg1, end1, beg2, end2]
