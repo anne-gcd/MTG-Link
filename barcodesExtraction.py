@@ -155,17 +155,19 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
 
         # If chunk/flank size larger than length of scaffold(s), set the chunk/flank size to the minimal scaffold length.
         ## Left chunk/flank
-        if chunkSize > leftScaffold.slen:
-            print("Warning for {}: The flank size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
-            chunk_L = leftScaffold.slen
-        else:
-            chunk_L = chunkSize
+        #if chunkSize > leftScaffold.slen:
+            #print("Warning for {}: The flank size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
+            #chunk_L = leftScaffold.slen
+        #else:
+            #chunk_L = chunkSize
+        chunk_L = chunkSize
         ## Right chunk/flank
-        if chunkSize > rightScaffold.slen:
-            print("Warning for {}: The flank size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
-            chunk_R = rightScaffold.slen
-        else:
-            chunk_R = chunkSize
+        #if chunkSize > rightScaffold.slen:
+            #print("Warning for {}: The flank size you provided is higher than the length of the right scaffold. Thus, for the right scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
+            #chunk_R = rightScaffold.slen
+        #else:
+            #chunk_R = chunkSize
+        chunk_R = chunkSize
 
     except Exception as e:
         print("File 'barcodesExtraction.py': Something wrong with the 'Pre-Processing' step of the function 'extractBarcodesFromChunkRegions()'")
