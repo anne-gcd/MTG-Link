@@ -153,7 +153,7 @@ def extractBarcodesFromChunkRegions(current_gap, gfaFile, bamFile, chunkSize, ba
             print("File 'barcodesExtraction.py, function 'extractBarcodesFromChunkRegions()': Unable to create the object 'rightScaffold' from the class 'Scaffold'.", file=sys.stderr)
             sys.exit(1)
 
-        # If chunk/flank size larger than length of scaffold(s), set the chunk/flank size to the minimal scaffold length.
+        ## (not done) If chunk/flank size larger than length of scaffold(s), set the chunk/flank size to the minimal scaffold length.
         ## Left chunk/flank
         #if chunkSize > leftScaffold.slen:
             #print("Warning for {}: The flank size you provided is higher than the length of the left scaffold. Thus, for the left scaffold, the barcodes will be extracted on its whole length".format(gapLabel))
