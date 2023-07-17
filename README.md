@@ -168,6 +168,10 @@ We provide [documentation and examples of these different use cases](./docs/READ
 Please note that GATB-Core is distributed under Affero-GPL license.
 -->
 
+## Citation
+
+Guichard, A., Legeai, F., Tagu, D. et al. MTG-Link: leveraging barcode information from linked-reads to assemble specific loci. BMC Bioinformatics 24, 284 (2023). https://doi.org/10.1186/s12859-023-05395-w
+
 ## Contact
 
 To contact a developer, request help, or for any feedback on MTG-Link, please use the issue form of github: https://github.com/anne-gcd/MTG-Link/issues/new
