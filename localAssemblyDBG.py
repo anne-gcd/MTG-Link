@@ -296,17 +296,21 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
                 # in this case, could use the kmer from the reference genome
                 rightKmer = refRightKmer
 
-            # Reverse Left kmer.
-            if rightScaffold.orient == "+":
-                revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
-            if rightScaffold.orient == "-":
-                revLeftKmer = str(rightFlankingSeq[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+#            # Reverse Left kmer.
+#            if rightScaffold.orient == "+":
+#                revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+#            if rightScaffold.orient == "-":
+#                revLeftKmer = str(rightFlankingSeq[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
 
-            # Reverse Right kmer.
-            if leftScaffold.orient == "+":
-                revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
-            if leftScaffold.orient == "-":
-                revRightKmer = str(leftFlankingSeq[extSize:(extSize + k)])
+#            # Reverse Right kmer.
+#            if leftScaffold.orient == "+":
+#               revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
+#            if leftScaffold.orient == "-":
+#                revRightKmer = str(leftFlankingSeq[extSize:(extSize + k)])
+
+            # Left and Right kmer for assembling in the reverse orientation (from right to left)
+            revLeftKmer = str(rc(rightKmer))
+            revRightKmer = str(rc(leftKmer))
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]
