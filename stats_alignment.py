@@ -443,6 +443,7 @@ if re.match('^.*.contigs.fasta$', args.reference):
     try:
         # Local assembly performed with the DBG algorithm.
         if ".k" in qry_file.split('/')[-1]:
+            # file name of the form: test.gfa.27358_0-171884-L+_27358_172884-344768-R+.g1000.flank10000.occ2.k61.a3.bxu.insertions_filtered.fasta
             gap_size = qry_file.split('.bxu')[0].split('.')[-5]
             g = int("".join(list(gap_size)[1:]))
             if g == 0:
@@ -455,7 +456,7 @@ if re.match('^.*.contigs.fasta$', args.reference):
             k = int("".join(list(kmer_size)[1:]))
             abundance_min = qry_file.split('.bxu')[0].split('.')[-1]
             a = int("".join(list(abundance_min)[1:]))
-            qry_id = qry_file.split('/')[-1].split('.')[2]
+            qry_id = qry_file.split('/')[-1].split('.gfa.')[-1].split('.')[0]
 
         # Local assembly performed with the IRO algorithm.
         if ".dmax" in qry_file.split('/')[-1]:
@@ -475,7 +476,7 @@ if re.match('^.*.contigs.fasta$', args.reference):
             a = str("".join(list(abundance_min)[1:]))
             dmax = qry_file.split('.bxu')[0].split('.')[-1]
             d = int("".join(list(dmax)[4:]))
-            qry_id = qry_file.split('/')[-1].split('.')[2]
+            qry_id = qry_file.split('/')[-1].split('.gfa.')[-1].split('.')[0]
 
     except Exception as e:
         print("\nFile 'stats_alignment.py': Something wrong with getting the parameters of the local assembly step, when ref = flanking contigs' sequences")
