@@ -49,5 +49,7 @@ LRez index fastq -f readsFile.fastq.gz -o barcodeIndex.bci -g
     * Output FASTA file: `insertionSequenceCoordinates.assembled_sequences.fasta`
         * it is a sequence file in FASTA format, that contains the set of assembled target sequences.
 
-**NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md)
+**NB**: The outputs of MTG-Link are detailed [here](../input-output_files.md). 
+
+**NB2**: The outputs of MTG-Link can be converted to VCF format using the external script [create_mtglink_vcf.py](https://gist.github.com/pontushojer/da2c40de4f8d89c23fa992d6ff6f3cc3) (author: [Pontus Höjer](https://github.com/pontushojer), see also the discussion in [issue #25](https://github.com/anne-gcd/MTG-Link/issues/25))
 
