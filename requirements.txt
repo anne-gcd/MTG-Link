@@ -1,11 +1,11 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
-biopython=1.79
+biopython>=1.87
 gfapy=1.2.0
 mummer=3.23
 pathos=0.2.8
 pysam=0.19.1
 regex=2021.11.2
-lrez=2.2.3
-mindthegap=2.2.3
+lrez>=2.2.3
+mindthegap>=2.2.3

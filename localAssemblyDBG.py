@@ -262,41 +262,55 @@ def localAssemblyWithDBGAlgorithm(current_gap, gfaFile, chunkSize, extSize, maxL
             if leftScaffold.orient == "+":
                 leftKmerRegion_start = int(str(leftRegion).split('-')[-1]) - extSize - k
                 leftKmerRegion_end = int(str(leftRegion).split('-')[-1]) - extSize
+                refLeftKmer = leftFlankingSeq[leftKmerRegion_start:leftKmerRegion_end]
 
             if leftScaffold.orient == "-":
                 leftKmerRegion_start = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize
                 leftKmerRegion_end = int(str(leftRegion).split(':')[1].split('-')[0]) + extSize + k
+                refLeftKmer = str(rc(leftFlankingSeq[leftKmerRegion_start:leftKmerRegion_end]))
                 
             leftKmerRegion = str(leftRegion).split(':')[0] +":"+ str(leftKmerRegion_start) +"-"+ str(leftKmerRegion_end)
             leftKmer = getMostRepresentedKmer(main.bamFile, leftKmerRegion, leftScaffold.orient, k)
             if not leftKmer:
-                print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the left kmer for {}.".format(str(leftRegion).split(':')[0]), file=sys.stderr)
+                # print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the left kmer for {} with k={}.".format(str(leftRegion).split(':')[0], str(k)), file=sys.stderr)
+                print("Warning: Unable to find a suitable left kmer for {} with k={} in mapped reads, using instead the one from the reference genome.".format(str(leftRegion).split(':')[0], str(k)))
+                # in this case, could use the kmer from the reference genome
+                leftKmer = refLeftKmer
 
             # Right kmer.
             if rightScaffold.orient == "+":
                 rightKmerRegion_start = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize
                 rightKmerRegion_end = int(str(rightRegion).split(':')[1].split('-')[0]) + extSize + k
+                refRightKmer = rightFlankingSeq[rightKmerRegion_start:rightKmerRegion_end] 
 
             if rightScaffold.orient == "-":
                 rightKmerRegion_start = int(str(rightRegion).split('-')[-1]) - extSize - k
                 rightKmerRegion_end = int(str(rightRegion).split('-')[-1]) - extSize
+                refRightKmer = str(rc(rightFlankingSeq[rightKmerRegion_start:rightKmerRegion_end]))
                 
             rightKmerRegion = str(rightRegion).split(':')[0] +":"+ str(rightKmerRegion_start) +"-"+ str(rightKmerRegion_end)
             rightKmer = getMostRepresentedKmer(main.bamFile, rightKmerRegion, rightScaffold.orient, k)
             if not rightKmer:
-                print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
+                # print("File 'localAssemblyDBG.py, function 'localAssemblyWithDBGAlgorithm()': Unable to get the right kmer for {}.".format(str(rightRegion).split(':')[0]), file=sys.stderr)
+                print("Warning: Unable to find a suitable right kmer for {} with k={} in mapped reads, using instead the one from the reference genome.".format(str(leftRegion).split(':')[0], str(k)))
+                # in this case, could use the kmer from the reference genome
+                rightKmer = refRightKmer
 
-            # Reverse Left kmer.
-            if rightScaffold.orient == "+":
-                revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
-            if rightScaffold.orient == "-":
-                revLeftKmer = str(rightFlankingSeq[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+#            # Reverse Left kmer.
+#            if rightScaffold.orient == "+":
+#                revLeftKmer = str(rc(rightFlankingSeq)[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
+#            if rightScaffold.orient == "-":
+#                revLeftKmer = str(rightFlankingSeq[(len(rightFlankingSeq) - extSize - k):(len(rightFlankingSeq) - extSize)])
 
-            # Reverse Right kmer.
-            if leftScaffold.orient == "+":
-                revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
-            if leftScaffold.orient == "-":
-                revRightKmer = str(leftFlankingSeq[extSize:(extSize + k)])
+#            # Reverse Right kmer.
+#            if leftScaffold.orient == "+":
+#               revRightKmer = str(rc(leftFlankingSeq)[extSize:(extSize + k)])
+#            if leftScaffold.orient == "-":
+#                revRightKmer = str(leftFlankingSeq[extSize:(extSize + k)])
+
+            # Left and Right kmer for assembling in the reverse orientation (from right to left)
+            revLeftKmer = str(rc(rightKmer))
+            revRightKmer = str(rc(leftKmer))
 
             # Get a breakpoint file containing the input sequences for the local assembly with `MindTheGap fill` (start and stop kmers).
             gfa_name = gfaFile.split('/')[-1]

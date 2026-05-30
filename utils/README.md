@@ -66,22 +66,22 @@ The format of the input MATRIX file is: `<scaffoldLeftID>:<extremitiesCoordStart
 The output GFA file is a GFA 2.0 file.
 
 
-# Get a GFA file from a VCF file containing insertions coordinates
+# Get a GFA file from a VCF file containing Indels coordinates
 
 ## vcf2gfa.py
 
-The **`vcf2gfa.py`** script converts a VCF file containing the insertions coordinates to a GFA file (GFA 2.0).  
-It is possible to filter the insertions you want to treat as targets (e.g. you want to reconstruct) by:
-* the flanking contigs' sizes (for example, select only the insertions whose flanking contigs' sizes are long enough to get enough barcodes)
+The **`vcf2gfa.py`** script converts a VCF file containing the Indels coordinates to a GFA file (GFA 2.0).  
+It is possible to filter the Indels you want to treat as targets (e.g. you want to reconstruct) by:
+* the flanking contigs' sizes (for example, select only the Indels whose flanking contigs' sizes are long enough to get enough barcodes)
 
 It can be run with the following command:  
 ```
-vcf2gfa.py -vcf vcfFile.vcf -fa referenceGenome.fasta -out insertionSequenceCoordinates.gfa -contigs MIN_CONTIGSIZE
+vcf2gfa.py -vcf vcfFile.vcf -fa referenceGenome.fasta -out indelSequenceCoordinates.gfa -contigs MIN_CONTIGSIZE
 ```
-* vcfFile.vcf: VCF file containing the insertions coordinates
+* vcfFile.vcf: VCF file containing the Indels coordinates
 * referenceGenome.fasta: FASTA file of the reference genome
-* insertionSequenceCoordinates.gfa: Output GFA file
-* MIN_CONTIGSIZE: Minimum size of the flanking contigs of the insertion to treat as a target
+* indelSequenceCoordinates.gfa: Output GFA file
+* MIN_CONTIGSIZE: Minimum size of the flanking contigs of the Indels to treat as a target
 
 The output GFA file is a GFA 2.0 file. 
 

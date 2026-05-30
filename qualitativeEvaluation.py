@@ -117,16 +117,16 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
 
             # Forward orientations.
             if orient1 == "+":
-                beg1 = str(length1 - extSize)
+                beg1 = str(max([0, length1-extSize]))
                 end1 = str(length1) + "$"  
                 beg2 = str(0)
-                end2 = str(extSize)
+                end2 = str(min([length2, extSize]))
 
             # Reverse orientations.
             elif orient1 == "-":
                 beg1 = str(0)
-                end1 = str(extSize)
-                beg2 = str(length2 - extSize)
+                end1 = str(min([length1, extSize]))
+                beg2 = str(max([0, length2-extSize]))
                 end2 = str(length2) + "$"
 
         # Opposite orientations.
@@ -134,17 +134,17 @@ def getPositionForEdgesOfGFA(orient1, orient2, length1, length2, extSize):
 
             # First sequence in fwd orientation and second sequence in rev orientation.
             if orient1 == "+":
-                beg1 = str(length1 - extSize)
+                beg1 = str(max([0, length1-extSize]))
                 end1 = str(length1) + "$"
-                beg2 = str(length2 - extSize)
+                beg2 = str(max([0, length2-extSize]))
                 end2 = str(length2) + "$"
 
             # First sequence in rev orientation and first sequence in fwd orientation.
             elif orient1 == "-":
                 beg1 = str(0)
-                end1 = str(extSize)
+                end1 = str(min([length1, extSize]))
                 beg2 = str(0)
-                end2 = str(extSize)
+                end2 = str(min([length2, extSize]))
 
         # Get the list 'positions'
         positions = [beg1, end1, beg2, end2]
@@ -344,21 +344,37 @@ def qualitativeEvaluationOfTheAssembly(current_gap, gfaFile, extSize, gapfilling
 
                 # Left scaffold oriented '+'.
                 if leftScaffold.orient == "+":
-                    ref_fasta.write(">" + leftScaffold.name + "_region:" + str(leftScaffold.slen - extSize) + "-" + str(leftScaffold.slen) + "\n")
-                    ref_fasta.write(leftFlankingSeq[(leftScaffold.slen - extSize):leftScaffold.slen])
+                    if leftScaffold.slen < extSize:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(leftScaffold.slen) + "\n")
+                        ref_fasta.write(leftFlankingSeq[0:leftScaffold.slen])
+                    else:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:" + str(leftScaffold.slen - extSize) + "-" + str(leftScaffold.slen) + "\n")
+                        ref_fasta.write(leftFlankingSeq[(leftScaffold.slen - extSize):leftScaffold.slen])
                 # Left scaffold oriented '-'.
                 elif leftScaffold.orient == "-":
-                    ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(extSize) + "_revcom\n")
-                    ref_fasta.write(rc(leftFlankingSeq[0:extSize]))
+                    if leftScaffold.slen < extSize:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(leftScaffold.slen) + "_revcom\n")
+                        ref_fasta.write(rc(leftFlankingSeq[0:leftScaffold.slen]))
+                    else:
+                        ref_fasta.write(">" + leftScaffold.name + "_region:0-" + str(extSize) + "_revcom\n")
+                        ref_fasta.write(rc(leftFlankingSeq[0:extSize]))
 
                 # Right scaffold oriented '+'.
                 if rightScaffold.orient == "+":
-                    ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(extSize) + "\n")
-                    ref_fasta.write(rightFlankingSeq[0:extSize])
+                    if rightScaffold.slen < extSize:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(rightScaffold.slen) + "\n")
+                        ref_fasta.write(rightFlankingSeq[0:rightScaffold.slen])
+                    else:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(extSize) + "\n")
+                        ref_fasta.write(rightFlankingSeq[0:extSize])
                 # Right scaffold oriented '-'.
                 elif rightScaffold.orient == "-":
-                    ref_fasta.write("\n>" + rightScaffold.name + "_region:" + str(rightScaffold.slen - extSize) + "-" + str(rightScaffold.slen) + "_revcom\n")
-                    ref_fasta.write(rc(rightFlankingSeq[(rightScaffold.slen - extSize):rightScaffold.slen]))
+                    if rightScaffold.slen < extSize:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:0-" + str(rightScaffold.slen) + "_revcom\n")
+                        ref_fasta.write(rc(rightFlankingSeq[0:rightScaffold.slen]))
+                    else:
+                        ref_fasta.write("\n>" + rightScaffold.name + "_region:" + str(rightScaffold.slen - extSize) + "-" + str(rightScaffold.slen) + "_revcom\n")
+                        ref_fasta.write(rc(rightFlankingSeq[(rightScaffold.slen - extSize):rightScaffold.slen]))
 
         except IOError as err:
             print("File 'qualitativeEvaluation.py', function 'qualitativeEvaluationOfTheAssembly()': Unable to open or write to the file {}. \nIOError-{}".format(referenceFile, err))
